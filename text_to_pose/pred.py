@@ -35,7 +35,8 @@ def visualize_poses(_id: str, text: str, original_pose: Pose, predicted_pose: Po
     pose_2_name = _id + "_pred.mp4"
     visualize_pose(predicted_pose, pose_2_name)
 
-    title = f"<h3><u>{_id}</u>: <span class='hamnosys'>{text}</span> ({len(original_pose.body.data)} / {len(predicted_pose.body.data)})</h3>"
+    lengths = f"({len(original_pose.body.data)} / {len(predicted_pose.body.data)})"
+    title = f"<h3><u>{_id}</u>: <span class='hamnosys'>{text}</span> {lengths}</h3>"
     video1 = f"<video src='{pose_1_name}' controls preload='none'></video>"
     video2 = f"<video src='{pose_2_name}' controls preload='none'></video>"
     return title + video1 + video2

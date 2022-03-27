@@ -5,27 +5,27 @@ import torch
 
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
 from text_to_pose.tests.tokenizer import DummyTokenizer
-import pytorch_lightning as pl
+
+
+def get_batch(bsz=4):
+    data_tensor = torch.tensor([[[1, 1]], [[2, 2]], [[3, 3]]], dtype=torch.float)
+    return {
+        "text": ["text1"] * bsz,
+        "pose": {
+            "length": torch.tensor([3], dtype=torch.float).expand(bsz, 1),
+            "data": data_tensor.expand(bsz, *data_tensor.shape),
+            "confidence": torch.ones([bsz, 3, 1]),
+            "inverse_mask": torch.ones([bsz, 3]),
+        },
+    }
 
 
 class ModelOverfitTestCase(unittest.TestCase):
-    def get_batch(self, bsz=4):
-        data_tensor = torch.tensor([[[1, 1]], [[2, 2]], [[3, 3]]], dtype=torch.float)
-        return {
-            "text": ["text1"] * bsz,
-            "pose": {
-                "length": torch.tensor([3], dtype=torch.float).expand(bsz, 1),
-                "data": data_tensor.expand(bsz, *data_tensor.shape),
-                "confidence": torch.ones([bsz, 3, 1]),
-                "inverse_mask": torch.ones([bsz, 3]),
-            },
-        }
-
     def overfit_in_steps(self, steps: int):
         torch.manual_seed(42)
         random.seed(42)
 
-        batch = self.get_batch()
+        batch = get_batch()
 
         model = IterativeTextGuidedPoseGenerationModel(
             tokenizer=DummyTokenizer(),
@@ -39,7 +39,7 @@ class ModelOverfitTestCase(unittest.TestCase):
 
         # Training loop
         losses = []
-        for i in range(1000):
+        for _ in range(1000):
             loss = model.training_step(batch, steps=steps)
             loss_float = float(loss.detach())
             losses.append(loss_float)
@@ -53,7 +53,7 @@ class ModelOverfitTestCase(unittest.TestCase):
         first_pose = batch["pose"]["data"][0, 0, :, :]
         prediction = model.forward("", first_pose=first_pose, step_size=1)
         next(prediction)
-        for i in range(steps):
+        for _ in range(steps):
             seq = next(prediction)
             print("seq predicted", seq)
 

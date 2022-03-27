@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-import numpy.ma as ma
+from numpy import ma
 from pose_format import Pose
 from pose_format.numpy import NumPyPoseBody
 from pose_format.pose_header import PoseHeaderDimensions, PoseHeader
@@ -12,29 +12,32 @@ from text_to_pose.data import TextPoseDataset
 from text_to_pose.utils import zero_pad_collator
 
 
+def fake_pose(num_frames: int, fps=25):
+    dimensions = PoseHeaderDimensions(width=1, height=1, depth=1)
+    header = PoseHeader(version=0.1, dimensions=dimensions, components=OpenPose_Components)
+
+    total_points = header.total_points()
+    data = np.zeros(shape=(num_frames, 1, total_points, 2), dtype=np.float32)
+    confidence = np.zeros(shape=(num_frames, 1, total_points), dtype=np.float32)
+    masked_data = ma.masked_array(data)
+
+    body = NumPyPoseBody(fps=int(fps), data=masked_data, confidence=confidence)
+
+    return Pose(header, body)
+
+
+def single_datum(num_frames):
+    return {
+        "id": "test_id",
+        "text": "test text",
+        "pose": fake_pose(num_frames=num_frames)
+    }
+
+
 class DataTestCase(unittest.TestCase):
-    def fake_pose(self, num_frames: int, fps=25):
-        dimensions = PoseHeaderDimensions(width=1, height=1, depth=1)
-        header = PoseHeader(version=0.1, dimensions=dimensions, components=OpenPose_Components)
-
-        total_points = header.total_points()
-        data = np.zeros(shape=(num_frames, 1, total_points, 2), dtype=np.float32)
-        confidence = np.zeros(shape=(num_frames, 1, total_points), dtype=np.float32)
-        masked_data = ma.masked_array(data)
-
-        body = NumPyPoseBody(fps=int(fps), data=masked_data, confidence=confidence)
-
-        return Pose(header, body)
-
-    def single_datum(self, num_frames):
-        return {
-            "id": "test_id",
-            "text": "test text",
-            "pose": self.fake_pose(num_frames=num_frames)
-        }
 
     def test_getting_single_item(self):
-        datum = self.single_datum(num_frames=5)
+        datum = single_datum(num_frames=5)
         dataset = TextPoseDataset([datum])
         self.assertEqual(len(dataset), 1)
 
@@ -47,8 +50,8 @@ class DataTestCase(unittest.TestCase):
 
     def test_multiple_items_data_collation(self):
         dataset = TextPoseDataset([
-            self.single_datum(num_frames=5),
-            self.single_datum(num_frames=10)
+            single_datum(num_frames=5),
+            single_datum(num_frames=10)
         ])
         self.assertEqual(len(dataset), 2)
 

@@ -8,7 +8,6 @@ from torch.utils.data import DataLoader
 from text_to_pose.args import args
 from text_to_pose.data import get_dataset
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from text_to_pose.tests.tokenizer import DummyTokenizer
 from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
 from text_to_pose.utils import zero_pad_collator
 

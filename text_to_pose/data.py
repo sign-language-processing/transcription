@@ -1,4 +1,5 @@
 from typing import List
+import importlib
 
 import torch
 from pose_format import Pose
@@ -7,11 +8,8 @@ from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.utils.reader import BufferReader
 from torch.utils.data import Dataset
 from tqdm import tqdm
-import importlib
 
 import tensorflow_datasets as tfds
-# noinspection PyUnresolvedReferences
-import sign_language_datasets.datasets
 from sign_language_datasets.datasets.config import SignDatasetConfig
 
 

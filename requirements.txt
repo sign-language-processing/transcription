@@ -5,3 +5,6 @@ pose_format
 fontTools
 numpy
 pylint
+tensorflow_datasets
+tqdm
+git+git://github.com/sign-language-processing/datasets.git
