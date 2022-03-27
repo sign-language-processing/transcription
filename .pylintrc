@@ -2,6 +2,7 @@
 disable=
 	W0221, # (arguments-differ)
 	W0223, # (abstract-method)
+	R0801, # (duplicate-code)
 	R0901, # (too-many-ancestors)
 	R0902, # (too-many-instance-attributes)
 	R0913, # (too-many-arguments)

@@ -59,7 +59,7 @@ if __name__ == '__main__':
         ))
 
     trainer = pl.Trainer(
-        max_epochs=1000,
+        max_epochs=5000,
         logger=LOGGER,
         callbacks=callbacks,
         gpus=args.gpus)
