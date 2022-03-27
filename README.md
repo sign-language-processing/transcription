@@ -47,12 +47,14 @@ Given the following never-seen HamNoSys text sequence:
 
 ![](assets/example/494_GSL_text.png)
 
-We predict the number of frames to generate (73) which is close to the reference number (66).
+We predict the number of frames to generate (68) which is close to the reference number (66).
 
-We use the first reference frame, expanded 73 times as a starting sequence to be refined iteratively.
+We use the first reference frame, expanded 68 times as a starting sequence to be refined iteratively.
 
 |                | Reference                                        | Predicted                                                                                              | Predicted                                                                                           |
 |----------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
-| Frames         | 66                                               | 73                                                                                                     | 74 (bug?)                                                                                           |
+| Frames         | 66                                               | 68                                                                                                     | 68                                                                                                  |
 | Starting Frame | N/A                                              | From [494_GSL](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/gsl/494.mp4) (Standing) | From [54_DGS](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/dgs/54.mp4) (Sitting) |
 | Pose           | ![original](assets/example/494_GSL_original.gif) | ![pred](assets/example/494_GSL_pred.gif)                                                               | ![other](assets/example/494_GSL_other.gif)                                                          |
+
+This example was taken during training. The loss is still improving!

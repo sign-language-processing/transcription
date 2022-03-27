@@ -22,6 +22,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             text_encoder_depth=2,
             pose_encoder_depth=4,
             encoder_heads=2,
+            encoder_dim_feedforward=2048,
             max_seq_size: int = 1000):
         super().__init__()
 
@@ -43,7 +44,8 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         self.pose_projection = nn.Linear(pose_dim, hidden_dim)
 
         # Encoder
-        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads,
+                                                   dim_feedforward=encoder_dim_feedforward, batch_first=True)
         self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=text_encoder_depth)
         self.pose_encoder = nn.TransformerEncoder(encoder_layer, num_layers=pose_encoder_depth)
 
@@ -62,7 +64,8 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         positional_embedding = self.positional_embeddings(tokenized["positions"])
         embedding = self.embedding(tokenized["tokens_ids"]) + positional_embedding
         encoded = self.text_encoder(embedding, src_key_padding_mask=tokenized["attention_mask"])
-        seq_length = self.seq_length(encoded[:, 0, :])
+        bos = encoded[:, 0, :]
+        seq_length = self.seq_length(bos)
         return {"data": encoded, "mask": tokenized["attention_mask"]}, seq_length
 
     def refine_pose_sequence(self, pose_sequence, text_encoding, positional_embedding):
@@ -109,7 +112,6 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
 
         # Calculate sequence length loss
         sequence_length_loss = F.mse_loss(sequence_length, pose["length"]) / 10000
-        self.log(name + "_seq_length_loss", sequence_length_loss)
 
         # Repeat the first frame for initial prediction
         batch_size, pose_seq_length, _, _ = pose["data"].shape
@@ -129,13 +131,17 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             refinement_loss += masked_mse_loss(l1_gold, l1_predicted, confidence=pose["confidence"])
 
             step_shape = [batch_size, 1, 1, 1]
-            step_size = 1 + torch.randn(step_shape, device=self.device) / 4
+            step_size = 1 + torch.randn(step_shape, device=self.device) / 10
             l1_step = l1_gold if name == "validation" else l1_predicted
             pose_sequence["data"] = pose_sequence["data"] + step_size * l1_step
 
-        self.log(name + "_refinement_loss", refinement_loss)
+            if name == "train":  # add just a little noise while training
+                pose_sequence["data"] = pose_sequence["data"] + torch.randn_like(pose_sequence["data"]) * 1e-4
+
+        self.log(name + "_seq_length_loss", sequence_length_loss, batch_size=batch_size)
+        self.log(name + "_refinement_loss", refinement_loss, batch_size=batch_size)
         train_loss = refinement_loss + sequence_length_loss
-        self.log(name + "_loss", train_loss)
+        self.log(name + "_loss", train_loss, batch_size=batch_size)
         return train_loss
 
     def configure_optimizers(self):

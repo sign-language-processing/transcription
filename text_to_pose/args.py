@@ -30,7 +30,7 @@ parser.add_argument('--pose_encoder_depth', type=int, default=4, help='number of
 parser.add_argument('--encoder_heads', type=int, default=2, help='number of heads for the encoder')
 
 # Prediction args
-parser.add_argument('--pred_checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")
+parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")
 parser.add_argument('--pred_output', type=str, default=None, metavar='PATH', help="Path for saving prediction files")
 parser.add_argument('--ffmpeg_path', type=str, default=None, metavar='PATH', help="Path for saving prediction files")
 

@@ -30,6 +30,7 @@ class ModelOverfitTestCase(unittest.TestCase):
         model = IterativeTextGuidedPoseGenerationModel(
             tokenizer=DummyTokenizer(),
             hidden_dim=10,
+            encoder_dim_feedforward=10,
             pose_dims=(1, 2),
         )
         optimizer = model.configure_optimizers()

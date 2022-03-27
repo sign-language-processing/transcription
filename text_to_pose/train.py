@@ -40,8 +40,10 @@ if __name__ == '__main__':
                       encoder_heads=args.encoder_heads,
                       max_seq_size=args.max_seq_size)
 
-    # model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(args.pred_checkpoint, **model_args)
-    model = IterativeTextGuidedPoseGenerationModel(**model_args)
+    if args.checkpoint is not None:
+        model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(args.checkpoint, **model_args)
+    else:
+        model = IterativeTextGuidedPoseGenerationModel(**model_args)
 
     callbacks = []
     if LOGGER is not None:
@@ -49,6 +51,7 @@ if __name__ == '__main__':
 
         callbacks.append(ModelCheckpoint(
             dirpath="models/" + LOGGER.experiment.id,
+            filename="model",
             verbose=True,
             save_top_k=1,
             monitor='train_loss',

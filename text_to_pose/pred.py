@@ -42,8 +42,8 @@ def visualize_poses(_id: str, text: str, poses: List[Pose]) -> str:
 
 
 if __name__ == '__main__':
-    if args.pred_checkpoint is None:
-        raise Exception("Must specify `pred_checkpoint`")
+    if args.checkpoint is None:
+        raise Exception("Must specify `checkpoint`")
     if args.pred_output is None:
         raise Exception("Must specify `pred_output`")
     if args.ffmpeg_path is None:
@@ -57,13 +57,16 @@ if __name__ == '__main__':
     _, num_pose_joints, num_pose_dims = dataset[0]["pose"]["data"].shape
     pose_header = dataset.data[0]["pose"].header
 
-    model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(
-        args.pred_checkpoint,
-        tokenizer=HamNoSysTokenizer(),
-        pose_dims=(num_pose_joints, num_pose_dims),
-        hidden_dim=args.hidden_dim,
-        max_seq_size=args.max_seq_size
-    )
+    model_args = dict(tokenizer=HamNoSysTokenizer(),
+                      pose_dims=(num_pose_joints, num_pose_dims),
+                      hidden_dim=args.hidden_dim,
+                      text_encoder_depth=args.text_encoder_depth,
+                      pose_encoder_depth=args.pose_encoder_depth,
+                      encoder_heads=args.encoder_heads,
+                      max_seq_size=args.max_seq_size)
+
+    model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(args.checkpoint, **model_args)
+    model.eval()
 
     html = []
 
@@ -72,7 +75,7 @@ if __name__ == '__main__':
             first_pose = datum["pose"]["data"][0]
             # datum["text"] = ""
             seq_iter = model.forward(text=datum["text"], first_pose=first_pose, step_size=1)
-            for i in range(10):  # This loop is instantaneous
+            for i in range(10):  # This loop is near instantaneous
                 seq = next(seq_iter)
 
             data = torch.unsqueeze(seq, 1).cpu()
