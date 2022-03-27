@@ -1,10 +1,10 @@
-pytorch_lightning
+pytorch_lightning==1.5.10
 torch==1.11.0
 wandb==0.12.11
 pose_format
 fontTools
 numpy
+tqdm
 pylint
 tensorflow_datasets
-tqdm
-git+https://github.com/sign-language-processing/datasets.git#egg=sign_language_datasets
+sign-language-datasets

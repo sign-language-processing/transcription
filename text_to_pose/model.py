@@ -86,7 +86,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             "data": first_pose.expand(1, sequence_length, *self.pose_dims),
             "mask": torch.zeros([1, sequence_length], dtype=torch.bool),
         }
-        positions = torch.range(0, min(sequence_length, self.max_seq_size) - 1, dtype=torch.int, device=self.device)
+        positions = torch.arange(0, min(sequence_length, self.max_seq_size), dtype=torch.int, device=self.device)
         positional_embedding = self.positional_embeddings(positions)
         while True:
             yield pose_sequence["data"][0]
@@ -115,7 +115,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             "mask": torch.logical_not(pose["inverse_mask"])
         }
 
-        positions = torch.range(0, pose_seq_length - 1, dtype=torch.int, device=self.device)
+        positions = torch.arange(0, pose_seq_length, dtype=torch.int, device=self.device)
         positional_embedding = self.positional_embeddings(positions)
 
         refinement_loss = 0

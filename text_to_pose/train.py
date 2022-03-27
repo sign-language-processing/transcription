@@ -46,10 +46,9 @@ if __name__ == '__main__':
     callbacks = []
     if LOGGER is not None:
         os.makedirs("models", exist_ok=True)
-        os.makedirs("models/" + LOGGER.experiment.id + "/", exist_ok=True)
 
         callbacks.append(ModelCheckpoint(
-            filepath="models/" + LOGGER.experiment.id + "/weights.ckpt",
+            dirpath="models/" + LOGGER.experiment.id,
             verbose=True,
             save_top_k=1,
             monitor='train_loss',

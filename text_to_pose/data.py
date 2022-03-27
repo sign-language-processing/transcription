@@ -95,8 +95,8 @@ def get_dataset(name="dicta_sign", poses="holistic", fps=25, split="train",
     tfds_dataset = tfds.load(name=name, builder_kwargs=dict(config=config), split=split, data_dir=data_dir)
 
     # pylint: disable=protected-access
-    with open(dataset_module._POSE_HEADERS[poses], "rb") as fp:
-        pose_header = PoseHeader.read(BufferReader(fp.read()))
+    with open(dataset_module._POSE_HEADERS[poses], "rb") as buffer:
+        pose_header = PoseHeader.read(BufferReader(buffer.read()))
 
     normalization_info = pose_normalization_info(pose_header)
     data = [process_datum(datum, pose_header, normalization_info, components)

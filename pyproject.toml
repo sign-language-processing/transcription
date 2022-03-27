@@ -1,5 +1,5 @@
 [project]
-name = "sign_text_to_pose"
+name = "sign-text-to-pose"
 description = "Model for generating pose files from text"
 version = "0.0.1"
 authors = [

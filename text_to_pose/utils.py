@@ -12,10 +12,10 @@ def zero_pad_collator(batch) -> Union[Dict[str, torch.Tensor], Tuple[torch.Tenso
         if isinstance(datum, dict):  # Recurse over dictionaries
             return zero_pad_collator(batch)
 
-        if isinstance(datum, int) or isinstance(datum, np.int32):
+        if isinstance(datum, (int, np.int32)):
             return torch.tensor(batch, dtype=torch.long)
 
-        if isinstance(datum, MaskedTensor) or isinstance(datum, torch.Tensor):
+        if isinstance(datum, (MaskedTensor, torch.Tensor)):
             max_len = max([len(t) for t in batch])
             if max_len == 1:
                 return torch.stack(batch)
@@ -23,15 +23,15 @@ def zero_pad_collator(batch) -> Union[Dict[str, torch.Tensor], Tuple[torch.Tenso
             torch_cls = MaskedTorch if isinstance(datum, MaskedTensor) else torch
 
             new_batch = []
-            for t in batch:
-                missing = list(t.shape)
-                missing[0] = max_len - t.shape[0]
+            for tensor in batch:
+                missing = list(tensor.shape)
+                missing[0] = max_len - tensor.shape[0]
 
                 if missing[0] > 0:
-                    padding_tensor = torch.zeros(missing, dtype=t.dtype, device=t.device)
-                    t = torch_cls.cat([t, padding_tensor], dim=0)
+                    padding_tensor = torch.zeros(missing, dtype=tensor.dtype, device=tensor.device)
+                    tensor = torch_cls.cat([tensor, padding_tensor], dim=0)
 
-                new_batch.append(t)
+                new_batch.append(tensor)
 
             return torch_cls.stack(new_batch, dim=0)
 
@@ -43,7 +43,7 @@ def zero_pad_collator(batch) -> Union[Dict[str, torch.Tensor], Tuple[torch.Tenso
 
     # For tuples
     if isinstance(batch[0], tuple):
-        return tuple([collate_tensors([b[i] for b in batch]) for i in range(len(batch[0]))])
+        return tuple(collate_tensors([b[i] for b in batch]) for i in range(len(batch[0])))
 
     # For dictionaries
     keys = batch[0].keys()

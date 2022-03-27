@@ -41,6 +41,7 @@ class ModelTestCase(unittest.TestCase):
                 torch.tensor([self.seq_length]),
             )
         )
+        model.log = MagicMock(return_value=True)
         return model
 
     def model_forward(self):

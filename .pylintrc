@@ -1,5 +1,11 @@
 [MASTER]
 disable=
+	W0221, # (arguments-differ)
+	W0223, # (abstract-method)
+	R0901, # (too-many-ancestors)
+	R0902, # (too-many-instance-attributes)
+	R0913, # (too-many-arguments)
+	R0914, # (too-many-locals)
     C0114, # (missing-module-docstring)
 	C0115, # (missing-class-docstring)
 	C0116 # (missing-function-docstring)
