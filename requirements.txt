@@ -4,3 +4,4 @@ wandb==0.12.11
 pose_format
 fontTools
 numpy
+pylint
