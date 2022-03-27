@@ -19,6 +19,9 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             tokenizer,
             pose_dims: (int, int) = (137, 2),
             hidden_dim: int = 128,
+            text_encoder_depth=2,
+            pose_encoder_depth=4,
+            encoder_heads=2,
             max_seq_size: int = 1000):
         super().__init__()
 
@@ -40,9 +43,9 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         self.pose_projection = nn.Linear(pose_dim, hidden_dim)
 
         # Encoder
-        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=2, batch_first=True)
-        self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=2)
-        self.pose_encoder = nn.TransformerEncoder(encoder_layer, num_layers=4)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads, batch_first=True)
+        self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=text_encoder_depth)
+        self.pose_encoder = nn.TransformerEncoder(encoder_layer, num_layers=pose_encoder_depth)
 
         # Predict sequence length
         self.seq_length = nn.Linear(hidden_dim, 1)

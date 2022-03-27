@@ -31,13 +31,13 @@ if __name__ == '__main__':
 
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
 
-    # # Model Arguments
-    # TODO parser.add_argument('--encoder_depth', type=int, default=2, help='number of layers for the encoder')
-    # TODO parser.add_argument('--encoder_heads', type=int, default=4, help='number of heads for the encoder')
-
+    # Model Arguments
     model_args = dict(tokenizer=HamNoSysTokenizer(),
                       pose_dims=(num_pose_joints, num_pose_dims),
                       hidden_dim=args.hidden_dim,
+                      text_encoder_depth=args.text_encoder_depth,
+                      pose_encoder_depth=args.pose_encoder_depth,
+                      encoder_heads=args.encoder_heads,
                       max_seq_size=args.max_seq_size)
 
     # model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(args.pred_checkpoint, **model_args)

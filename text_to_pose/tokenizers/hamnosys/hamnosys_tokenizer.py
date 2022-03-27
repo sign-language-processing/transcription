@@ -4,6 +4,8 @@ from typing import List
 import torch
 from fontTools.ttLib import TTFont
 
+from text_to_pose.utils import zero_pad_collator
+
 
 class HamNoSysTokenizer:
 
@@ -27,25 +29,16 @@ class HamNoSysTokenizer:
 
     def __call__(self, texts: List[str], device=None):
         all_tokens = [self.tokenize(text) for text in texts]
-        max_tokens = max([len(t) for t in all_tokens])
 
-        shape = (len(texts), max_tokens)
+        tokens_batch = zero_pad_collator([{
+            "tokens_ids": torch.tensor(tokens, dtype=torch.int, device=device),
+            "attention_mask": torch.ones(len(tokens), dtype=torch.bool, device=device),
+            "positions": torch.arange(0, len(tokens), dtype=torch.int, device=device)
+        } for tokens in all_tokens])
+        # In transformers, 1 is mask, not 0
+        tokens_batch["attention_mask"] = torch.logical_not(tokens_batch["attention_mask"])
 
-        tokens_ids = torch.zeros(shape, dtype=torch.int, device=device)
-        attention_mask = torch.ones(shape, dtype=torch.bool, device=device)
-        positions = torch.arange(0, max_tokens, dtype=torch.int, device=device).expand(shape)
-
-        # TODO use the zero pad collator?
-        for i, tokens in enumerate(all_tokens):
-            for j, token in enumerate(tokens):
-                tokens_ids[i, j] = token
-            attention_mask[i, :len(tokens)] = 0
-
-        return {
-            "tokens_ids": tokens_ids,
-            "positions": positions,
-            "attention_mask": attention_mask,
-        }
+        return tokens_batch
 
 
 if __name__ == "__main__":
