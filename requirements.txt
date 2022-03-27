@@ -1,0 +1,6 @@
+pytorch_lightning
+torch==1.11.0
+wandb==0.12.11
+pose_format
+fontTools
+numpy
