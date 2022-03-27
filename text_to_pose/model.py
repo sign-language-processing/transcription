@@ -135,5 +135,5 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         self.log(name + "_loss", train_loss)
         return train_loss
 
-    def configure_optimizers(self, lr=1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=1e-3)

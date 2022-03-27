@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import List
 
 import torch
 from pose_format import Pose
@@ -28,18 +29,16 @@ def visualize_pose(pose: Pose, pose_name: str):
                           custom_ffmpeg=args.ffmpeg_path)
 
 
-def visualize_poses(_id: str, text: str, original_pose: Pose, predicted_pose: Pose) -> str:
-    pose_1_name = _id + "_original.mp4"
-    visualize_pose(original_pose, pose_1_name)
+def visualize_poses(_id: str, text: str, poses: List[Pose]) -> str:
+    lengths = " / ".join([str(len(p.body.data)) for p in poses])
+    html_tags = f"<h3><u>{_id}</u>: <span class='hamnosys'>{text}</span> ({lengths})</h3>"
 
-    pose_2_name = _id + "_pred.mp4"
-    visualize_pose(predicted_pose, pose_2_name)
+    for k, pose in enumerate(poses):
+        pose_name = f"{_id}_{k}.mp4"
+        visualize_pose(pose, pose_name)
+        html_tags += f"<video src='{pose_name}' controls preload='none'></video>"
 
-    lengths = f"({len(original_pose.body.data)} / {len(predicted_pose.body.data)})"
-    title = f"<h3><u>{_id}</u>: <span class='hamnosys'>{text}</span> {lengths}</h3>"
-    video1 = f"<video src='{pose_1_name}' controls preload='none'></video>"
-    video2 = f"<video src='{pose_2_name}' controls preload='none'></video>"
-    return title + video1 + video2
+    return html_tags
 
 
 if __name__ == '__main__':
@@ -79,12 +78,11 @@ if __name__ == '__main__':
             data = torch.unsqueeze(seq, 1).cpu()
             conf = torch.ones_like(data[:, :, :, 0])
             pose_body = NumPyPoseBody(args.fps, data.numpy(), conf.numpy())
-            pose = Pose(pose_header, pose_body)
+            predicted_pose = Pose(pose_header, pose_body)
 
             html.append(visualize_poses(_id=datum["id"],
                                         text=datum["text"],
-                                        original_pose=datum["pose"]["obj"],
-                                        predicted_pose=pose))
+                                        poses=[datum["pose"]["obj"], predicted_pose]))
 
     with open(os.path.join(args.pred_output, "index.html"), "w", encoding="utf-8") as f:
         f.write(

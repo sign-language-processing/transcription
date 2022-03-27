@@ -7,4 +7,4 @@ numpy
 pylint
 tensorflow_datasets
 tqdm
-git+git://github.com/sign-language-processing/datasets.git
+git+https://github.com/sign-language-processing/datasets.git#egg=sign_language_datasets

@@ -94,8 +94,9 @@ def get_dataset(name="dicta_sign", poses="holistic", fps=25, split="train",
                                include_pose=poses)  # Download and load Holistic pose estimation
     tfds_dataset = tfds.load(name=name, builder_kwargs=dict(config=config), split=split, data_dir=data_dir)
 
-    with open(dataset_module._POSE_HEADERS[poses], "rb") as f:
-        pose_header = PoseHeader.read(BufferReader(f.read()))
+    # pylint: disable=protected-access
+    with open(dataset_module._POSE_HEADERS[poses], "rb") as fp:
+        pose_header = PoseHeader.read(BufferReader(fp.read()))
 
     normalization_info = pose_normalization_info(pose_header)
     data = [process_datum(datum, pose_header, normalization_info, components)
