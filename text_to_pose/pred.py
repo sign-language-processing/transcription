@@ -52,7 +52,7 @@ if __name__ == '__main__':
     os.makedirs(args.pred_output, exist_ok=True)
 
     dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
-                          max_seq_size=args.max_seq_size, split="train[:10]")
+                          max_seq_size=args.max_seq_size, split="train[:20]")
 
     _, num_pose_joints, num_pose_dims = dataset[0]["pose"]["data"].shape
     pose_header = dataset.data[0]["pose"].header
