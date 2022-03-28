@@ -40,6 +40,15 @@ class TextPoseDataset(Dataset):
         }
 
 
+def pose_hide_legs(pose: Pose):
+    point_names = ["KNEE", "ANKLE", "HEEL", "FOOT_INDEX"]
+    # pylint: disable=protected-access
+    points = [pose.header._get_point_index("POSE_LANDMARKS", side + "_" + n)
+              for n in point_names for side in ["LEFT", "RIGHT"]]
+    pose.body.confidence[:, :, points] = 0
+    pose.body.data[:, :, points, :] = 0
+
+
 def pose_normalization_info(pose_header: PoseHeader):
     if pose_header.components[0].name == "POSE_LANDMARKS":
         return pose_header.normalization_info(
@@ -72,6 +81,7 @@ def process_datum(datum, pose_header: PoseHeader, normalization_info, components
         pose = pose.get_components(components)
 
     pose = pose.normalize(normalization_info)
+    pose_hide_legs(pose)
     text = datum["hamnosys"].numpy().decode('utf-8')
 
     return {

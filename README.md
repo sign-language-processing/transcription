@@ -36,6 +36,7 @@ while True:
 ## Extra details
 
 - Model tests, including overfitting, and continuous integration
+- We remove the legs because they are not informative
 - For experiment management we use WANDB
 - Training works on CPU and GPU (90% util)
 - Multiple-GPUs not tested
@@ -51,11 +52,11 @@ We predict the number of frames to generate (77) which is close to the reference
 
 We use the first reference frame, expanded 68 times as a starting sequence to be refined iteratively.
 
-|                | Reference                                        | Predicted                                                                                              | Predicted                                                                                           |
-|----------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
-| Frames         | 66                                               | 77                                                                                                     | 77                                                                                                  |
-| Starting Frame | N/A                                              | From [494_GSL](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/gsl/494.mp4) (Standing) | From [54_DGS](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/dgs/54.mp4) (Sitting) |
-| Pose           | ![original](assets/example/494_GSL_original.gif) | ![pred](assets/example/494_GSL_pred.gif)                                                               | ![other](assets/example/494_GSL_other.gif)                                                          |
+|                | Reference                                        | Predicted                                                                                           | Predicted                                                                                          |
+|----------------|--------------------------------------------------|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| Frames         | 66                                               | 77                                                                                                  | 77                                                                                                 |
+| Starting Frame | N/A                                              | From [494_GSL](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/gsl/494.mp4) | From [118_LSF](https://www.sign-lang.uni-hamburg.de/dicta-sign/portal/concepts/lsf/118.mp4) |
+| Pose           | ![original](assets/example/494_GSL_original.gif) | ![pred](assets/example/494_GSL_pred.gif)                                                            | ![other](assets/example/494_GSL_other.gif)                                                         |
 
 With the following [training](https://wandb.ai/amit_my/text-to-pose/runs/392fs203) loss curve:
 

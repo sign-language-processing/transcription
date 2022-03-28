@@ -8,7 +8,7 @@ from pose_format.numpy import NumPyPoseBody
 from pose_format.pose_visualizer import PoseVisualizer
 
 from text_to_pose.args import args
-from text_to_pose.data import get_dataset, pose_normalization_info
+from text_to_pose.data import get_dataset, pose_normalization_info, pose_hide_legs
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
 from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
 
@@ -23,7 +23,7 @@ def visualize_pose(pose: Pose, pose_name: str):
     pose.focus()
 
     # Draw original pose
-    visualizer = PoseVisualizer(pose)
+    visualizer = PoseVisualizer(pose, thickness=2)
     visualizer.save_video(os.path.join(args.pred_output, pose_name),
                           visualizer.draw(),
                           custom_ffmpeg=args.ffmpeg_path)
@@ -82,6 +82,7 @@ if __name__ == '__main__':
             conf = torch.ones_like(data[:, :, :, 0])
             pose_body = NumPyPoseBody(args.fps, data.numpy(), conf.numpy())
             predicted_pose = Pose(pose_header, pose_body)
+            pose_hide_legs(predicted_pose)
 
             html.append(visualize_poses(_id=datum["id"],
                                         text=datum["text"],
