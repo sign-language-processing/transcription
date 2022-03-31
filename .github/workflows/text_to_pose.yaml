@@ -1,0 +1,34 @@
+name: Build
+
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'pose_to_segments/**'
+
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install Requirements
+        run: |
+          pip install -r requirements.txt -r text_to_pose/requirements.txt
+          pip install .
+
+      - name: Lint Code
+        working-directory: text_to_pose
+        run: pylint text_to_pose
+
+      - name: Run tests
+        run: pytest text_to_pose

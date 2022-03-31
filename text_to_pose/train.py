@@ -5,11 +5,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
+from shared.collator import zero_pad_collator
 from text_to_pose.args import args
 from text_to_pose.data import get_dataset
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
 from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
-from text_to_pose.utils import zero_pad_collator
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -22,12 +22,12 @@ if __name__ == '__main__':
 
     train_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
                                 max_seq_size=args.max_seq_size, split="train[10:]")
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
+                              shuffle=True, collate_fn=zero_pad_collator)
 
     validation_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
                                      max_seq_size=args.max_seq_size, split="train[:10]")
-    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, shuffle=True,
-                                   collate_fn=zero_pad_collator)
+    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, collate_fn=zero_pad_collator)
 
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
 
@@ -64,4 +64,4 @@ if __name__ == '__main__':
         callbacks=callbacks,
         gpus=args.gpus)
 
-    trainer.fit(model, train_dataloader=train_loader, val_dataloaders=validation_loader)
+    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)

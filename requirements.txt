@@ -1,10 +1,5 @@
-pytorch_lightning==1.5.10
-torch==1.11.0
-wandb==0.12.11
 pose_format
-fontTools
-numpy
-tqdm
-pylint
 tensorflow_datasets
 sign-language-datasets
+tqdm
+numpy

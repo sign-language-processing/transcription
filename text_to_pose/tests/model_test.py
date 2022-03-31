@@ -26,7 +26,6 @@ class ModelTestCase(unittest.TestCase):
         self.assertTrue(torch.all(torch.eq(torch.zeros_like(encoded_text["mask"]), encoded_text["mask"])))
 
     def model_setup(self):
-        hidden_dim = 2
         model = IterativeTextGuidedPoseGenerationModel(
             tokenizer=DummyTokenizer(),
             hidden_dim=self.hidden_dim,
@@ -35,7 +34,7 @@ class ModelTestCase(unittest.TestCase):
         model.encode_text = MagicMock(
             return_value=(
                 {
-                    "data": torch.ones([1, 2, hidden_dim]),
+                    "data": torch.ones([1, 2, self.hidden_dim]),
                     "mask": torch.zeros([1, 2], dtype=torch.bool),
                 },
                 torch.tensor([self.seq_length]),

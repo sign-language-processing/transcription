@@ -4,7 +4,7 @@ from typing import List
 import torch
 from fontTools.ttLib import TTFont
 
-from text_to_pose.utils import zero_pad_collator
+from shared.collator import zero_pad_collator
 
 
 class HamNoSysTokenizer:

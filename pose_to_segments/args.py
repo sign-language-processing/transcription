@@ -12,10 +12,9 @@ parser.add_argument('--no_wandb', type=bool, default=False, help='ignore wandb?'
 # Training Arguments
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
-parser.add_argument('--batch_size', type=int, default=32, help='batch size')
+parser.add_argument('--batch_size', type=int, default=4, help='batch size')
 
 # Data Arguments
-parser.add_argument('--max_seq_size', type=int, default=100, help='input sequence size')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
 parser.add_argument('--pose_components', type=list,
@@ -23,9 +22,7 @@ parser.add_argument('--pose_components', type=list,
                     help='what pose components to use?')
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
-parser.add_argument('--text_encoder_depth', type=int, default=2, help='number of layers for the text encoder')
-parser.add_argument('--pose_encoder_depth', type=int, default=4, help='number of layers for the pose encoder')
-parser.add_argument('--encoder_heads', type=int, default=2, help='number of heads for the encoder')
+parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
 
 # Prediction args
 parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")

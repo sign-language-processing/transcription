@@ -1,0 +1,4 @@
+pytorch_lightning==1.6.0
+torch==1.11.0
+wandb==0.12.11
+fontTools

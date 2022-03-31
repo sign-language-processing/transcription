@@ -1,20 +1,26 @@
 name: Build
 
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - 'pose_to_segments/**'
+      - 'text_to_pose/**'
+
 
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.8]
 
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.8
 
       - name: Install Requirements
         run: |
@@ -22,7 +28,7 @@ jobs:
           pip install .
 
       - name: Lint Code
-        run: pylint text_to_pose
+        run: pylint shared
 
       - name: Run tests
-        run: pytest text_to_pose
+        run: pytest shared
