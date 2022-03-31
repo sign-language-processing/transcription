@@ -3,9 +3,9 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
     paths-ignore:
       - 'pose_to_segments/**'
       - 'text_to_pose/**'
