@@ -17,5 +17,5 @@ dev = [
 packages = [
     "shared",
     "text_to_pose",
-    "pose_segmentation",
+    "pose_to_segments",
 ]

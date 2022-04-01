@@ -55,7 +55,7 @@ if __name__ == '__main__':
         ))
 
     trainer = pl.Trainer(
-        max_epochs=5000,
+        max_epochs=100,
         logger=LOGGER,
         callbacks=callbacks,
         log_every_n_steps=10,
