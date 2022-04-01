@@ -3,3 +3,5 @@ tensorflow_datasets
 sign-language-datasets
 tqdm
 numpy
+pylint
+pytest
