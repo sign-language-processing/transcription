@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    name: Run Tests
+    name: text-to-pose
     runs-on: ubuntu-latest
 
     steps:
@@ -23,11 +23,10 @@ jobs:
 
       - name: Install Requirements
         run: |
-          pip install -r requirements.txt -r text_to_pose/requirements.txt
+          pip install -r requirements.txt
           pip install .
 
       - name: Lint Code
-        working-directory: text_to_pose
         run: pylint text_to_pose
 
       - name: Run tests

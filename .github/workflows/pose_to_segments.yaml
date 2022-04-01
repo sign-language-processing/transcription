@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    name: Run Tests
+    name: pose-to-segments
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Requirements
         run: |
-          pip install -r requirements.txt -r pose_to_segments/requirements.txt
+          pip install -r requirements.txt
           pip install .
 
       - name: Lint Code
