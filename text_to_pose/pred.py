@@ -2,6 +2,7 @@ import os
 import shutil
 from typing import List
 
+import numpy as np
 import torch
 from pose_format import Pose
 from pose_format.numpy import NumPyPoseBody
@@ -88,6 +89,28 @@ if __name__ == '__main__':
             html.append(visualize_poses(_id=datum["id"],
                                         text=datum["text"],
                                         poses=[datum["pose"]["obj"], predicted_pose]))
+
+        # # Iterative change
+        # datum = dataset[12]  # dataset[0] starts with an empty frame
+        # first_pose = datum["pose"]["data"][0]
+        # seq_iter = model.forward(text=datum["text"], first_pose=first_pose, step_size=1)
+        #
+        # data = torch.stack([next(seq_iter) for i in range(1000)], dim=1)
+        # data = data[:, ::100, :, :]
+        #
+        # conf = torch.ones_like(data[:, :, :, 0])
+        # pose_body = NumPyPoseBody(args.fps, data.numpy(), conf.numpy())
+        # predicted_pose = Pose(pose_header, pose_body)
+        # pose_hide_legs(predicted_pose)
+        # predicted_pose.focus()
+        # # shift poses
+        # for i in range(predicted_pose.body.data.shape[1] - 1):
+        #     max_x = np.max(predicted_pose.body.data[:, i, :, 0])
+        #     predicted_pose.body.data[:, i + 1, :, 0] += max_x
+        #
+        # html.append(visualize_poses(_id=datum["id"] + "_iterative",
+        #                             text=datum["text"],
+        #                             poses=[datum["pose"]["obj"], predicted_pose]))
 
     with open(os.path.join(args.pred_output, "index.html"), "w", encoding="utf-8") as f:
         f.write(

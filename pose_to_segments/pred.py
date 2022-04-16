@@ -68,10 +68,9 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         # Save model as single file, without code
-        with torch.no_grad():
-            pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
-            traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
-            torch.jit.save(traced_cell, "dist/model.pth")
+        pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
+        traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
+        torch.jit.save(traced_cell, "dist/model.pth")
 
         model = torch.jit.load("dist/model.pth")
         model.eval()
