@@ -1,6 +1,6 @@
 from transformers import pipeline
 
-from text_to_text._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
+from ._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
 
 model_path = 'outputs/checkpoint-7000'
 

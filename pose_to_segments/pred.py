@@ -5,10 +5,10 @@ import torch
 from pose_format import Pose
 from pose_format.pose_visualizer import PoseVisualizer
 
-from pose_to_segments.args import args
-from pose_to_segments.data import BIO, get_dataset
-from pose_to_segments.model import PoseTaggingModel
-from shared.pose_utils import pose_normalization_info
+from .args import args
+from .data import BIO, get_dataset
+from .model import PoseTaggingModel
+from ..shared.pose_utils import pose_normalization_info
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 

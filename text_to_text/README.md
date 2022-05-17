@@ -1,6 +1,11 @@
 # 📝 ⇝ 🧏 Text-to-Text
 
-Translation between spoken and signed language texts
+Translation between spoken and signed language texts.
+
+## ⚠️ Warning!
+
+- We managed to train this for ASL fingerspelling, but not multilingual fingerspelling.
+- This module will change drastically as we probably move to using bergamot.
 
 ## Main Idea
 

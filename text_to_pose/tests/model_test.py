@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import torch
 
-from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from text_to_pose.tests.tokenizer import DummyTokenizer
+from ..model import IterativeTextGuidedPoseGenerationModel
+from .tokenizer import DummyTokenizer
 
 
 class ModelTestCase(unittest.TestCase):

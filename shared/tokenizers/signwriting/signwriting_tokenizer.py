@@ -2,16 +2,17 @@ import re
 from itertools import chain
 from typing import List
 
-from shared.signwriting.signwriting import fsw_to_sign, SignSymbol
-from shared.tokenizers.base_tokenizer import BaseTokenizer
+from ...signwriting.signwriting import fsw_to_sign, SignSymbol
+from ...tokenizers.base_tokenizer import BaseTokenizer
 
 
 class SignWritingTokenizer(BaseTokenizer):
 
     def __init__(self, starting_index=None):
-        super().__init__(tokens=self.tokens(), starting_index=starting_index)
+        super().__init__(tokens=SignWritingTokenizer.tokens(), starting_index=starting_index)
 
-    def tokens(self):
+    @staticmethod
+    def tokens():
         box_symbols = ["B", "L", "M", "R"]
 
         base_symbols = ["S" + hex(i)[2:] + hex(j)[2:] for i in range(0x10, 0x38 + 1) for j in range(0x0, 0xf + 1)]
@@ -27,7 +28,8 @@ class SignWritingTokenizer(BaseTokenizer):
 
         return list(chain.from_iterable([box_symbols, base_symbols, rows, cols, positions]))
 
-    def tokenize_symbol(self, symbol: SignSymbol):
+    @staticmethod
+    def tokenize_symbol(symbol: SignSymbol):
         if symbol["symbol"] in ["B", "L", "M", "R"]:
             yield symbol["symbol"]
         else:
@@ -39,12 +41,12 @@ class SignWritingTokenizer(BaseTokenizer):
         yield "p" + str(symbol["position"][0])
         yield "p" + str(symbol["position"][1])
 
-    def text_to_tokens(self, fsw: str) -> List[str]:
-        signs = [fsw_to_sign(f) for f in fsw.split(" ")]
+    def text_to_tokens(self, text: str) -> List[str]:
+        signs = [fsw_to_sign(f) for f in text.split(" ")]
         for sign in signs:
-            yield from self.tokenize_symbol(sign["box"])
+            yield from SignWritingTokenizer.tokenize_symbol(sign["box"])
             for symbol in sign["symbols"]:
-                yield from self.tokenize_symbol(symbol)
+                yield from SignWritingTokenizer.tokenize_symbol(symbol)
 
     def tokens_to_text(self, tokens: List[str]) -> str:
         tokenized = " ".join(tokens)
@@ -57,10 +59,3 @@ class SignWritingTokenizer(BaseTokenizer):
         tokenized = re.sub(r'(\d)M', r'\1 M', tokenized)
 
         return tokenized
-
-
-if __name__ == "__main__":
-    tokenizer = SignWritingTokenizer()
-    print(tokenizer.tokens_to_text(
-        "M p500 p500 S203 r0 p492 p438 S192 r0 p492 p475 S119 r0 p486 p500 S1f0 c0 r0 p478 p540 S14a r0 p492 p565".split(
-            " ")))

@@ -2,7 +2,7 @@ import os
 import random
 import re
 from pathlib import Path
-from shared.signwriting.signwriting import join_signs
+from ...shared.signwriting.signwriting import join_signs
 import numpy as np
 
 current_dir = Path(__file__).parent

@@ -51,10 +51,10 @@ from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
-from text_to_text._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
+from ._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
 
 # Register custom tokenizer
-from text_to_text._tokenizers.sign_language_tokenizer import SignLanguageTokenizer, SignLanguageTokenizerConfig
+from ._tokenizers.sign_language_tokenizer import SignLanguageTokenizer, SignLanguageTokenizerConfig
 
 # AutoTokenizer.register(config_class=SignLanguageTokenizerConfig, slow_tokenizer_class=SignLanguageTokenizer)
 

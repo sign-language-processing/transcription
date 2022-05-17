@@ -5,7 +5,7 @@ from typing import Tuple, Optional, Union, List
 
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from text_to_text._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
+from .._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
 
 
 class EncoderDecoderTokenizer(PreTrainedTokenizer):

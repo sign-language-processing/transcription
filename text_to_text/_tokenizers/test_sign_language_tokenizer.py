@@ -1,6 +1,6 @@
 import unittest
 
-from text_to_text._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
+from .._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
 
 
 class TokenizeCase(unittest.TestCase):

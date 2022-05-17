@@ -1,10 +1,8 @@
-from pathlib import Path
 from typing import List
 
 import torch
-from fontTools.ttLib import TTFont
 
-from shared.collator import zero_pad_collator
+from ...shared.collator import zero_pad_collator
 
 
 class BaseTokenizer:
@@ -34,10 +32,10 @@ class BaseTokenizer:
         return len(self.i2s)
 
     def text_to_tokens(self, text: str) -> List[str]:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def tokens_to_text(self, tokens: List[str]) -> str:
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def tokenize(self, text: str):
         return [self.bos_token_id] + [self.s2i[c] for c in self.text_to_tokens(text)]

@@ -10,7 +10,7 @@ from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.utils.reader import BufferReader
 from tqdm import tqdm
 
-from shared.pose_utils import pose_normalization_info, pose_hide_legs
+from .pose_utils import pose_normalization_info, pose_hide_legs
 
 
 class ProcessedPoseDatum(TypedDict):

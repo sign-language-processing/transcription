@@ -2,9 +2,9 @@ import unittest
 
 from torch.utils.data import DataLoader
 
-from shared.collator import zero_pad_collator
-from shared.pose_utils import fake_pose
-from text_to_pose.data import TextPoseDataset, TextPoseDatum
+from ...shared.collator import zero_pad_collator
+from ...shared.pose_utils import fake_pose
+from ..data import TextPoseDataset, TextPoseDatum
 
 
 def single_datum(num_frames) -> TextPoseDatum:

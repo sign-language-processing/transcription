@@ -3,7 +3,7 @@ from typing import List, TypedDict
 import torch
 from pose_format import Pose
 from torch.utils.data import Dataset
-from shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
+from ..shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
 
 
 class TextPoseDatum(TypedDict):

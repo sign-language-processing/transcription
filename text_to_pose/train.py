@@ -5,11 +5,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-from shared.collator import zero_pad_collator
-from text_to_pose.args import args
-from text_to_pose.data import get_dataset
-from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from shared.tokenizers import HamNoSysTokenizer
+from ..shared.collator import zero_pad_collator
+from ..shared.tokenizers import HamNoSysTokenizer
+from .args import args
+from .data import get_dataset
+from .model import IterativeTextGuidedPoseGenerationModel
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"

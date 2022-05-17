@@ -3,7 +3,7 @@ from typing import List
 
 from fontTools.ttLib import TTFont
 
-from shared.tokenizers.base_tokenizer import BaseTokenizer
+from ..base_tokenizer import BaseTokenizer
 
 
 class HamNoSysTokenizer(BaseTokenizer):
@@ -17,7 +17,7 @@ class HamNoSysTokenizer(BaseTokenizer):
         super().__init__(tokens=tokens, starting_index=starting_index)
 
     def text_to_tokens(self, text: str) -> List[str]:
-        return [c for c in text]
+        return list(text)
 
     def tokens_to_text(self, tokens: List[str]) -> str:
         return "".join(tokens)

@@ -5,7 +5,7 @@ import torch
 from pose_format import Pose
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
-from shared.tfds_dataset import get_tfds_dataset, ProcessedPoseDatum
+from ..shared.tfds_dataset import get_tfds_dataset, ProcessedPoseDatum
 
 
 class Segment(TypedDict):

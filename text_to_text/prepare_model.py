@@ -3,8 +3,8 @@ import os
 
 from transformers import AutoTokenizer, EncoderDecoderModel
 
-from text_to_text._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
-from text_to_text._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
+from ._tokenizers.encoder_decoder_tokenizer import EncoderDecoderTokenizer
+from ._tokenizers.sign_language_tokenizer import SignLanguageTokenizer
 
 
 def main():

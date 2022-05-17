@@ -7,11 +7,12 @@ from pose_format import Pose
 from pose_format.numpy import NumPyPoseBody
 from pose_format.pose_visualizer import PoseVisualizer
 
-from shared.pose_utils import pose_normalization_info, pose_hide_legs
-from text_to_pose.args import args
-from text_to_pose.data import get_dataset
-from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from shared.tokenizers import HamNoSysTokenizer
+from ..shared.pose_utils import pose_normalization_info, pose_hide_legs
+from ..shared.tokenizers import HamNoSysTokenizer
+
+from .args import args
+from .data import get_dataset
+from .model import IterativeTextGuidedPoseGenerationModel
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 
