@@ -7,13 +7,13 @@ on:
   pull_request:
     branches: [ master, main ]
     paths-ignore:
+      - 'pose_to_segments/**'
       - 'text_to_pose/**'
-      - 'text_to_text/**'
 
 
 jobs:
   test:
-    name: pose-to-segments
+    name: text-to-text
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           pip install .
 
       - name: Lint Code
-        run: pylint pose_to_segments
+        run: pylint text_to_text
 
       - name: Run tests
-        run: pytest pose_to_segments
+        run: pytest text_to_text

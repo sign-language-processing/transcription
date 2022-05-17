@@ -9,7 +9,7 @@ from shared.collator import zero_pad_collator
 from text_to_pose.args import args
 from text_to_pose.data import get_dataset
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
+from shared.tokenizers import HamNoSysTokenizer
 
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"

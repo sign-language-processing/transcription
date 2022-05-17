@@ -2,7 +2,6 @@ import os
 import shutil
 from typing import List
 
-import numpy as np
 import torch
 from pose_format import Pose
 from pose_format.numpy import NumPyPoseBody
@@ -12,7 +11,7 @@ from shared.pose_utils import pose_normalization_info, pose_hide_legs
 from text_to_pose.args import args
 from text_to_pose.data import get_dataset
 from text_to_pose.model import IterativeTextGuidedPoseGenerationModel
-from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
+from shared.tokenizers import HamNoSysTokenizer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 

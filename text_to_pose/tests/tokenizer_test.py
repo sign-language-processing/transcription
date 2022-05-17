@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from text_to_pose.tokenizers.hamnosys.hamnosys_tokenizer import HamNoSysTokenizer
+from shared.tokenizers import HamNoSysTokenizer
 
 
 class TokenizerTestCase(unittest.TestCase):

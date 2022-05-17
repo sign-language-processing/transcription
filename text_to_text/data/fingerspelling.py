@@ -1,0 +1,72 @@
+import os
+import random
+import re
+from pathlib import Path
+from shared.signwriting.signwriting import join_signs
+import numpy as np
+
+current_dir = Path(__file__).parent
+wordslist_dir = current_dir.joinpath('wordslist')
+fingerspelling_dir = current_dir.joinpath('fingerspelling')
+
+raw_dir = current_dir.joinpath('raw').joinpath('fingerspelling')
+raw_dir.mkdir(exist_ok=True)
+
+if not wordslist_dir.exists():
+    os.system('git clone https://github.com/imsky/wordlists.git ' + str(wordslist_dir.absolute()))
+
+# name_files = wordslist_dir.joinpath('names').glob("**/*.txt")
+name_files = wordslist_dir.glob("**/*.txt")
+names = []
+for name_file in name_files:
+    with open(name_file, "r", encoding="utf-8") as f:
+        names += f.read().splitlines()
+
+names = [n.strip() for n in names if len(n.strip()) > 0]
+
+# Sample numbers
+samples = set([str(n) for n in np.power(10, np.random.exponential(3, 10000)).astype(np.int32)])
+print("Sampled Numbers", len(samples))
+print("Words:", len(names))
+names += list(samples)
+
+with open(raw_dir.joinpath("spoken.txt"), "w", encoding="utf-8") as spoken_f:
+    for name in names:
+        spoken_f.write(name + "\n")
+
+for f_name in fingerspelling_dir.iterdir():
+    if f_name.name == "README.md":
+        continue
+
+    spoken, country, iana, local_name = f_name.name.split(".")[0].split("-")
+    with open(f_name, "r", encoding="utf-8") as f:
+        content = re.sub(r'#.*$', '', f.read())  # Remove comments
+        lines = [l.strip().split(",") for l in content.splitlines() if len(l.strip()) > 0]
+        chars = {l[0].lower(): l[1:] for l in lines}
+
+    signed_f = open(raw_dir.joinpath("signed." + country + '-' + iana), "w", encoding="utf-8")
+
+    counter = 0
+    for name in names:
+        sl = []
+        caret = 0
+        while caret < len(name):
+            found = False
+            for c, options in chars.items():
+                if name[caret:caret + len(c)].lower() == c:
+                    sl.append(random.choice(options))
+                    caret += len(c)
+                    found = True
+                    break
+            if not found:
+                break
+
+        if caret == len(name):
+            counter += 1
+            signed_f.write("<SW> <" + country + "> <" + iana + "> | " + join_signs(*sl, spacing=10) + "\n")
+        else:
+            signed_f.write("\n")
+
+    signed_f.close()
+
+    print(f_name, counter)
