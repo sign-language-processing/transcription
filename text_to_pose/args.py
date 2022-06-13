@@ -1,3 +1,4 @@
+import os
 import random
 from argparse import ArgumentParser
 from os import path
@@ -34,11 +35,13 @@ parser.add_argument('--ffmpeg_path', type=str, default=None, metavar='PATH', hel
 
 args = parser.parse_args()
 
-# ---------------------
 # Set Seed
-# ---------------------
 if args.seed == 0:  # Make seed random if 0
     args.seed = random.randint(0, 1000)
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
+
+# Set Available GPUs
+gpus = ["0", "1", "2", "3"]
+os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(gpus[:args.gpus])

@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    name: pose-to-segments
+    name: pose-to-text
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
           pip install .
 
       - name: Lint Code
-        run: pylint pose_to_segments
+        run: pylint pose_to_text
 
       - name: Run tests
-        run: pytest pose_to_segments
+        run: pytest pose_to_text

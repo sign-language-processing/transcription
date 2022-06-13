@@ -12,8 +12,6 @@ from .data import get_dataset
 from .model import IterativeTextGuidedPoseGenerationModel
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
     LOGGER = None
     if not args.no_wandb:
         LOGGER = WandbLogger(project="text-to-pose", log_model=False, offline=False)

@@ -3,8 +3,8 @@ from unittest.mock import MagicMock
 
 import torch
 
+from ...shared.tokenizers.dummy_tokenizer import DummyTokenizer
 from ..model import IterativeTextGuidedPoseGenerationModel
-from .tokenizer import DummyTokenizer
 
 
 class ModelTestCase(unittest.TestCase):
@@ -45,9 +45,10 @@ class ModelTestCase(unittest.TestCase):
 
     def model_forward(self):
         model = self.model_setup()
-        return model.forward(
-            "", torch.full(self.pose_dim, fill_value=2, dtype=torch.float)
-        )
+        model.eval()
+        with torch.no_grad():
+            first_pose = torch.full(self.pose_dim, fill_value=2, dtype=torch.float)
+            return model.forward("", first_pose)
 
     def test_forward_yields_initial_pose_sequence(self):
         model_forward = self.model_forward()

@@ -4,7 +4,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
-import numpy as np
+
+from ..shared.models.pose_encoder import PoseEncoderModel
 
 
 def masked_mse_loss(pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torch.Tensor):
@@ -28,26 +29,24 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
 
         self.tokenizer = tokenizer
         self.max_seq_size = max_seq_size
-        self.pose_dims = pose_dims
-        pose_dim = int(np.prod(pose_dims))
 
         # Embedding layers
-        self.positional_embeddings = nn.Embedding(
-            num_embeddings=max_seq_size, embedding_dim=hidden_dim
-        )
+        self.positional_embeddings = nn.Embedding(num_embeddings=max_seq_size, embedding_dim=hidden_dim)
 
         self.embedding = nn.Embedding(
             num_embeddings=len(tokenizer),
             embedding_dim=hidden_dim,
             padding_idx=tokenizer.pad_token_id,
         )
-        self.pose_projection = nn.Linear(pose_dim, hidden_dim)
+
+        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims, hidden_dim=hidden_dim,
+                                             encoder_depth=pose_encoder_depth, encoder_heads=encoder_heads,
+                                             encoder_dim_feedforward=encoder_dim_feedforward, max_seq_size=max_seq_size)
 
         # Encoder
         encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads,
                                                    dim_feedforward=encoder_dim_feedforward, batch_first=True)
         self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=text_encoder_depth)
-        self.pose_encoder = nn.TransformerEncoder(encoder_layer, num_layers=pose_encoder_depth)
 
         # Predict sequence length
         self.seq_length = nn.Linear(hidden_dim, 1)
@@ -56,7 +55,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         self.pose_diff_projection = nn.Sequential(
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, pose_dim),
+            nn.Linear(hidden_dim, self.pose_encoder.pose_dim),
         )
 
     def encode_text(self, texts: List[str]):
@@ -68,36 +67,27 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         seq_length = self.seq_length(bos)
         return {"data": encoded, "mask": tokenized["attention_mask"]}, seq_length
 
-    def refine_pose_sequence(self, pose_sequence, text_encoding, positional_embedding):
+    def refine_pose_sequence(self, pose_sequence, text_encoding):
         batch_size, seq_length, _, _ = pose_sequence["data"].shape
-        flat_pose_data = pose_sequence["data"].reshape(batch_size, seq_length, -1)
-        # Encode pose sequence
-        pose_embedding = self.pose_projection(flat_pose_data) + positional_embedding
-        pose_text_sequence = torch.cat([pose_embedding, text_encoding["data"]], dim=1)
-        pose_text_mask = torch.cat(
-            [pose_sequence["mask"], text_encoding["mask"]], dim=1
-        )
-        pose_encoding = self.pose_encoder(
-            pose_text_sequence, src_key_padding_mask=pose_text_mask
-        )[:, :seq_length, :]
+        pose_encoding = self.pose_encoder(pose=pose_sequence, additional_sequence=text_encoding)
+        pose_encoding = pose_encoding[:, :seq_length, :]
+
         # Predict desired change
         flat_pose_projection = self.pose_diff_projection(pose_encoding)
-        return flat_pose_projection.reshape(batch_size, seq_length, *self.pose_dims)
+        return flat_pose_projection.reshape(batch_size, seq_length, *self.pose_encoder.pose_dims)
 
     def forward(self, text: str, first_pose: torch.Tensor, step_size: float = 0.5):
         text_encoding, sequence_length = self.encode_text([text])
         sequence_length = round(float(sequence_length))
 
         pose_sequence = {
-            "data": first_pose.expand(1, sequence_length, *self.pose_dims),
+            "data": first_pose.expand(1, sequence_length, *self.pose_encoder.pose_dims),
             "mask": torch.zeros([1, sequence_length], dtype=torch.bool),
         }
-        positions = torch.arange(0, min(sequence_length, self.max_seq_size), dtype=torch.int, device=self.device)
-        positional_embedding = self.positional_embeddings(positions)
         while True:
             yield pose_sequence["data"][0]
 
-            step = self.refine_pose_sequence(pose_sequence, text_encoding, positional_embedding)
+            step = self.refine_pose_sequence(pose_sequence, text_encoding)
             pose_sequence["data"] = pose_sequence["data"] + step_size * step
 
     def training_step(self, batch, *unused_args, steps=10):
@@ -120,14 +110,11 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             "mask": torch.logical_not(pose["inverse_mask"])
         }
 
-        positions = torch.arange(0, pose_seq_length, dtype=torch.int, device=self.device)
-        positional_embedding = self.positional_embeddings(positions)
-
         refinement_loss = 0
         for _ in range(steps):
             pose_sequence["data"] = pose_sequence["data"].detach()  # Detach from graph
             l1_gold = pose["data"] - pose_sequence["data"]
-            l1_predicted = self.refine_pose_sequence(pose_sequence, text_encoding, positional_embedding)
+            l1_predicted = self.refine_pose_sequence(pose_sequence, text_encoding)
             refinement_loss += masked_mse_loss(l1_gold, l1_predicted, confidence=pose["confidence"])
 
             step_shape = [batch_size, 1, 1, 1]

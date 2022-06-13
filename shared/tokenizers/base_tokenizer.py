@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List
 
 import torch
@@ -40,11 +42,28 @@ class BaseTokenizer:
     def tokenize(self, text: str):
         return [self.bos_token_id] + [self.s2i[c] for c in self.text_to_tokens(text)]
 
-    def __call__(self, texts: List[str], device=None):
-        all_tokens = [self.tokenize(text) for text in texts]
+    def detokenize(self, tokens: List[int]):
+        if len(tokens) == 0:
+            return ""
+        if tokens[0] == self.bos_token_id:
+            tokens = tokens[1:]
+
+        try:
+            padding_index = tokens.index(self.pad_token_id)
+            tokens = tokens[:padding_index]
+        except ValueError:
+            pass
+
+        return self.tokens_to_text([self.i2s[t] for t in tokens])
+
+    def __call__(self, texts: List[str] | torch.Tensor, is_tokenized=False, device=None):
+        if not is_tokenized:
+            all_tokens = [self.tokenize(text) for text in texts]
+        else:
+            all_tokens = texts.tolist()
 
         tokens_batch = zero_pad_collator([{
-            "tokens_ids": torch.tensor(tokens, dtype=torch.int, device=device),
+            "tokens_ids": torch.tensor(tokens, dtype=torch.long, device=device),
             "attention_mask": torch.ones(len(tokens), dtype=torch.bool, device=device),
             "positions": torch.arange(0, len(tokens), dtype=torch.int, device=device)
         } for tokens in all_tokens])

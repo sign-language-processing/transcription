@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - 'pose_to_segments/**'
       - 'text_to_pose/**'
+      - 'pose_to_text/**'
 
 
 jobs:
