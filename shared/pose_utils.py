@@ -45,8 +45,8 @@ def fake_pose(num_frames: int, fps=25):
     header = PoseHeader(version=0.1, dimensions=dimensions, components=OpenPose_Components)
 
     total_points = header.total_points()
-    data = np.zeros(shape=(num_frames, 1, total_points, 2), dtype=np.float32)
-    confidence = np.zeros(shape=(num_frames, 1, total_points), dtype=np.float32)
+    data = np.random.randn(num_frames, 1, total_points, 2)
+    confidence = np.random.randn(num_frames, 1, total_points)
     masked_data = ma.masked_array(data)
 
     body = NumPyPoseBody(fps=int(fps), data=masked_data, confidence=confidence)

@@ -1,10 +1,13 @@
 import unittest
 
+import numpy as np
+import tensorflow as tf
 from torch.utils.data import DataLoader
 
+from ...shared.tfds_dataset import ProcessedPoseDatum
 from ...shared.collator import zero_pad_collator
 from ...shared.pose_utils import fake_pose
-from ..data import TextPoseDataset, TextPoseDatum
+from ..data import TextPoseDataset, TextPoseDatum, process_datum
 
 
 def single_datum(num_frames) -> TextPoseDatum:
@@ -45,6 +48,41 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(pose["confidence"].shape, (2, 10, 137))
         self.assertEqual(pose["length"].shape, tuple([2, 1]))
         self.assertEqual(pose["inverse_mask"].shape, tuple([2, 10]))
+
+    def test_process_datum_not_prunes_not_zeros(self):
+        pose = fake_pose(num_frames=100)
+
+        hamnosys = tf.convert_to_tensor(np.array("abc"))
+        datum: ProcessedPoseDatum = {
+            "id": "test",
+            "pose": pose,
+            "tf_datum": {
+                "hamnosys": hamnosys
+            }
+        }
+
+        processed_datum = process_datum(datum)
+        pose_data = processed_datum["pose"].body.data
+
+        self.assertEqual(len(pose_data), 100)
+
+    def test_process_datum_prunes_zeros(self):
+        pose = fake_pose(num_frames=100)
+        pose.body.confidence[:5] = 0
+
+        hamnosys = tf.convert_to_tensor(np.array("abc"))
+        datum: ProcessedPoseDatum = {
+            "id": "test",
+            "pose": pose,
+            "tf_datum": {
+                "hamnosys": hamnosys
+            }
+        }
+
+        processed_datum = process_datum(datum)
+        pose_data = processed_datum["pose"].body.data
+
+        self.assertEqual(len(pose_data), 95)
 
 
 if __name__ == '__main__':

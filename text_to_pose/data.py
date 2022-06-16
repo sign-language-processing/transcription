@@ -44,6 +44,14 @@ def process_datum(datum: ProcessedPoseDatum) -> TextPoseDatum:
     text = datum["tf_datum"]["hamnosys"].numpy().decode('utf-8').strip()
     pose: Pose = datum["pose"]
 
+    # Prune all leading frames containing only zeros
+    for i in range(len(pose.body.data)):
+        if pose.body.confidence[i].sum() != 0:
+            if i != 0:
+                pose.body.data = pose.body.data[i:]
+                pose.body.confidence = pose.body.confidence[i:]
+            break
+
     return {
         "id": datum["id"],
         "text": text,
