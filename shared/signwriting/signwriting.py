@@ -36,6 +36,10 @@ def sign_to_fsw(sign: Sign) -> str:
     return "".join(symbols_str)
 
 
+def all_ys(_sign):
+    return [s["position"][1] for s in _sign["symbols"]]
+
+
 def join_signs(*fsws: str, spacing: int = 0):
     signs = [fsw_to_sign(fsw) for fsw in fsws]
     new_sign: Sign = {
@@ -47,7 +51,6 @@ def join_signs(*fsws: str, spacing: int = 0):
     }
 
     accumulative_offset = 0
-    all_ys = lambda _sign: [s["position"][1] for s in _sign["symbols"]]
 
     for sign in signs:
         sign_min_y = min(all_ys(sign))

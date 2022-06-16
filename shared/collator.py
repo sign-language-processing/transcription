@@ -16,7 +16,7 @@ def zero_pad_collator(batch) -> Union[Dict[str, torch.Tensor], Tuple[torch.Tenso
             return torch.tensor(batch, dtype=torch.long)
 
         if isinstance(datum, (MaskedTensor, torch.Tensor)):
-            max_len = max([len(t) for t in batch])
+            max_len = max(len(t) for t in batch)
             if max_len == 1:
                 return torch.stack(batch)
 
