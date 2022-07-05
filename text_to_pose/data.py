@@ -35,7 +35,7 @@ class TextPoseDataset(Dataset):
                 "data": torch_body.data.tensor[:, 0, :, :],
                 "confidence": torch_body.confidence[:, 0, :],
                 "length": torch.tensor([pose_length], dtype=torch.float),
-                "inverse_mask": torch.ones(pose_length, dtype=torch.bool)
+                "inverse_mask": torch.ones(pose_length, dtype=torch.int8)
             }
         }
 

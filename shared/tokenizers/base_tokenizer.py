@@ -4,7 +4,7 @@ from typing import List
 
 import torch
 
-from ...shared.collator import zero_pad_collator
+from ..collator import zero_pad_collator
 
 
 class BaseTokenizer:

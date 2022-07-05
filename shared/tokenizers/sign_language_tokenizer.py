@@ -6,11 +6,11 @@ from .signwriting.signwriting_tokenizer import SignWritingTokenizer
 
 
 class SignLanguageTokenizer(BaseTokenizer):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         self.hamnosys_tokenizer = HamNoSysTokenizer()
         self.signwriting_tokenizer = SignWritingTokenizer(starting_index=len(self.hamnosys_tokenizer))
 
-        super().__init__(**kwargs)
+        super().__init__([])
 
         self.i2s = {**self.hamnosys_tokenizer.i2s, **self.signwriting_tokenizer.i2s}
         self.s2i = {**self.hamnosys_tokenizer.s2i, **self.signwriting_tokenizer.s2i}

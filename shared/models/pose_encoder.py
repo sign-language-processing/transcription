@@ -12,8 +12,11 @@ class PoseEncoderModel(pl.LightningModule):
             encoder_depth=4,
             encoder_heads=2,
             encoder_dim_feedforward=2048,
-            max_seq_size: int = 1000):
+            max_seq_size: int = 1000,
+            dropout=0.5):
         super().__init__()
+
+        self.dropout = nn.Dropout(p=dropout)
 
         self.max_seq_size = max_seq_size
         self.pose_dims = pose_dims
@@ -45,7 +48,8 @@ class PoseEncoderModel(pl.LightningModule):
         positions = torch.arange(0, seq_length, dtype=torch.int, device=self.device)
         positional_embedding = self.positional_embeddings(positions)
 
-        flat_pose_data = pose["data"].reshape(batch_size, seq_length, -1)
+        pose_data = self.dropout(pose["data"])
+        flat_pose_data = pose_data.reshape(batch_size, seq_length, -1)
         # Encode pose sequence
         embedding = self.pose_projection(flat_pose_data) + positional_embedding
         mask = pose["mask"]

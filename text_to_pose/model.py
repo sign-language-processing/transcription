@@ -14,6 +14,25 @@ def masked_mse_loss(pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torc
     return (sq_error * confidence).mean()
 
 
+class DistributionPredictionModel(nn.Module):
+    def __init__(self, input_size: int):
+        super().__init__()
+
+        self.fc_mu = nn.Linear(input_size, 1)
+        self.fc_var = nn.Linear(input_size, 1)
+
+    def forward(self, x: torch.Tensor):
+        mu = self.fc_mu(x)
+        if not self.training:  # In test time, just predict the mean
+            return mu
+
+        log_var = self.fc_var(x)
+        # sample z from q
+        std = torch.exp(log_var / 2)
+        q = torch.distributions.Normal(mu, std)
+        return q.rsample()
+
+
 class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
     def __init__(
             self,
@@ -41,7 +60,8 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
 
         self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims, hidden_dim=hidden_dim,
                                              encoder_depth=pose_encoder_depth, encoder_heads=encoder_heads,
-                                             encoder_dim_feedforward=encoder_dim_feedforward, max_seq_size=max_seq_size)
+                                             encoder_dim_feedforward=encoder_dim_feedforward, max_seq_size=max_seq_size,
+                                             dropout=0)
 
         # Encoder
         encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads,
@@ -49,7 +69,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=text_encoder_depth)
 
         # Predict sequence length
-        self.seq_length = nn.Linear(hidden_dim, 1)
+        self.seq_length = DistributionPredictionModel(hidden_dim)
 
         # Predict pose difference
         self.pose_diff_projection = nn.Sequential(

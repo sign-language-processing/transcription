@@ -40,7 +40,7 @@ class ModelOverfitTestCase(unittest.TestCase):
 
         # Training loop
         losses = []
-        for _ in range(1000):
+        for _ in range(500):
             loss = model.training_step(batch, steps=steps)
             loss_float = float(loss.detach())
             losses.append(loss_float)
@@ -55,7 +55,7 @@ class ModelOverfitTestCase(unittest.TestCase):
 
         first_pose = batch["pose"]["data"][0, 0, :, :]
         with torch.no_grad():
-            prediction = model.forward("", first_pose=first_pose, step_size=1)
+            prediction = model.forward("text1", first_pose=first_pose, step_size=1)
         next(prediction)
         for _ in range(steps):
             seq = next(prediction)
