@@ -8,4 +8,6 @@ def get_dataset(**kwargs):
         # get_single_dataset(name="sign2mint", **kwargs)
     ]
 
-    return TextPoseDataset(list(chain.from_iterable([d.data for d in datasets])))
+    all_data = list(chain.from_iterable([d.data for d in datasets]))
+    # TODO @AmitMY - 3D normalize hand and face
+    return TextPoseDataset(all_data)

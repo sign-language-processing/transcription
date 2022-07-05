@@ -52,7 +52,7 @@ class ModelTestCase(unittest.TestCase):
             "pose": {
                 "length": torch.tensor([self.seq_length], dtype=torch.float),
                 "data": torch.ones([1, self.seq_length, *self.pose_dim], dtype=torch.float),
-                "inverse_mask": torch.ones([1, self.seq_length]),
+                "inverse_mask": torch.ones([1, self.seq_length], dtype=torch.int8),
             },
         }
 

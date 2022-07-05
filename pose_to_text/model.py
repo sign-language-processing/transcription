@@ -3,6 +3,7 @@ from typing import List
 import torch
 from torch import nn
 import pytorch_lightning as pl
+from torchmetrics import ExtendedEditDistance
 
 from ..shared.models.pose_encoder import PoseEncoderModel
 
@@ -17,16 +18,21 @@ class PoseToTextModel(pl.LightningModule):
             pose_encoder_depth=4,
             encoder_heads=2,
             encoder_dim_feedforward=2048,
-            max_seq_size: int = 1000):
+            max_seq_size: int = 100,
+            max_decode_seq_size: int = 30):
         super().__init__()
 
         self.max_seq_size = max_seq_size
+        self.max_decode_seq_size = max_decode_seq_size
 
         self.tokenizer = tokenizer
 
-        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims, hidden_dim=hidden_dim,
-                                             encoder_depth=pose_encoder_depth, encoder_heads=encoder_heads,
-                                             encoder_dim_feedforward=encoder_dim_feedforward, max_seq_size=max_seq_size)
+        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
+                                             hidden_dim=hidden_dim,
+                                             encoder_depth=pose_encoder_depth,
+                                             encoder_heads=encoder_heads,
+                                             encoder_dim_feedforward=encoder_dim_feedforward,
+                                             max_seq_size=max_seq_size)
 
         # Decoder
         self.positional_embeddings = nn.Embedding(num_embeddings=max_seq_size, embedding_dim=hidden_dim)
@@ -41,6 +47,9 @@ class PoseToTextModel(pl.LightningModule):
 
         # Loss
         self.loss_function = nn.CrossEntropyLoss(reduction='none')
+
+        # Metrics
+        self.val_edit_distance = ExtendedEditDistance(alpha=1., rho=1., deletion=1., insertion=1.)
 
     def embed_text(self, texts: List[str], is_tokenized=False):
         tokenized = self.tokenizer(texts, is_tokenized=is_tokenized, device=self.device)
@@ -69,12 +78,13 @@ class PoseToTextModel(pl.LightningModule):
 
         batch_size = len(pose_encoding)
 
-        output = torch.full(size=(batch_size, self.max_seq_size),
+        output = torch.full(size=(batch_size, self.max_decode_seq_size),
                             fill_value=self.tokenizer.bos_token_id, dtype=torch.long, device=self.device)
         padding_tensor = torch.full(size=tuple([batch_size]),
-                                    fill_value=self.tokenizer.pad_token_id, dtype=torch.long)
+                                    fill_value=self.tokenizer.pad_token_id,
+                                    dtype=torch.long, device=self.device)
 
-        for t in range(1, self.max_seq_size):
+        for t in range(1, self.max_decode_seq_size):
             # Break if all last tokens are padding
             last_padded = torch.eq(output[:, t - 1], self.tokenizer.pad_token_id)
             if last_padded.sum() == batch_size:
@@ -86,6 +96,7 @@ class PoseToTextModel(pl.LightningModule):
                                          pose_encoding=pose_encoding, pose_mask=pose["mask"])
 
             probs = self.get_token_probs(decoder_output[:, -1, :])
+
             output_t = probs.data.topk(1)[1].squeeze()
             output[:, t] = torch.where(last_padded, padding_tensor, output_t)
 
@@ -97,7 +108,14 @@ class PoseToTextModel(pl.LightningModule):
         return self.step(batch, *unused_args, name="train")
 
     def validation_step(self, batch, *unused_args):
-        return self.step(batch, *unused_args, name="validation")
+        output_texts = self.forward(batch)
+        self.val_edit_distance.update(output_texts, batch["text"])
+        for a, b in zip(output_texts, batch["text"]):
+            print("predicted", a, "/", b)
+
+    def validation_step_end(self, *unused_args, **unused_kwargs):
+        self.log("validation_edit_distance", self.val_edit_distance.compute())
+        self.val_edit_distance.reset()
 
     def decoder_mask(self, length):
         return nn.Transformer().generate_square_subsequent_mask(length).to(self.device)
@@ -129,7 +147,8 @@ class PoseToTextModel(pl.LightningModule):
         _, _, vocab = probs.shape
 
         # Flatten tensors and calculate loss
-        padding_eos_token = torch.full(size=(batch_size, 1), fill_value=self.tokenizer.pad_token_id)
+        padding_eos_token = torch.full(size=(batch_size, 1),
+                                       fill_value=self.tokenizer.pad_token_id, device=self.device)
         target_tokens = torch.cat([text_embedding["tokens_ids"], padding_eos_token], dim=1)[:, 1:]
         loss_mask = torch.logical_not(text_embedding["mask"]).reshape(-1)
         loss_target = target_tokens.reshape(-1)

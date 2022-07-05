@@ -13,3 +13,4 @@ pytorch2keras~=0.2.4
 torchmetrics~=0.7.3
 tensorflow~=2.8.0
 opencv-python==4.5.5.64
+mediapipe

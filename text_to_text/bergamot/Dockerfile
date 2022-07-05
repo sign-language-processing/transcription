@@ -16,6 +16,10 @@ RUN make conda
 RUN make snakemake
 RUN make git-modules
 
+RUN apt-get install nvidia-cuda-toolkit -y # Marian requires this toolkit
+RUN make dry-run
+RUN make test # Downloads and compiles additional packages
+
 ## Custom commands here
 
 RUN sed -i 's/^NUM_GPUS=8/NUM_GPUS=4/' Makefile

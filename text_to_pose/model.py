@@ -83,8 +83,7 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
         positional_embedding = self.positional_embeddings(tokenized["positions"])
         embedding = self.embedding(tokenized["tokens_ids"]) + positional_embedding
         encoded = self.text_encoder(embedding, src_key_padding_mask=tokenized["attention_mask"])
-        bos = encoded[:, 0, :]
-        seq_length = self.seq_length(bos)
+        seq_length = self.seq_length(torch.mean(encoded, dim=1))
         return {"data": encoded, "mask": tokenized["attention_mask"]}, seq_length
 
     def refine_pose_sequence(self, pose_sequence, text_encoding):
