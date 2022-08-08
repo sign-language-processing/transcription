@@ -13,3 +13,7 @@ Where:
 2. `COUNTRY` is a 2 letter `ISO 3166` ALPHA 2 code
 3. `IANA` is a code from the [language subtag registry](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)
 4. `NAME` is a non-unique sign language code, as known locally
+
+
+### Missing Alphabets
+- `pl-pl-pso-pjm`: https://www.slownikpjm.uw.edu.pl/en/page/opjm#alfabet

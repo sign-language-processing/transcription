@@ -1,6 +1,2 @@
-raw
-!raw/.gitkeep
-wordslist
-data.csv.gz
 train.jsonl
 validation.jsonl

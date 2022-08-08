@@ -6,7 +6,7 @@ Each directory should include a `signed.X` and `spoken.X` entries. And can conta
 many-to-many aligned.
 
 ### `signed.X`
-
+ 
 1. Writing system `SW` (SignWriting) or `HNS` (HamNoSys)
 2. Country code for that signed language
 3. (optional) the sign language ISO code.
@@ -24,6 +24,7 @@ To create all data, run:
 ```bash
 python fingerspelling.py # SW Fingerspelling in multiple languages
 python dicta_sign.py # HamNoSys single words
+python dgs_corpus.py # HamNoSys sentences
 python sign_bank.py # SW words and sentences in multiple languages 
 python swojs_glossario.py # SW sentences for Brazilian sign language
 python bible.py # SignBank Bible + the multilingual bible corpus

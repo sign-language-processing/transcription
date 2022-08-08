@@ -9,7 +9,7 @@ import itertools
 
 current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('sign2mint')
-raw_dir.mkdir(exist_ok=True)
+raw_dir.mkdir(exist_ok=True, parents=True)
 
 config = SignDatasetConfig(name="only-annotations", version="1.0.0", include_video=False)
 sign2mint = tfds.load(name='sign2_mint', builder_kwargs={"config": config})

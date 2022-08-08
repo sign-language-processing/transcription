@@ -6,7 +6,7 @@ import torch
 from ..model import PoseToTextModel
 from ...shared.tokenizers.sign_language_tokenizer import SignLanguageTokenizer
 
-# It is important t test overfitting on more than one string,
+# It is important to test overfitting on more than one string,
 # to make sure the model doesn't always generate the same output.
 TEXTS = ["M518x533S1870a489x515", '']  # 10 tokens, 17 tokens
 
@@ -14,7 +14,9 @@ TEXTS = ["M518x533S1870a489x515", '
 def get_batch():
     bsz = len(TEXTS)
     return {
-        "text": TEXTS,
+        "text": {
+            "text": TEXTS
+        },
         "pose": {
             "length": torch.tensor([3], dtype=torch.float).expand(bsz, 1),
             "data": torch.randn([bsz, 3, 10, 2], dtype=torch.float),

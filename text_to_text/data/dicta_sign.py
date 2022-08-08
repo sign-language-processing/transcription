@@ -14,7 +14,7 @@ dicta_sign = tfds.load(name='dicta_sign', builder_kwargs={"config": config})
 
 current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('dicta_sign')
-raw_dir.mkdir(exist_ok=True)
+raw_dir.mkdir(exist_ok=True, parents=True)
 
 country_dirs = {}
 country_dicts = {}

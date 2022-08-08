@@ -11,7 +11,7 @@ from .data import get_dataset
 from .model import PoseTaggingModel
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
     LOGGER = None
     if not args.no_wandb:
@@ -20,7 +20,7 @@ if __name__ == '__main__':
             LOGGER.log_hyperparams(args)
 
     train_dataset = get_dataset(poses=args.pose, fps=args.fps,
-                                components=args.pose_components, split="train[10:]")
+                                components=args.pose_components, split="train[:10]") # TODO
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
                               shuffle=True, collate_fn=zero_pad_collator)
 

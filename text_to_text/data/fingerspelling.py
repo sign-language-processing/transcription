@@ -1,8 +1,9 @@
 import os
 import random
 import re
+import string
 from pathlib import Path
-from ...shared.signwriting.signwriting import join_signs
+from shared.signwriting.signwriting import join_signs
 import numpy as np
 
 current_dir = Path(__file__).parent
@@ -10,7 +11,7 @@ wordslist_dir = current_dir.joinpath('wordslist')
 fingerspelling_dir = current_dir.joinpath('fingerspelling')
 
 raw_dir = current_dir.joinpath('raw').joinpath('fingerspelling')
-raw_dir.mkdir(exist_ok=True)
+raw_dir.mkdir(exist_ok=True, parents=True)
 
 if not wordslist_dir.exists():
     os.system('git clone https://github.com/imsky/wordlists.git ' + str(wordslist_dir.absolute()))
@@ -22,7 +23,7 @@ for name_file in name_files:
     with open(name_file, "r", encoding="utf-8") as f:
         names += f.read().splitlines()
 
-names = [n.strip() for n in names if len(n.strip()) > 0]
+names = list(string.ascii_lowercase + string.digits) + [n.strip() for n in names if len(n.strip()) > 0]
 
 # Sample numbers
 samples = set([str(n) for n in np.power(10, np.random.exponential(3, 10000)).astype(np.int32)])

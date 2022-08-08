@@ -5,11 +5,11 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-from ..shared.collator import zero_pad_collator
-from ..shared.tokenizers.sign_language_tokenizer import SignLanguageTokenizer
-from ..text_to_pose.args import args
-from .data import get_dataset
-from .model import PoseToTextModel
+from shared.collator import zero_pad_collator
+from shared.tokenizers.sign_language_tokenizer import SignLanguageTokenizer
+from text_to_pose.args import args
+from pose_to_text.data import get_dataset
+from pose_to_text.model import PoseToTextModel
 
 if __name__ == '__main__':
     LOGGER = None
@@ -19,7 +19,7 @@ if __name__ == '__main__':
             LOGGER.log_hyperparams(args)
 
     train_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
-                                max_seq_size=args.max_seq_size, split="train[:10]")
+                                max_seq_size=args.max_seq_size, split="train[10:]")
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
                               shuffle=True, collate_fn=zero_pad_collator)
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     trainer = pl.Trainer(
         max_epochs=5000,
-        check_val_every_n_epoch=10,  # validation is really slow
+        check_val_every_n_epoch=1,  # validation is really slow
         logger=LOGGER,
         callbacks=callbacks,
         gpus=args.gpus)

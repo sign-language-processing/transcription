@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional
 
 from transformers import PreTrainedTokenizer, PretrainedConfig
 
-from ...shared.tokenizers import HamNoSysTokenizer, SignWritingTokenizer
+from shared.tokenizers import HamNoSysTokenizer, SignWritingTokenizer
 
 
 class SignLanguageTokenizerConfig(PretrainedConfig):

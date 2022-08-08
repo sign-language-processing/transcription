@@ -1,2 +1,4 @@
-models/*
-outputs/*
+raw
+!raw/.gitkeep
+wordslist
+ru-en/

@@ -1,5 +1,5 @@
 from itertools import chain
-from ..text_to_pose.data import get_dataset as get_single_dataset, TextPoseDataset
+from text_to_pose.data import get_dataset as get_single_dataset, TextPoseDataset
 
 
 def get_dataset(**kwargs):

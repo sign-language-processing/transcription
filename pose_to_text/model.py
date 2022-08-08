@@ -5,7 +5,7 @@ from torch import nn
 import pytorch_lightning as pl
 from torchmetrics import ExtendedEditDistance
 
-from ..shared.models.pose_encoder import PoseEncoderModel
+from shared.models.pose_encoder import PoseEncoderModel
 
 
 class PoseToTextModel(pl.LightningModule):
@@ -28,6 +28,7 @@ class PoseToTextModel(pl.LightningModule):
         self.tokenizer = tokenizer
 
         self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
+                                             dropout=0.2,
                                              hidden_dim=hidden_dim,
                                              encoder_depth=pose_encoder_depth,
                                              encoder_heads=encoder_heads,
@@ -96,9 +97,8 @@ class PoseToTextModel(pl.LightningModule):
                                          pose_encoding=pose_encoding, pose_mask=pose["mask"])
 
             probs = self.get_token_probs(decoder_output[:, -1, :])
-
-            output_t = probs.data.topk(1)[1].squeeze()
-            output[:, t] = torch.where(last_padded, padding_tensor, output_t)
+            _, output_t = probs.topk(1)
+            output[:, t] = torch.where(last_padded, padding_tensor, output_t.squeeze())
 
         sentences = output.cpu().numpy().tolist()
         texts = [self.tokenizer.detokenize(tokens) for tokens in sentences]
@@ -109,8 +109,8 @@ class PoseToTextModel(pl.LightningModule):
 
     def validation_step(self, batch, *unused_args):
         output_texts = self.forward(batch)
-        self.val_edit_distance.update(output_texts, batch["text"])
-        for a, b in zip(output_texts, batch["text"]):
+        self.val_edit_distance.update(output_texts, batch["text"]["text"])
+        for a, b in zip(output_texts, batch["text"]["text"]):
             print("predicted", a, "/", b)
 
     def validation_step_end(self, *unused_args, **unused_kwargs):
@@ -135,7 +135,7 @@ class PoseToTextModel(pl.LightningModule):
         pose = PoseToTextModel.format_pose(batch["pose"])
         pose_encoding = self.pose_encoder(pose)
 
-        text_embedding = self.embed_text(batch["text"])
+        text_embedding = self.embed_text(batch["text"]["text"])
 
         batch_size = len(text_embedding["data"])
 
