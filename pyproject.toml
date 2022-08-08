@@ -39,6 +39,9 @@ packages = [
     "text_to_text",
 ]
 
+[tool.setuptools.package-data]
+pose_to_segments = ["*.pth"]
+
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = [
