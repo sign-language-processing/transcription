@@ -10,6 +10,7 @@ on:
       - 'pose_to_segments/**'
       - 'text_to_pose/**'
       - 'pose_to_text/**'
+      - 'video_to_pose/**'
 
 
 jobs:
@@ -25,8 +26,7 @@ jobs:
 
       - name: Install Requirements
         run: |
-          pip install -r requirements.txt
-          pip install .
+          pip install .[dev]
 
       - name: Lint Code
         run: pylint text_to_text

@@ -6,9 +6,25 @@ authors = [
     { name = "Amit Moryossef", email = "amitmoryossef@gmail.com" }
 ]
 readme = "README.md"
+dependencies = [
+    "pose_format",
+    "tqdm~=4.63.1",
+    "numpy~=1.22.3",
+    "torch==1.11.0",
+    "fontTools~=4.31.2",
+    "opencv-python==4.5.5.64",
+]
 
 [project.optional-dependencies]
 dev = [
+    "tensorflow_datasets",
+    "sign-language-datasets",
+    "wandb==0.12.11",
+    "pytorch_lightning==1.6.0",
+    "pytorch2keras~=0.2.4",
+    "torchmetrics~=0.7.3",
+    "tensorflow~=2.8.0",
+    "mediapipe",
     "pytest",
     "pylint"
 ]
@@ -16,8 +32,23 @@ dev = [
 [tool.setuptools]
 packages = [
     "shared",
+    "video_to_pose",
     "pose_to_segments",
     "pose_to_text",
     "text_to_pose",
-    "text_to_text"
+    "text_to_text",
 ]
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = [
+    "shared",
+    "video_to_pose",
+    "pose_to_segments",
+    "pose_to_text",
+    "text_to_pose"
+]
+
+[project.scripts]
+video_to_pose = "video_to_pose.bin:main"
+pose_to_segments = "pose_to_segments.bin:main"

@@ -1,4 +1,5 @@
 [MASTER]
+init-hook='import sys; sys.path.append(".")'
 disable=
 	W0221, # (arguments-differ)
 	W0223, # (abstract-method)

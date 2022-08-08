@@ -10,6 +10,8 @@ from pose_to_segments.data import get_dataset, BIO
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 
+from pose_to_segments.probs_to_segments import probs_to_segments
+
 
 def prepare_predictions():
     pred_cache_file = os.path.join(args.pred_output, "raw.pickle")
@@ -41,39 +43,6 @@ def prepare_predictions():
     #         pickle.dump(cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     return cache
-
-
-def probs_to_segments(probs, b_threshold=47., o_threshold=29.):
-    probs = np.round(np.exp(probs.numpy().squeeze()) * 100)
-
-    segments = []
-
-    segment = {"start": None, "end": None}
-    did_pass_start = False
-    for i in range(len(probs)):
-        B = float(probs[i, BIO["B"]])
-        O = float(probs[i, BIO["O"]])
-        if segment["start"] is None:
-            if B > b_threshold:
-                segment["start"] = i
-        else:
-            if did_pass_start:
-                if B > b_threshold or O > o_threshold:
-                    segment["end"] = i - 1
-
-                    # reset
-                    segments.append(segment)
-                    segment = {"start": None, "end": None}
-                    did_pass_start = False
-            else:
-                if B < b_threshold:
-                    did_pass_start = True
-
-    if segment["start"] is not None:
-        segment["end"] = len(probs)
-        segments.append(segment)
-
-    return segments
 
 
 def bio_to_segments(bio):
