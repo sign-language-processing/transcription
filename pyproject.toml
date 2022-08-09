@@ -9,7 +9,7 @@ readme = "README.md"
 dependencies = [
     "pose_format",
     "tqdm~=4.63.1",
-    "numpy~=1.22.3",
+    "numpy",
     "torch==1.11.0",
     "fontTools~=4.31.2",
     "opencv-python==4.5.5.64",

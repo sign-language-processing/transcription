@@ -46,23 +46,11 @@ marian-args:
 datasets:
   # parallel training corpus
   train:
-    - custom-corpus_/custom_corpus/bible/train
-    - custom-corpus_/custom_corpus/dgs_corpus/train
-    - custom-corpus_/custom_corpus/dicta_sign/train
     - custom-corpus_/custom_corpus/fingerspelling/train
-    - custom-corpus_/custom_corpus/sign2mint/train
   devtest:
-    - custom-corpus_/custom_corpus/bible/devtest
-    - custom-corpus_/custom_corpus/dgs_corpus/devtest
-    - custom-corpus_/custom_corpus/dicta_sign/devtest
     - custom-corpus_/custom_corpus/fingerspelling/devtest
-    - custom-corpus_/custom_corpus/sign2mint/devtest
   test:
-    - custom-corpus_/custom_corpus/bible/test
-    - custom-corpus_/custom_corpus/dgs_corpus/test
-    - custom-corpus_/custom_corpus/dicta_sign/test
     - custom-corpus_/custom_corpus/fingerspelling/test
-    - custom-corpus_/custom_corpus/sign2mint/test
   # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
   # to be translated by the teacher model
   mono-src: [ ] # TODO, create monolingual spoken language data in many languages, with <SW> or <HNS> initials
