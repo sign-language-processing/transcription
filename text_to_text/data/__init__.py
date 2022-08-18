@@ -2,6 +2,8 @@ import gzip
 import json
 import os
 import pathlib
+import random
+import re
 from collections import defaultdict, Counter
 from random import shuffle
 from typing import List
@@ -21,11 +23,11 @@ def load_pair(spoken_files: List[str], signed_files: List[str]):
 
 
 def load_data():
-    raw_dir = pathlib.Path(__file__).parent.joinpath('raw')
+    raw_dir = pathlib.Path(__file__).parent.joinpath('bilingual', 'raw')
 
     for match in sorted(pathlib.Path(raw_dir).glob("**/*")):
-        # if "sign_bank/46" not in str(match):
-        #     continue
+        if "finger" not in str(match):
+            continue
 
         if match.is_dir():
             children = [match.joinpath(str(f_name)) for f_name in os.listdir(match)]
@@ -36,7 +38,21 @@ def load_data():
                 yield dir_name, load_pair(spoken_files, signed_files)
 
 
-if __name__ == "__main__":
+CONTROL_WORDS = set()
+
+
+def write_line(f, line):
+    # We can't have "<" and ">" because bergamot (browser) thinks it is html
+    line = line.replace('<', '$').replace('>', '$')
+
+    # Extract control words
+    for match in re.finditer(r'\$.*?\$', line):
+        CONTROL_WORDS.add(match.group(0))
+
+    f.write(line.strip() + "\n")
+
+
+def build_bilingual():
     statistics = defaultdict(Counter)
 
     compressed_dir = pathlib.Path(__file__).parent.joinpath('compressed')
@@ -70,7 +86,6 @@ if __name__ == "__main__":
             for sp, si in split_data:
                 if sp[4:].strip() == "":
                     mono += 1
-                    # TODO save mono sign language data
                     continue
 
                 if sp[0] == '<' and "<" in si[1:]:
@@ -87,8 +102,8 @@ if __name__ == "__main__":
 
                 total += 1
 
-                spoken_f.write(src.strip())
-                signed_f.write(tgt.strip())
+                write_line(spoken_f, src)
+                write_line(signed_f, tgt)
 
             spoken_f.close()
             signed_f.close()
@@ -104,3 +119,40 @@ if __name__ == "__main__":
 
     with open("statistics.json", "w") as f:
         json.dump(statistics, f)
+
+
+def build_monolingual():
+    compressed_dir = pathlib.Path(__file__).parent.joinpath('compressed')
+
+    raw_dir = pathlib.Path(__file__).parent.joinpath('monolingual', 'raw')
+
+    formats = ["SW"]  # , "HNS"]
+    target_languages = [("us", "ase")]  # TODO add others
+
+    # <SW> <us> <ase> <en> test
+
+    for match in sorted(pathlib.Path(raw_dir).glob("**/*")):
+        if match.is_dir():
+            children = [match.joinpath(str(f_name)) for f_name in os.listdir(match)]
+            if all((c.is_file() for c in children)):
+                dataset_dir = compressed_dir.joinpath(match.name)
+                dataset_dir.mkdir(parents=True, exist_ok=True)
+                spoken_f = gzip.open(dataset_dir.joinpath('mono.spoken.gz'), 'wt')
+
+                for c in children:
+                    with open(c, "r", encoding="utf-8") as f:
+                        for line in f.read().splitlines():
+                            _format = random.choice(formats)
+                            _target_language = random.choice(target_languages)
+                            src = f"<{_format}> <{_target_language[0]}> <{_target_language[1]}> {line}"
+                            write_line(spoken_f, src)
+
+                print(f"- custom-mono_/custom_corpus/{match.name}/mono")
+
+
+if __name__ == "__main__":
+    build_bilingual()
+    build_monolingual()
+
+    print("CONTROL WORDS:")
+    print(",".join(list(CONTROL_WORDS)))

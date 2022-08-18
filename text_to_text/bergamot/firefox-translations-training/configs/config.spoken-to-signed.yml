@@ -20,7 +20,7 @@ experiment:
   best-model: chrf
 
   bicleaner:
-    default-threshold: 0  # There is no bicleaner support for "spoken" and "signed". TODO: train such a cleaner
+    default-threshold: 0  # There is no bicleaner support for "spoken" and "signed". TODO: train such a cleaner?
     dataset-thresholds: {}
 
 marian-args:
@@ -53,7 +53,8 @@ datasets:
     - custom-corpus_/custom_corpus/fingerspelling/test
   # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
   # to be translated by the teacher model
-  mono-src: [ ] # TODO, create monolingual spoken language data in many languages, with <SW> or <HNS> initials
+  mono-src: # TODO, create monolingual spoken language data in many languages, with <SW> or <HNS> initials
+    - custom-mono_/custom_corpus/common_words/mono
   # to be translated by the backward model to augment teacher corpus with back-translations
   # leave empty to skip augmentation step (high resource languages)
   mono-trg: [ ] # TODO, create monolingual signed language data

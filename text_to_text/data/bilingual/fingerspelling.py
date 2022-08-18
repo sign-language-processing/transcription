@@ -3,8 +3,9 @@ import random
 import re
 import string
 from pathlib import Path
-from shared.signwriting.signwriting import join_signs
 import numpy as np
+
+from shared.signwriting.signwriting import join_signs
 
 current_dir = Path(__file__).parent
 wordslist_dir = current_dir.joinpath('wordslist')
@@ -26,7 +27,7 @@ for name_file in name_files:
 names = list(string.ascii_lowercase + string.digits) + [n.strip() for n in names if len(n.strip()) > 0]
 
 # Sample numbers
-samples = set([str(n) for n in np.power(10, np.random.exponential(3, 10000)).astype(np.int32)])
+samples = {str(n) for n in np.power(10, np.random.exponential(3, 10000)).astype(np.int32)}
 print("Sampled Numbers", len(samples))
 print("Words:", len(names))
 names += list(samples)

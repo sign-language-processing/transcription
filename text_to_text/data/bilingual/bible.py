@@ -48,11 +48,11 @@ verse_dict = defaultdict(dict)
 
 for bible_file in tqdm(bibles.iterdir()):
     with open(bible_file, "r", encoding="utf-8") as f:
-        bible_str = str(f.read())
-        languages = re.findall(r'language id=\"(.*?)\"', bible_str)
+        BIBLE_STR = str(f.read())
+        languages = re.findall(r'language id=\"(.*?)\"', BIBLE_STR)
         if len(languages) > 0:
             language = languages[0]
-            matches = re.findall(r'\<seg id=[\"\'](.*?)[\"\'] type=[\"\']verse[\"\']>([\s\S]*?)<\/seg>', bible_str)
+            matches = re.findall(r'\<seg id=[\"\'](.*?)[\"\'] type=[\"\']verse[\"\']>([\s\S]*?)<\/seg>', BIBLE_STR)
             for match in matches:
                 verse_dict[language][match[0]] = match[1].strip()
 
@@ -79,7 +79,7 @@ for asl_bible_id in [151, 152]:
             spoken = spoken[len("Title"):]
         spoken = spoken.strip()
 
-        books = list(filter(lambda b: spoken.lower().startswith(b.lower()), sorted(BOOKS.keys(), key=len)))
+        books = [book for book in sorted(BOOKS.keys(), key=len) if spoken.lower().startswith(book.lower())]
         if len(books) > 0:
             book = books[-1]
             spoken = spoken[len(book):].strip()

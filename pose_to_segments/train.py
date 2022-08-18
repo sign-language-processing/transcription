@@ -20,7 +20,7 @@ if __name__ == '__main__':
             LOGGER.log_hyperparams(args)
 
     train_dataset = get_dataset(poses=args.pose, fps=args.fps,
-                                components=args.pose_components, split="train[:10]") # TODO
+                                components=args.pose_components, split="train[10:]")
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
                               shuffle=True, collate_fn=zero_pad_collator)
 

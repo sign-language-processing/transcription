@@ -1,4 +1,4 @@
-# Transcription
+# 📝 ⇝ 🧏 Transcription
 
 Repository for sign language transcription related models.
 

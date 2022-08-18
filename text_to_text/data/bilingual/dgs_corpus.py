@@ -3,7 +3,7 @@ from collections import Counter
 from pathlib import Path
 
 import tensorflow_datasets as tfds
-# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
 import sign_language_datasets.datasets
 from sign_language_datasets.datasets.config import SignDatasetConfig
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
@@ -12,7 +12,7 @@ current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('dgs_corpus')
 raw_dir.mkdir(exist_ok=True, parents=True)
 
-config = SignDatasetConfig(name="texts", version="3.0.0", include_video=False, process_video=False,
+config = SignDatasetConfig(name="texts-new", version="3.0.0", include_video=False, process_video=False,
                            include_pose=None)
 dgs_types = tfds.load(name='dgs_types', builder_kwargs={"config": config})
 dgs_corpus = tfds.load(name='dgs_corpus', builder_kwargs={"config": config})
@@ -52,7 +52,7 @@ for datum in dgs_corpus["train"]:
             signed_text = " ".join(hamnosys)
 
             spoken.write(f"<de> {spoken_text}\n")
-            signed.write(f"<SW> <de> <gsg> | {signed_text}\n")
+            signed.write(f"<HNS> <de> <gsg> | {signed_text}\n")
         else:
             for bad_gloss in bad_glosses:
                 bad_glosses_counter[bad_gloss] += 1

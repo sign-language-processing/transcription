@@ -2,7 +2,7 @@ from itertools import chain
 from pathlib import Path
 
 import tensorflow_datasets as tfds
-# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
 import sign_language_datasets.datasets
 from sign_language_datasets.datasets.config import SignDatasetConfig
 

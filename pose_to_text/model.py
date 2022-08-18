@@ -5,7 +5,7 @@ from torch import nn
 import pytorch_lightning as pl
 from torchmetrics import ExtendedEditDistance
 
-from shared.models.pose_encoder import PoseEncoderModel
+from ..shared.models.pose_encoder import PoseEncoderModel
 
 
 class PoseToTextModel(pl.LightningModule):

@@ -2,14 +2,10 @@ import os
 import pickle
 
 import numpy as np
-# import torch
-from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from pose_to_segments.args import args
-from pose_to_segments.data import get_dataset, BIO
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
-
+from pose_to_segments.data import BIO
 from pose_to_segments.probs_to_segments import probs_to_segments
 
 
@@ -49,18 +45,18 @@ def bio_to_segments(bio):
     segments = []
 
     segment = {"start": None, "end": None}
-    for i in range(len(bio)):
+    for i, val in enumerate(bio):
         if segment["start"] is None:
-            if bio[i] == BIO["B"]:
+            if val == BIO["B"]:
                 segment["start"] = i
         else:
-            if bio[i] == BIO["B"] or bio[i] == BIO["O"]:
+            if val in [BIO["B"], BIO["O"]]:
                 segment["end"] = i - 1
                 # reset
                 segments.append(segment)
                 segment = {"start": None, "end": None}
 
-            if bio[i] == BIO["B"]:
+            if val == BIO["B"]:
                 segment["start"] = i
 
     return segments
@@ -84,8 +80,7 @@ def eval_segments(segments1, segments2):
     return error
 
 
-def heatmap(data, row_labels, col_labels, ax=None,
-            cbar_kw={}, cbarlabel="", **kwargs):
+def heatmap(data, row_labels, col_labels, ax=None, cbarlabel="", **kwargs):
     """
     Create a heatmap from a numpy array and two lists of labels.
 
@@ -115,7 +110,7 @@ def heatmap(data, row_labels, col_labels, ax=None,
     im = ax.imshow(data, **kwargs)
 
     # Create colorbar
-    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
 
     # Show all ticks and label them with the respective list entries.
@@ -147,14 +142,14 @@ if __name__ == "__main__":
 
     os.makedirs(args.pred_output, exist_ok=True)
 
-    skips = 10
-    matrix = np.zeros(shape=(100 // skips, 100 // skips), dtype=np.float32)
+    SKIPS = 10
+    matrix = np.zeros(shape=(100 // SKIPS, 100 // SKIPS), dtype=np.float32)
     # matrix = np.random.randn(100, 100)
-    b_thresholds = range(0, 100, skips)
-    o_thresholds = range(0, 100, skips)
+    b_thresholds = range(0, 100, SKIPS)
+    o_thresholds = range(0, 100, SKIPS)
 
-    cache = prepare_predictions()
-    for datum in cache.values():
+    pred_cache = prepare_predictions()
+    for datum in pred_cache.values():
         gold_bio = bio_to_segments(datum["bio"]["sign"])
         pred_bio = probs_to_segments(datum["probs"]["sign"])
         pred_bio_50 = probs_to_segments(datum["probs"]["sign"], b_threshold=50., o_threshold=50.)

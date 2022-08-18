@@ -4,8 +4,6 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import numpy as np
 
-from ..shared.models.s4.sashimi import Sashimi
-
 
 class PoseTaggingModel(pl.LightningModule):
     def __init__(
@@ -23,13 +21,8 @@ class PoseTaggingModel(pl.LightningModule):
         assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
 
         # Encoder
-        # self.encoder = nn.LSTM(hidden_dim, hidden_dim // 2, num_layers=encoder_depth,
-        #                        batch_first=True, bidirectional=True)
-        # self.encoder_layers = [S4(hidden_dim, d_state=hidden_dim, bidirectional=True, transposed=True)
-        #                        for _ in range(encoder_depth)]
-        # for i, layer in enumerate(self.encoder_layers):
-        #     self.register_module(f"s4_{i}", layer)
-        self.encoder = Sashimi(d_model=hidden_dim, n_layers=encoder_depth, pool=[1, 1])
+        self.encoder = nn.LSTM(hidden_dim, hidden_dim // 2, num_layers=encoder_depth,
+                               batch_first=True, bidirectional=True)
 
         # tag sequence for sign bio / sentence bio
         self.sign_bio_head = nn.Linear(hidden_dim, 3)

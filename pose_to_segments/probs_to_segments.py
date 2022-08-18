@@ -11,14 +11,14 @@ def probs_to_segments(probs, b_threshold=47., o_threshold=29.):
     segment = {"start": None, "end": None}
     did_pass_start = False
     for i in range(len(probs)):
-        B = float(probs[i, BIO["B"]])
-        O = float(probs[i, BIO["O"]])
+        b = float(probs[i, BIO["B"]])
+        o = float(probs[i, BIO["O"]])
         if segment["start"] is None:
-            if B > b_threshold:
+            if b > b_threshold:
                 segment["start"] = i
         else:
             if did_pass_start:
-                if B > b_threshold or O > o_threshold:
+                if b > b_threshold or o > o_threshold:
                     segment["end"] = i - 1
 
                     # reset
@@ -26,7 +26,7 @@ def probs_to_segments(probs, b_threshold=47., o_threshold=29.):
                     segment = {"start": None, "end": None}
                     did_pass_start = False
             else:
-                if B < b_threshold:
+                if b < b_threshold:
                     did_pass_start = True
 
     if segment["start"] is not None:

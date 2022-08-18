@@ -1,11 +1,9 @@
 from pathlib import Path
 
 import tensorflow_datasets as tfds
-# noinspection PyUnresolvedReferences
+# pylint: disable=unused-import
 import sign_language_datasets.datasets
 from sign_language_datasets.datasets.config import SignDatasetConfig
-
-import itertools
 
 current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('sign2mint')
