@@ -1,163 +1,91 @@
-from typing import List
+from typing import Tuple
 
 import torch
-from torch import nn
-import pytorch_lightning as pl
-from torchmetrics import ExtendedEditDistance
+from torch import Tensor
 
-from ..shared.models.pose_encoder import PoseEncoderModel
+from joeynmt.constants import PAD_TOKEN
+from joeynmt.decoders import Decoder, TransformerDecoder
+from joeynmt.embeddings import Embeddings
+from joeynmt.encoders import Encoder, TransformerEncoder
+from joeynmt.initialization import initialize_model
+from joeynmt.model import Model as JoeyNMTModel
+from joeynmt.vocabulary import Vocabulary
+from joeynmt.helpers import ConfigurationError
+
+from shared.models.pose_encoder import PoseEncoderModel
 
 
-class PoseToTextModel(pl.LightningModule):
-    def __init__(
-            self,
-            tokenizer,
-            pose_dims: (int, int) = (137, 2),
-            hidden_dim: int = 128,
-            text_encoder_depth=2,
-            pose_encoder_depth=4,
-            encoder_heads=2,
-            encoder_dim_feedforward=2048,
-            max_seq_size: int = 100,
-            max_decode_seq_size: int = 30):
-        super().__init__()
+class PoseToTextModel(JoeyNMTModel):
+    def __init__(self,
+                 pose_encoder: PoseEncoderModel,
+                 encoder: Encoder,
+                 decoder: Decoder,
+                 trg_embed: Embeddings,
+                 trg_vocab: Vocabulary):
+        # Setup fake "src" parameters
+        src_vocab = Vocabulary([])
+        src_embed = Embeddings(vocab_size=len(src_vocab), padding_idx=src_vocab.lookup(PAD_TOKEN))
+        super().__init__(encoder=encoder,
+                         decoder=decoder,
+                         src_embed=src_embed,
+                         trg_embed=trg_embed,
+                         src_vocab=src_vocab,
+                         trg_vocab=trg_vocab)
 
-        self.max_seq_size = max_seq_size
-        self.max_decode_seq_size = max_decode_seq_size
+        self.pose_encoder = pose_encoder
 
-        self.tokenizer = tokenizer
+    def _encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor, **kwargs) \
+            -> (Tensor, Tensor):
+        # Encode pose using the universal pose encoder
+        pose_encoding = self.pose_encoder({
+            "data": src,
+            "mask": torch.logical_not(src_mask)
+        })
 
-        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
-                                             dropout=0.2,
-                                             hidden_dim=hidden_dim,
-                                             encoder_depth=pose_encoder_depth,
-                                             encoder_heads=encoder_heads,
-                                             encoder_dim_feedforward=encoder_dim_feedforward,
-                                             max_seq_size=max_seq_size)
+        # Encode using additional custom  JoeyNMT encoder
+        return self.encoder(pose_encoding, src_length, src_mask)
 
-        # Decoder
-        self.positional_embeddings = nn.Embedding(num_embeddings=max_seq_size, embedding_dim=hidden_dim)
-        self.embedding = nn.Embedding(
-            num_embeddings=len(tokenizer),
-            embedding_dim=hidden_dim,
-            padding_idx=tokenizer.pad_token_id,
-        )
-        decoder_layer = nn.TransformerDecoderLayer(d_model=hidden_dim, nhead=encoder_heads,
-                                                   dim_feedforward=encoder_dim_feedforward, batch_first=True)
-        self.text_decoder = nn.TransformerDecoder(decoder_layer, num_layers=text_encoder_depth)
 
-        # Loss
-        self.loss_function = nn.CrossEntropyLoss(reduction='none')
+def build_model(pose_dims: Tuple[int, int],
+                cfg: dict,
+                trg_vocab: Vocabulary) -> PoseToTextModel:
+    trg_padding_idx = trg_vocab.lookup(PAD_TOKEN)
 
-        # Metrics
-        self.val_edit_distance = ExtendedEditDistance(alpha=1., rho=1., deletion=1., insertion=1.)
+    # Embeddings
+    trg_embed = Embeddings(**cfg["decoder"]["embeddings"],
+                           vocab_size=len(trg_vocab),
+                           padding_idx=trg_padding_idx)
 
-    def embed_text(self, texts: List[str], is_tokenized=False):
-        tokenized = self.tokenizer(texts, is_tokenized=is_tokenized, device=self.device)
-        positional_embedding = self.positional_embeddings(tokenized["positions"])
-        embedding = self.embedding(tokenized["tokens_ids"]) + positional_embedding
+    # Build encoder
+    encoder = TransformerEncoder(**cfg["encoder"])
 
-        return {
-            "tokens_ids": tokenized["tokens_ids"],
-            "data": embedding,
-            "mask": tokenized["attention_mask"]
-        }
+    # Build decoder
+    decoder = TransformerDecoder(**cfg["decoder"], encoder=encoder,
+                                 vocab_size=len(trg_vocab), emb_size=trg_embed.embedding_dim)
 
-    @staticmethod
-    def format_pose(pose):
-        return {
-            "data": pose["data"],
-            "mask": pose["inverse_mask"]
-        }
+    pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
+                                    dropout=cfg["pose_encoder"]["dropout"],
+                                    hidden_dim=cfg["pose_encoder"]["hidden_size"],
+                                    encoder_depth=cfg["pose_encoder"]["num_layers"],
+                                    encoder_heads=cfg["pose_encoder"]["num_heads"],
+                                    encoder_dim_feedforward=cfg["pose_encoder"]["ff_size"])
 
-    def forward(self, batch):
-        """
-        TODO: implement beam search
-        """
-        pose = PoseToTextModel.format_pose(batch["pose"])
-        pose_encoding = self.pose_encoder(pose)
+    model = PoseToTextModel(pose_encoder=pose_encoder,
+                            encoder=encoder, decoder=decoder,
+                            trg_embed=trg_embed,
+                            trg_vocab=trg_vocab)
 
-        batch_size = len(pose_encoding)
+    # tie softmax layer with trg embeddings
+    if cfg.get("tied_softmax", False):
+        if trg_embed.lut.weight.shape == model.decoder.output_layer.weight.shape:
+            # (also) share trg embeddings and softmax layer:
+            model.decoder.output_layer.weight = trg_embed.lut.weight
+        else:
+            raise ConfigurationError(
+                "For tied_softmax, the decoder embedding_dim and decoder hidden_size "
+                "must be the same. The decoder must be a Transformer.")
 
-        output = torch.full(size=(batch_size, self.max_decode_seq_size),
-                            fill_value=self.tokenizer.bos_token_id, dtype=torch.long, device=self.device)
-        padding_tensor = torch.full(size=tuple([batch_size]),
-                                    fill_value=self.tokenizer.pad_token_id,
-                                    dtype=torch.long, device=self.device)
+    # custom initialization of model parameters
+    initialize_model(model=model, cfg=cfg, src_padding_idx=None, trg_padding_idx=trg_padding_idx)
 
-        for t in range(1, self.max_decode_seq_size):
-            # Break if all last tokens are padding
-            last_padded = torch.eq(output[:, t - 1], self.tokenizer.pad_token_id)
-            if last_padded.sum() == batch_size:
-                output = output[:t - 1]
-                break
-
-            text_embedding = self.embed_text(output[:, :t], is_tokenized=True)
-            decoder_output = self.decode(text_embedding=text_embedding,
-                                         pose_encoding=pose_encoding, pose_mask=pose["mask"])
-
-            probs = self.get_token_probs(decoder_output[:, -1, :])
-            _, output_t = probs.topk(1)
-            output[:, t] = torch.where(last_padded, padding_tensor, output_t.squeeze())
-
-        sentences = output.cpu().numpy().tolist()
-        texts = [self.tokenizer.detokenize(tokens) for tokens in sentences]
-        return texts
-
-    def training_step(self, batch, *unused_args):
-        return self.step(batch, *unused_args, name="train")
-
-    def validation_step(self, batch, *unused_args):
-        output_texts = self.forward(batch)
-        self.val_edit_distance.update(output_texts, batch["text"]["text"])
-        for a, b in zip(output_texts, batch["text"]["text"]):
-            print("predicted", a, "/", b)
-
-    def validation_step_end(self, *unused_args, **unused_kwargs):
-        self.log("validation_edit_distance", self.val_edit_distance.compute())
-        self.val_edit_distance.reset()
-
-    def decoder_mask(self, length):
-        return nn.Transformer().generate_square_subsequent_mask(length).to(self.device)
-
-    def decode(self, text_embedding, pose_encoding, pose_mask):  # Shape: Batch, Length, Dim
-        _, seq_length, _ = text_embedding["data"].shape
-        text_mask = self.decoder_mask(seq_length)
-
-        return self.text_decoder(tgt=text_embedding["data"], tgt_mask=text_mask,
-                                 tgt_key_padding_mask=text_embedding["mask"],
-                                 memory=pose_encoding, memory_key_padding_mask=pose_mask)
-
-    def get_token_probs(self, tensor: torch.Tensor):
-        return torch.matmul(tensor, self.embedding.weight.T)
-
-    def step(self, batch, *unused_args, name: str):
-        pose = PoseToTextModel.format_pose(batch["pose"])
-        pose_encoding = self.pose_encoder(pose)
-
-        text_embedding = self.embed_text(batch["text"]["text"])
-
-        batch_size = len(text_embedding["data"])
-
-        decoder_output = self.decode(text_embedding=text_embedding,
-                                     pose_encoding=pose_encoding, pose_mask=pose["mask"])
-
-        # Shape: Batch, Length, Vocab
-        probs = self.get_token_probs(decoder_output)
-        _, _, vocab = probs.shape
-
-        # Flatten tensors and calculate loss
-        padding_eos_token = torch.full(size=(batch_size, 1),
-                                       fill_value=self.tokenizer.pad_token_id, device=self.device)
-        target_tokens = torch.cat([text_embedding["tokens_ids"], padding_eos_token], dim=1)[:, 1:]
-        loss_mask = torch.logical_not(text_embedding["mask"]).reshape(-1)
-        loss_target = target_tokens.reshape(-1)
-        flat_probs = probs.reshape(-1, vocab)
-        unmasked_loss = self.loss_function(flat_probs, loss_target)
-        loss = (unmasked_loss * loss_mask).mean()
-
-        self.log(name + "_loss", loss, batch_size=batch_size)
-        return loss
-
-    def configure_optimizers(self, lr=1e-3):
-        return torch.optim.Adam(self.parameters(), lr=lr)
+    return model

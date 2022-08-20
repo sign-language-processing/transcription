@@ -117,7 +117,7 @@ def build_bilingual():
     print("total", total)
     print("signed mono total", mono)
 
-    with open("statistics.json", "w") as f:
+    with open("statistics.json", "w", encoding="utf-8") as f:
         json.dump(statistics, f)
 
 

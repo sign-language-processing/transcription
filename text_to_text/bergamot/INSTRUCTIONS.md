@@ -14,10 +14,6 @@ then, use `nvidia-docker` to run the image,
 copying the `profile` and `config` files into the container, 
 and mounting the data directory.
 ```bash
-# Because of a bug in the mono-corpus code, create a temporary directory
-mkdir -p "$(pwd)/training/data/spoken-signed/spoken_to_signed/original/mono/custom-mono_/custom_corpus/common_words/original/custom-mono_/custom_corpus/common_words/"
-
-
 nvidia-docker run -it  \
 	--mount type=bind,source="$(pwd)/bergamot/firefox-translations-training/configs/config.spoken-to-signed.yml",target=/firefox-translations-training/configs/config.spoken-to-signed.yml \
 	--mount type=bind,source="$(pwd)/bergamot/firefox-translations-training/profiles/custom/config.yaml",target=/firefox-translations-training/profiles/custom/config.yaml \
@@ -36,6 +32,8 @@ make test
 
 to run the pipeline on your own data, specify paths to config files
 ```bash
+# Because of a bug in the mono-corpus code, create a temporary directory
+mkdir -p /training/data/spoken-signed/spoken_to_signed/original/mono/custom-mono_/custom_corpus/common_words/original/custom-mono_/custom_corpus/common_words/
 make run PROFILE=custom CONFIG=configs/config.spoken-to-signed.yml
 ```
 

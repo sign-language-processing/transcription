@@ -19,7 +19,12 @@ dgs_corpus = tfds.load(name='dgs_corpus', builder_kwargs={"config": config})
 
 # Map glosses to hamnosys
 gloss_hamnosys_map = {}
-decode_str = lambda s: s.numpy().decode('utf-8')
+
+
+def decode_str(s):
+    return s.numpy().decode('utf-8')
+
+
 for datum in dgs_types["train"]:
     hamnosys = decode_str(datum['hamnosys'])
     if len(hamnosys) > 0:

@@ -6,8 +6,8 @@ from .base_tokenizer import BaseTokenizer
 
 
 class DummyTokenizer(BaseTokenizer):
-    def __init__(self):
-        super().__init__(['a'])
+    def __init__(self, **kwargs):
+        super().__init__(['a'], **kwargs)
 
     def tokens_to_text(self, tokens: List[str]) -> str:
         return " ".join(tokens)

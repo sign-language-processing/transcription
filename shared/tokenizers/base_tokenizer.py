@@ -4,19 +4,19 @@ from typing import List
 
 import torch
 
-from ..collator import zero_pad_collator
+from ..collator.collator import zero_pad_collator
 
 
 class BaseTokenizer:
-
-    def __init__(self, tokens: List[str], starting_index=None):
+    def __init__(self, tokens: List[str], starting_index=None,
+                 init_token="[CLS]", eos_token="[SEP]", pad_token="[PAD]", unk_token="[UNK]"):
         if starting_index is None:
             starting_index = 4
 
-        self.pad_token = "[PAD]"
-        self.bos_token = "[CLS]"
-        self.eos_token = "[SEP]"
-        self.unk_token = "[UNK]"
+        self.pad_token = pad_token
+        self.bos_token = init_token
+        self.eos_token = eos_token
+        self.unk_token = unk_token
 
         self.i2s = {(i + starting_index): c for i, c in enumerate(tokens)}
         self.i2s[0] = self.pad_token
@@ -33,14 +33,22 @@ class BaseTokenizer:
     def __len__(self):
         return len(self.i2s)
 
+    def vocab(self):
+        return list(self.i2s.values())
+
     def text_to_tokens(self, text: str) -> List[str]:
         raise NotImplementedError()
 
     def tokens_to_text(self, tokens: List[str]) -> str:
         raise NotImplementedError()
 
-    def tokenize(self, text: str):
-        return [self.bos_token_id] + [self.s2i[c] for c in self.text_to_tokens(text)]
+    def tokenize(self, text: str, bos=False, eos=False):
+        tokens = [self.s2i[c] for c in self.text_to_tokens(text)]
+        if bos:
+            tokens.insert(0, self.bos_token_id)
+        if eos:
+            tokens.append(self.eos_token_id)
+        return tokens
 
     def detokenize(self, tokens: List[int]):
         if len(tokens) == 0:

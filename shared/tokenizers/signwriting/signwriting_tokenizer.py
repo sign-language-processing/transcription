@@ -8,8 +8,8 @@ from ...tokenizers.base_tokenizer import BaseTokenizer
 
 class SignWritingTokenizer(BaseTokenizer):
 
-    def __init__(self, starting_index=None):
-        super().__init__(tokens=SignWritingTokenizer.tokens(), starting_index=starting_index)
+    def __init__(self, starting_index=None, **kwargs):
+        super().__init__(tokens=SignWritingTokenizer.tokens(), starting_index=starting_index, **kwargs)
 
     @staticmethod
     def tokens():

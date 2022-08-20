@@ -5,7 +5,7 @@ import string
 from pathlib import Path
 import numpy as np
 
-from shared.signwriting.signwriting import join_signs
+from ....shared.signwriting.signwriting import join_signs
 
 current_dir = Path(__file__).parent
 wordslist_dir = current_dir.joinpath('wordslist')

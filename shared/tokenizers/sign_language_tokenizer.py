@@ -6,20 +6,20 @@ from .signwriting.signwriting_tokenizer import SignWritingTokenizer
 
 
 class SignLanguageTokenizer(BaseTokenizer):
-    def __init__(self) -> None:
-        self.hamnosys_tokenizer = HamNoSysTokenizer()
-        self.signwriting_tokenizer = SignWritingTokenizer(starting_index=len(self.hamnosys_tokenizer))
+    def __init__(self, **kwargs) -> None:
+        self.hamnosys_tokenizer = HamNoSysTokenizer(**kwargs)
+        self.signwriting_tokenizer = SignWritingTokenizer(**kwargs, starting_index=len(self.hamnosys_tokenizer))
 
         super().__init__([])
 
         self.i2s = {**self.hamnosys_tokenizer.i2s, **self.signwriting_tokenizer.i2s}
         self.s2i = {**self.hamnosys_tokenizer.s2i, **self.signwriting_tokenizer.s2i}
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str, bos=False, eos=False) -> List[str]:
         if text.isascii():
-            return self.signwriting_tokenizer.tokenize(text)
+            return self.signwriting_tokenizer.tokenize(text, bos=bos, eos=eos)
 
-        return self.hamnosys_tokenizer.tokenize(text)
+        return self.hamnosys_tokenizer.tokenize(text, bos=bos, eos=eos)
 
     def text_to_tokens(self, text: str) -> List[str]:
         if text.isascii():
