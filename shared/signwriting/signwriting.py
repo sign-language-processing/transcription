@@ -42,13 +42,7 @@ def all_ys(_sign):
 
 def join_signs(*fsws: str, spacing: int = 0):
     signs = [fsw_to_sign(fsw) for fsw in fsws]
-    new_sign: Sign = {
-        "box": {
-            "symbol": "M",
-            "position": (500, 500)
-        },
-        "symbols": []
-    }
+    new_sign: Sign = {"box": {"symbol": "M", "position": (500, 500)}, "symbols": []}
 
     accumulative_offset = 0
 
@@ -66,9 +60,7 @@ def join_signs(*fsws: str, spacing: int = 0):
     sign_middle = max(all_ys(new_sign)) // 2
 
     for symbol in new_sign["symbols"]:
-        symbol["position"] = (
-            symbol["position"][0],
-            new_sign["box"]["position"][1] - sign_middle + symbol["position"][1]
-        )
+        symbol["position"] = (symbol["position"][0],
+                              new_sign["box"]["position"][1] - sign_middle + symbol["position"][1])
 
     return sign_to_fsw(new_sign)

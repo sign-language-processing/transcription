@@ -3,6 +3,7 @@ from joeynmt.batch import Batch
 
 
 class SignBatch(Batch):
+
     def __init__(self, src_length, **kwargs):
         super().__init__(src_length=src_length, **kwargs)
         self.src_mask = self._pose_mask(src_length)

@@ -11,12 +11,7 @@ from ..data import TextPoseDataset, TextPoseDatum, process_datum
 
 
 def single_datum(num_frames) -> TextPoseDatum:
-    return {
-        "id": "test_id",
-        "text": "test text",
-        "pose": fake_pose(num_frames=num_frames),
-        "length": 0
-    }
+    return {"id": "test_id", "text": "test text", "pose": fake_pose(num_frames=num_frames), "length": 0}
 
 
 class DataTestCase(unittest.TestCase):
@@ -34,10 +29,7 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(pose["inverse_mask"].shape, tuple([5]))
 
     def test_multiple_items_data_collation(self):
-        dataset = TextPoseDataset([
-            single_datum(num_frames=5),
-            single_datum(num_frames=10)
-        ])
+        dataset = TextPoseDataset([single_datum(num_frames=5), single_datum(num_frames=10)])
         self.assertEqual(len(dataset), 2)
 
         data_loader = DataLoader(dataset, batch_size=2, collate_fn=zero_pad_collator)
@@ -53,13 +45,7 @@ class DataTestCase(unittest.TestCase):
         pose = fake_pose(num_frames=100)
 
         hamnosys = tf.convert_to_tensor(np.array("abc"))
-        datum: ProcessedPoseDatum = {
-            "id": "test",
-            "pose": pose,
-            "tf_datum": {
-                "hamnosys": hamnosys
-            }
-        }
+        datum: ProcessedPoseDatum = {"id": "test", "pose": pose, "tf_datum": {"hamnosys": hamnosys}}
 
         processed_datum = process_datum(datum)
         pose_data = processed_datum["pose"].body.data
@@ -71,13 +57,7 @@ class DataTestCase(unittest.TestCase):
         pose.body.confidence[:5] = 0
 
         hamnosys = tf.convert_to_tensor(np.array("abc"))
-        datum: ProcessedPoseDatum = {
-            "id": "test",
-            "pose": pose,
-            "tf_datum": {
-                "hamnosys": hamnosys
-            }
-        }
+        datum: ProcessedPoseDatum = {"id": "test", "pose": pose, "tf_datum": {"hamnosys": hamnosys}}
 
         processed_datum = process_datum(datum)
         pose_data = processed_datum["pose"].body.data

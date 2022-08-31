@@ -7,6 +7,7 @@ from ..base_tokenizer import BaseTokenizer
 
 
 class HamNoSysTokenizer(BaseTokenizer):
+
     def __init__(self, starting_index=None, **kwargs):
         self.font_path = Path(__file__).parent.joinpath("HamNoSysUnicode.ttf")
 
@@ -24,7 +25,4 @@ class HamNoSysTokenizer(BaseTokenizer):
 
 if __name__ == "__main__":
     tokenizer = HamNoSysTokenizer()
-    print(tokenizer([
-        "\ue000\ue071",
-        "\ue000\ue071\ue012\ue029\ue03f\ue089\ue0c6\ue0d8"
-    ]))
+    print(tokenizer(["\ue000\ue071", "\ue000\ue071\ue012\ue029\ue03f\ue089\ue0c6\ue0d8"]))

@@ -29,6 +29,10 @@ dev = [
     "pylint"
 ]
 
+[tool.yapf]
+based_on_style = "google"
+column_limit = 120
+
 [tool.setuptools]
 packages = [
     "shared",

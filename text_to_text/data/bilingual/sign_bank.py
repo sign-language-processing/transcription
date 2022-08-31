@@ -17,7 +17,6 @@ puddle_dirs = {}
 
 disallowed_sign_pattern = re.compile("[ghijklmnopqrstuvwyzCDEFGHIJKNOPQTUVWXYZ,.]")
 
-
 for datum in tqdm(signbank["train"]):
     puddle = str(int(datum['puddle'].numpy()))
     if puddle not in puddle_dirs:
@@ -39,7 +38,7 @@ for datum in tqdm(signbank["train"]):
 
     terms = [t.numpy().decode('utf-8').replace("\n", " ") for t in datum['terms']]
     spoken_text = " / ".join(terms)
-    spoken_text = re.sub(r'<.*?>', '', spoken_text).strip() # Remove tags like iframes and such
+    spoken_text = re.sub(r'<.*?>', '', spoken_text).strip()  # Remove tags like iframes and such
 
     spoken_f, signed_f = puddle_dirs[puddle]
     clean_spoken_text = spoken_text.replace('\n', ' ')
@@ -58,5 +57,3 @@ for datum in tqdm(signbank["train"]):
 for f1, f2 in puddle_dirs.values():
     f1.close()
     f2.close()
-
-

@@ -10,12 +10,17 @@ from text_to_pose.data import get_dataset as get_single_dataset
 
 
 class PoseTextDataset(Dataset):
+
     def __init__(self, dataset: TextPoseDataset, split: str):
         self.dataset = dataset
         self.split = split
 
-        special_tokens = {"init_token": BOS_TOKEN, "eos_token": EOS_TOKEN,
-                          "pad_token": PAD_TOKEN, "unk_token": UNK_TOKEN}
+        special_tokens = {
+            "init_token": BOS_TOKEN,
+            "eos_token": EOS_TOKEN,
+            "pad_token": PAD_TOKEN,
+            "unk_token": UNK_TOKEN
+        }
         self.tokenizer = SignLanguageTokenizer(**special_tokens)
         self.trg_vocab = Vocabulary(self.tokenizer.vocab())
 

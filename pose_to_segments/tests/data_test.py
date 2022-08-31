@@ -9,14 +9,11 @@ from ..data import PoseSegmentsDataset, PoseSegmentsDatum, Segment
 
 
 def single_datum(num_frames, segments: List[List[Segment]]) -> PoseSegmentsDatum:
-    return {
-        "id": "test_id",
-        "pose": fake_pose(num_frames=num_frames),
-        "segments": segments
-    }
+    return {"id": "test_id", "pose": fake_pose(num_frames=num_frames), "segments": segments}
 
 
 class DataTestCase(unittest.TestCase):
+
     def test_item_without_segments(self):
         datum = single_datum(num_frames=5, segments=[])
         dataset = PoseSegmentsDataset([datum])
@@ -32,7 +29,10 @@ class DataTestCase(unittest.TestCase):
 
     def test_item_with_one_segment_uses_fps(self):
         datum = single_datum(num_frames=100, segments=[[
-            {"start_time": 0, "end_time": 4},
+            {
+                "start_time": 0,
+                "end_time": 4
+            },
         ]])
         dataset = PoseSegmentsDataset([datum])
         self.assertEqual(len(dataset), 1)

@@ -16,7 +16,10 @@ def load_video_frames(cap: cv2.VideoCapture):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--format', choices=['mediapipe'], default='mediapipe', type=str,
+    parser.add_argument('--format',
+                        choices=['mediapipe'],
+                        default='mediapipe',
+                        type=str,
                         help='type of pose estimation to use')
     parser.add_argument('-i', required=True, type=str, help='path to input video file')
     parser.add_argument('-o', required=True, type=str, help='path to output pose file')
@@ -38,7 +41,11 @@ def main():
     # Perform pose estimation
     print('Estimating pose ...')
     if args.format == 'mediapipe':
-        pose = load_holistic(frames, fps=fps, width=width, height=height, progress=True,
+        pose = load_holistic(frames,
+                             fps=fps,
+                             width=width,
+                             height=height,
+                             progress=True,
                              additional_holistic_config={'model_complexity': 2})
     else:
         raise NotImplementedError('Pose format not supported')

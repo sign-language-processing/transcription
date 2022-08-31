@@ -15,11 +15,8 @@ from shared.models.pose_encoder import PoseEncoderModel
 
 
 class PoseToTextModel(JoeyNMTModel):
-    def __init__(self,
-                 pose_encoder: PoseEncoderModel,
-                 encoder: Encoder,
-                 decoder: Decoder,
-                 trg_embed: Embeddings,
+
+    def __init__(self, pose_encoder: PoseEncoderModel, encoder: Encoder, decoder: Decoder, trg_embed: Embeddings,
                  trg_vocab: Vocabulary):
         # Setup fake "src" parameters
         src_vocab = Vocabulary([])
@@ -36,31 +33,26 @@ class PoseToTextModel(JoeyNMTModel):
     def _encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor, **unused_kwargs) \
             -> (Tensor, Tensor):
         # Encode pose using the universal pose encoder
-        pose_encoding = self.pose_encoder({
-            "data": src,
-            "mask": torch.logical_not(src_mask)
-        })
+        pose_encoding = self.pose_encoder({"data": src, "mask": torch.logical_not(src_mask)})
 
         # Encode using additional custom  JoeyNMT encoder
         return self.encoder(pose_encoding, src_length, src_mask)
 
 
-def build_model(pose_dims: Tuple[int, int],
-                cfg: dict,
-                trg_vocab: Vocabulary) -> PoseToTextModel:
+def build_model(pose_dims: Tuple[int, int], cfg: dict, trg_vocab: Vocabulary) -> PoseToTextModel:
     trg_padding_idx = trg_vocab.lookup(PAD_TOKEN)
 
     # Embeddings
-    trg_embed = Embeddings(**cfg["decoder"]["embeddings"],
-                           vocab_size=len(trg_vocab),
-                           padding_idx=trg_padding_idx)
+    trg_embed = Embeddings(**cfg["decoder"]["embeddings"], vocab_size=len(trg_vocab), padding_idx=trg_padding_idx)
 
     # Build encoder
     encoder = TransformerEncoder(**cfg["encoder"])
 
     # Build decoder
-    decoder = TransformerDecoder(**cfg["decoder"], encoder=encoder,
-                                 vocab_size=len(trg_vocab), emb_size=trg_embed.embedding_dim)
+    decoder = TransformerDecoder(**cfg["decoder"],
+                                 encoder=encoder,
+                                 vocab_size=len(trg_vocab),
+                                 emb_size=trg_embed.embedding_dim)
 
     pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
                                     dropout=cfg["pose_encoder"]["dropout"],
@@ -70,7 +62,8 @@ def build_model(pose_dims: Tuple[int, int],
                                     encoder_dim_feedforward=cfg["pose_encoder"]["ff_size"])
 
     model = PoseToTextModel(pose_encoder=pose_encoder,
-                            encoder=encoder, decoder=decoder,
+                            encoder=encoder,
+                            decoder=decoder,
                             trg_embed=trg_embed,
                             trg_vocab=trg_vocab)
 
@@ -80,9 +73,8 @@ def build_model(pose_dims: Tuple[int, int],
             # (also) share trg embeddings and softmax layer:
             model.decoder.output_layer.weight = trg_embed.lut.weight
         else:
-            raise ConfigurationError(
-                "For tied_softmax, the decoder embedding_dim and decoder hidden_size "
-                "must be the same. The decoder must be a Transformer.")
+            raise ConfigurationError("For tied_softmax, the decoder embedding_dim and decoder hidden_size "
+                                     "must be the same. The decoder must be a Transformer.")
 
     # custom initialization of model parameters
     initialize_model(model=model, cfg=cfg, src_padding_idx=None, trg_padding_idx=trg_padding_idx)

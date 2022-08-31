@@ -19,9 +19,11 @@ parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--max_seq_size', type=int, default=100, help='input sequence size')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
-parser.add_argument('--pose_components', type=list,
-                    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
-                    help='what pose components to use?')
+parser.add_argument(
+    '--pose_components',
+    type=list,
+    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
+    help='what pose components to use?')
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--text_encoder_depth', type=int, default=2, help='number of layers for the text encoder')

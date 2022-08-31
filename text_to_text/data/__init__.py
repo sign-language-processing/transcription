@@ -87,7 +87,7 @@ def build_bilingual():
 
         for split, split_start, split_end in [('train', 0, 99.5), ('devtest', 99.5, 99.75), ('test', 99.75, 100)]:
             start_index, end_index = int(len(data_list) * split_start / 100), int(len(data_list) * split_end / 100)
-            split_data = data_list[start_index: end_index]
+            split_data = data_list[start_index:end_index]
             if len(split_data) == 0:
                 continue
 

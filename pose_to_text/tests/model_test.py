@@ -9,6 +9,7 @@ from ..model import build_model
 
 
 class ModelTestCase(unittest.TestCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pose_dim = (2, 2)
@@ -25,8 +26,9 @@ class ModelTestCase(unittest.TestCase):
         }
         cfg = {
             "decoder": {
-                **transformer_cfg,
-                "embeddings": {"embedding_dim": 10}
+                **transformer_cfg, "embeddings": {
+                    "embedding_dim": 10
+                }
             },
             "encoder": transformer_cfg,
             "pose_encoder": transformer_cfg,
@@ -38,13 +40,11 @@ class ModelTestCase(unittest.TestCase):
         return model
 
     def get_batch(self):
-        return SignBatch(
-            src=torch.rand(1, self.seq_length, *self.pose_dim),
-            src_length=torch.tensor([self.seq_length]),
-            trg=torch.zeros(1, self.seq_length, dtype=torch.long),
-            trg_length=torch.tensor([self.seq_length]),
-            device=torch.device("cpu")
-        )
+        return SignBatch(src=torch.rand(1, self.seq_length, *self.pose_dim),
+                         src_length=torch.tensor([self.seq_length]),
+                         trg=torch.zeros(1, self.seq_length, dtype=torch.long),
+                         trg_length=torch.tensor([self.seq_length]),
+                         device=torch.device("cpu"))
 
     def test_forward_expected_loss_finite(self):
         model = self.model_setup()
@@ -53,6 +53,7 @@ class ModelTestCase(unittest.TestCase):
         loss = model(return_type="loss", **batch.__dict__)[0]
         self.assertNotEqual(float(loss), 0)
         self.assertTrue(torch.isfinite(loss))
+
 
 if __name__ == "__main__":
     unittest.main()

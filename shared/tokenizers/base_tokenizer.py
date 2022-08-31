@@ -8,8 +8,14 @@ from ..collator.collator import zero_pad_collator
 
 
 class BaseTokenizer:
-    def __init__(self, tokens: List[str], starting_index=None,
-                 init_token="[CLS]", eos_token="[SEP]", pad_token="[PAD]", unk_token="[UNK]"):
+
+    def __init__(self,
+                 tokens: List[str],
+                 starting_index=None,
+                 init_token="[CLS]",
+                 eos_token="[SEP]",
+                 pad_token="[PAD]",
+                 unk_token="[UNK]"):
         if starting_index is None:
             starting_index = 4
 

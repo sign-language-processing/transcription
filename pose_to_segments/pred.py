@@ -15,6 +15,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
+
 def draw_frames(visualizer: PoseVisualizer, sign_probs: torch.Tensor):
     for sign_prob, frame in zip(sign_probs, visualizer.draw(max_frames=None)):
         # Draw a rectangle on the image
@@ -83,9 +84,10 @@ if __name__ == '__main__':
             probs = model.forward(pose_data)
 
             # sentence_probs=torch.exp(probs["sentence"][0])
-            html.append(visualize_pose(pose=datum["pose"]["obj"],
-                                       pose_name=datum["id"] + ".mp4",
-                                       sign_probs=torch.exp(probs["sign"][0])))
+            html.append(
+                visualize_pose(pose=datum["pose"]["obj"],
+                               pose_name=datum["id"] + ".mp4",
+                               sign_probs=torch.exp(probs["sign"][0])))
 
     with open(os.path.join(args.pred_output, "index.html"), "w", encoding="utf-8") as f:
         f.write("<br><br><br>".join(html))

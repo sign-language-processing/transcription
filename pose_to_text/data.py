@@ -15,12 +15,11 @@ logger = logging.getLogger(__name__)
 CPU_DEVICE = torch.device("cpu")
 
 
-def collate_fn(
-        batch: List[Dict[str, Any]],
-        pad_index: int = PAD_ID,
-        device: torch.device = CPU_DEVICE,
-        has_trg: bool = True,
-        is_train: bool = True) -> Batch:
+def collate_fn(batch: List[Dict[str, Any]],
+               pad_index: int = PAD_ID,
+               device: torch.device = CPU_DEVICE,
+               has_trg: bool = True,
+               is_train: bool = True) -> Batch:
     collated = zero_pad_collator(batch)
 
     return SignBatch(
@@ -35,9 +34,7 @@ def collate_fn(
     )
 
 
-def get_data_iter(pad_index: int = PAD_ID,
-                  device: torch.device = CPU_DEVICE,
-                  **kwargs) -> DataLoader:
+def get_data_iter(pad_index: int = PAD_ID, device: torch.device = CPU_DEVICE, **kwargs) -> DataLoader:
     data_loader = make_data_iter(**kwargs)
     dataset = data_loader.dataset
 

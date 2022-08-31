@@ -8,6 +8,7 @@ from ..model import IterativeTextGuidedPoseGenerationModel
 
 
 class ModelTestCase(unittest.TestCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pose_dim = (2, 2)
@@ -31,15 +32,13 @@ class ModelTestCase(unittest.TestCase):
             hidden_dim=self.hidden_dim,
             pose_dims=self.pose_dim,
         )
-        model.encode_text = MagicMock(
-            return_value=(
-                {
-                    "data": torch.ones([1, 2, self.hidden_dim]),
-                    "mask": torch.zeros([1, 2], dtype=torch.bool),
-                },
-                torch.tensor([self.seq_length]),
-            )
-        )
+        model.encode_text = MagicMock(return_value=(
+            {
+                "data": torch.ones([1, 2, self.hidden_dim]),
+                "mask": torch.zeros([1, 2], dtype=torch.bool),
+            },
+            torch.tensor([self.seq_length]),
+        ))
         model.log = MagicMock(return_value=True)
         return model
 
@@ -70,12 +69,8 @@ class ModelTestCase(unittest.TestCase):
             "text": ["text1"],
             "pose": {
                 "length": torch.tensor([self.seq_length], dtype=torch.float),
-                "data": torch.ones(
-                    [1, self.seq_length, *self.pose_dim], dtype=torch.float
-                ),
-                "confidence": torch.full(
-                    [1, self.seq_length, self.pose_dim[0]], fill_value=confidence
-                ),
+                "data": torch.ones([1, self.seq_length, *self.pose_dim], dtype=torch.float),
+                "confidence": torch.full([1, self.seq_length, self.pose_dim[0]], fill_value=confidence),
                 "inverse_mask": torch.ones([1, self.seq_length]),
             },
         }

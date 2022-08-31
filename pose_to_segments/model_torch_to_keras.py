@@ -13,7 +13,7 @@ def convert_torch_to_keras(model, shape: tuple):
     input_np = np.random.uniform(0, 1, (1, *[1 if v is None else v for v in shape]))
     input_var = Variable(torch.FloatTensor(input_np))
 
-    return pytorch_to_keras(model, input_var, [shape], verbose=True) # names='short'
+    return pytorch_to_keras(model, input_var, [shape], verbose=True)  # names='short'
 
 
 if __name__ == "__main__":

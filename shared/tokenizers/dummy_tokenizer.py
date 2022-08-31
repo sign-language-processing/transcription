@@ -6,6 +6,7 @@ from .base_tokenizer import BaseTokenizer
 
 
 class DummyTokenizer(BaseTokenizer):
+
     def __init__(self, **kwargs):
         super().__init__(['a'], **kwargs)
 

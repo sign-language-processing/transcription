@@ -199,8 +199,8 @@ raw_dir = current_dir.joinpath('raw').joinpath('common_words')
 raw_dir.mkdir(exist_ok=True, parents=True)
 
 if not common_words_dir.exists():
-    os.system('git clone https://github.com/oprogramador/most-common-words-by-language.git ' + str(
-        common_words_dir.absolute()))
+    os.system('git clone https://github.com/oprogramador/most-common-words-by-language.git ' +
+              str(common_words_dir.absolute()))
 
 words_dir = common_words_dir.joinpath('src', 'resources')
 

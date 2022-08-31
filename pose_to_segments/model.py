@@ -6,11 +6,8 @@ from torch import nn
 
 
 class PoseTaggingModel(pl.LightningModule):
-    def __init__(
-            self,
-            pose_dims: (int, int) = (137, 2),
-            hidden_dim: int = 128,
-            encoder_depth=2):
+
+    def __init__(self, pose_dims: (int, int) = (137, 2), hidden_dim: int = 128, encoder_depth=2):
         super().__init__()
 
         self.pose_dims = pose_dims
@@ -21,15 +18,18 @@ class PoseTaggingModel(pl.LightningModule):
         assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
 
         # Encoder
-        self.encoder = nn.LSTM(hidden_dim, hidden_dim // 2, num_layers=encoder_depth,
-                               batch_first=True, bidirectional=True)
+        self.encoder = nn.LSTM(hidden_dim,
+                               hidden_dim // 2,
+                               num_layers=encoder_depth,
+                               batch_first=True,
+                               bidirectional=True)
 
         # tag sequence for sign bio / sentence bio
         self.sign_bio_head = nn.Linear(hidden_dim, 3)
         self.sentence_bio_head = nn.Linear(hidden_dim, 3)
 
-        self.loss_function = nn.NLLLoss(reduction='none',
-                                        weight=torch.tensor([1, 25, 1], dtype=torch.float))  # B is important
+        self.loss_function = nn.NLLLoss(reduction='none', weight=torch.tensor([1, 25, 1],
+                                                                              dtype=torch.float))  # B is important
 
     def forward(self, pose_data: torch.Tensor):
         batch_size, seq_length, _, _ = pose_data.shape
@@ -41,10 +41,7 @@ class PoseTaggingModel(pl.LightningModule):
         sign_bio_logits = self.sign_bio_head(pose_encoding)
         sentence_bio_logits = self.sentence_bio_head(pose_encoding)
 
-        return {
-            "sign": F.log_softmax(sign_bio_logits, dim=-1),
-            "sentence": F.log_softmax(sentence_bio_logits, dim=-1)
-        }
+        return {"sign": F.log_softmax(sign_bio_logits, dim=-1), "sentence": F.log_softmax(sentence_bio_logits, dim=-1)}
 
     def training_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="train")

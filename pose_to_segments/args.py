@@ -17,9 +17,11 @@ parser.add_argument('--batch_size', type=int, default=4, help='batch size')
 # Data Arguments
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
-parser.add_argument('--pose_components', type=list,
-                    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
-                    help='what pose components to use?')
+parser.add_argument(
+    '--pose_components',
+    type=list,
+    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
+    help='what pose components to use?')
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
@@ -39,6 +41,5 @@ if args.seed == 0:  # Make seed random if 0
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
-
 
 # conda update -n base -c defaults conda

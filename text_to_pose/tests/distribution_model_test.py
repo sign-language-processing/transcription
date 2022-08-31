@@ -6,6 +6,7 @@ from ..model import DistributionPredictionModel
 
 
 class DistributionModelTestCase(unittest.TestCase):
+
     def test_prediction_in_eval_should_be_consistent(self):
         model = DistributionPredictionModel(input_size=10)
         model.eval()

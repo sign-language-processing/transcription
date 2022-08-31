@@ -4,6 +4,7 @@ from .signwriting_tokenizer import SignWritingTokenizer
 
 
 class TokenizeCase(unittest.TestCase):
+
     def test_tokenization_single_sign(self):
         tokenizer = SignWritingTokenizer()
 
@@ -17,17 +18,17 @@ class TokenizeCase(unittest.TestCase):
 
         fsw = 'S38800464x496'
         tokens = list(tokenizer.text_to_tokens(fsw))
-        self.assertEqual(tokens,
-                         ['M', 'p500', 'p500', 'S388', 'c0', 'r0', 'p464', 'p496'])
+        self.assertEqual(tokens, ['M', 'p500', 'p500', 'S388', 'c0', 'r0', 'p464', 'p496'])
 
     def test_tokenization_multiple_signs(self):
         tokenizer = SignWritingTokenizer()
 
         fsw = 'M123x456S1f720487x492 M124x456S1f210488x493'
         tokens = list(tokenizer.text_to_tokens(fsw))
-        self.assertEqual(tokens,
-                         ['M', 'p123', 'p456', 'S1f7', 'c2', 'r0', 'p487', 'p492', 'M', 'p124', 'p456', 'S1f2', 'c1',
-                          'r0', 'p488', 'p493'])
+        self.assertEqual(tokens, [
+            'M', 'p123', 'p456', 'S1f7', 'c2', 'r0', 'p487', 'p492', 'M', 'p124', 'p456', 'S1f2', 'c1', 'r0', 'p488',
+            'p493'
+        ])
 
     def test_not_failing_for_r_box(self):
         tokenizer = SignWritingTokenizer()
@@ -45,6 +46,7 @@ class TokenizeCase(unittest.TestCase):
 
 
 class DetokenizeCase(unittest.TestCase):
+
     def test_detokenization_single_sign(self):
         tokenizer = SignWritingTokenizer()
 
@@ -55,8 +57,10 @@ class DetokenizeCase(unittest.TestCase):
     def test_detokenization_multiple_signs(self):
         tokenizer = SignWritingTokenizer()
 
-        tokens = ['M', 'p251', 'p456', 'S1f7', 'c2', 'r0', 'p487', 'p492', 'M', 'p124', 'p456', 'S1f2', 'c1',
-                  'r0', 'p488', 'p493']
+        tokens = [
+            'M', 'p251', 'p456', 'S1f7', 'c2', 'r0', 'p487', 'p492', 'M', 'p124', 'p456', 'S1f2', 'c1', 'r0', 'p488',
+            'p493'
+        ]
         fsw = tokenizer.tokens_to_text(tokens)
         self.assertEqual(fsw, 'M251x456S1f720487x492 M124x456S1f210488x493')
 

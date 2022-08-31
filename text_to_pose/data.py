@@ -15,6 +15,7 @@ class TextPoseDatum(TypedDict):
 
 
 class TextPoseDataset(Dataset):
+
     def __init__(self, data: List[TextPoseDatum]):
         self.data = data
 
@@ -53,16 +54,16 @@ def process_datum(datum: ProcessedPoseDatum) -> TextPoseDatum:
                 pose.body.confidence = pose.body.confidence[i:]
             break
 
-    return {
-        "id": datum["id"],
-        "text": text,
-        "pose": pose,
-        "length": max(len(pose.body.data), len(text))
-    }
+    return {"id": datum["id"], "text": text, "pose": pose, "length": max(len(pose.body.data), len(text))}
 
 
-def get_dataset(name="dicta_sign", poses="holistic", fps=25, split="train",
-                components: List[str] = None, data_dir=None, max_seq_size=1000):
+def get_dataset(name="dicta_sign",
+                poses="holistic",
+                fps=25,
+                split="train",
+                components: List[str] = None,
+                data_dir=None,
+                max_seq_size=1000):
     data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split, components=components, data_dir=data_dir)
 
     data = [process_datum(d) for d in data]

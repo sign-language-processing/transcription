@@ -46,6 +46,7 @@ def build_bio(timestamps: torch.Tensor, segments: List[Segment]):
 
 
 class PoseSegmentsDataset(Dataset):
+
     def __init__(self, data: List[PoseSegmentsDatum]):
         self.data = data
 
@@ -60,12 +61,14 @@ class PoseSegmentsDataset(Dataset):
         timestamps = torch.div(torch.arange(0, pose_length), pose.body.fps)
 
         # Build sign BIO
-        sign_bio = build_bio(timestamps, [segment for sentence_segments in datum["segments"]
-                                          for segment in sentence_segments])
+        sign_bio = build_bio(timestamps,
+                             [segment for sentence_segments in datum["segments"] for segment in sentence_segments])
 
         # Build sentence BIO
-        sentence_segments = [{"start_time": segments[0]["start_time"], "end_time": segments[-1]["end_time"]}
-                             for segments in datum["segments"]]
+        sentence_segments = [{
+            "start_time": segments[0]["start_time"],
+            "end_time": segments[-1]["end_time"]
+        } for segments in datum["segments"]]
         sentence_bio = build_bio(timestamps, sentence_segments)
 
         torch_body = pose.body.torch()
@@ -90,19 +93,23 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
 
     for person in ["a", "b"]:
         if len(poses[person].body.data) > 0:
-            segments = [[{"start_time": gloss["start"] / 1000, "end_time": gloss["end"] / 1000}
-                         for gloss in s["glosses"]] for s in sentences
+            segments = [[{
+                "start_time": gloss["start"] / 1000,
+                "end_time": gloss["end"] / 1000
+            }
+                         for gloss in s["glosses"]]
+                        for s in sentences
                         if s["participant"].lower() == person and len(s["glosses"]) > 0]
             if len(segments) > 0:
-                yield {
-                    "id": datum["id"] + "_" + person,
-                    "pose": poses[person],
-                    "segments": segments
-                }
+                yield {"id": datum["id"] + "_" + person, "pose": poses[person], "segments": segments}
 
 
-def get_dataset(name="dgs_corpus", poses="holistic", fps=25, split="train",
-                components: List[str] = None, data_dir=None):
+def get_dataset(name="dgs_corpus",
+                poses="holistic",
+                fps=25,
+                split="train",
+                components: List[str] = None,
+                data_dir=None):
     data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split, components=components, data_dir=data_dir)
 
     data = list(chain.from_iterable([process_datum(d) for d in data]))

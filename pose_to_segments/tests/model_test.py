@@ -7,6 +7,7 @@ from ..model import PoseTaggingModel
 
 
 class ModelTestCase(unittest.TestCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pose_dim = (2, 2)
@@ -14,11 +15,7 @@ class ModelTestCase(unittest.TestCase):
         self.hidden_dim = 4
 
     def model_setup(self):
-        model = PoseTaggingModel(
-            hidden_dim=self.hidden_dim,
-            pose_dims=self.pose_dim,
-            encoder_depth=2
-        )
+        model = PoseTaggingModel(hidden_dim=self.hidden_dim, pose_dims=self.pose_dim, encoder_depth=2)
         model.log = MagicMock(return_value=True)
         return model
 

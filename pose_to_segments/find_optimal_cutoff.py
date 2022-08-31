@@ -76,8 +76,8 @@ def eval_segments(segments1, segments2):
     for i, s1 in enumerate(segments1):
         best_match_i = np.argmin(np.abs(mid_points_2 - mid_points_1[i]))
         s2 = segments2[best_match_i]
-        error += (s1["start"] - s2["start"]) ** 2
-        error += (s1["end"] - s2["end"]) ** 2
+        error += (s1["start"] - s2["start"])**2
+        error += (s1["end"] - s2["end"])**2
 
     return error
 
@@ -120,12 +120,10 @@ def heatmap(data, row_labels, col_labels, ax=None, cbarlabel="", **kwargs):
     ax.set_yticks(np.arange(data.shape[0]), labels=row_labels)
 
     # Let the horizontal axes labeling appear on top.
-    ax.tick_params(top=False, bottom=False,
-                   labeltop=False, labelbottom=False)
+    ax.tick_params(top=False, bottom=False, labeltop=False, labelbottom=False)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
-             rotation_mode="anchor")
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right", rotation_mode="anchor")
 
     # Turn spines off and create white grid.
     ax.spines[:].set_visible(False)
@@ -158,8 +156,8 @@ if __name__ == "__main__":
 
         for b_threshold in b_thresholds:
             for o_threshold in o_thresholds:
-                corrected_b_threshold = 67 + b_threshold/10
-                corrected_o_threshold = 45 + o_threshold/10
+                corrected_b_threshold = 67 + b_threshold / 10
+                corrected_o_threshold = 45 + o_threshold / 10
                 pred_bio = probs_to_segments(datum["probs"]["sign"],
                                              b_threshold=corrected_b_threshold,
                                              o_threshold=corrected_o_threshold)
@@ -176,7 +174,6 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     b_labels = ["b" + str(i) for i in b_thresholds]
     o_labels = ["o" + str(i) for i in o_thresholds]
-    im, cbar = heatmap(np.log(matrix), b_labels, o_labels, ax=ax,
-                       cmap="YlGn", cbarlabel="error")
+    im, cbar = heatmap(np.log(matrix), b_labels, o_labels, ax=ax, cmap="YlGn", cbarlabel="error")
     fig.tight_layout()
     plt.savefig("heatmap.png")

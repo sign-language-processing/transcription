@@ -6,6 +6,7 @@ from .signwriting.signwriting_tokenizer import SignWritingTokenizer
 
 
 class SignLanguageTokenizer(BaseTokenizer):
+
     def __init__(self, **kwargs) -> None:
         self.hamnosys_tokenizer = HamNoSysTokenizer(**kwargs)
         self.signwriting_tokenizer = SignWritingTokenizer(**kwargs, starting_index=len(self.hamnosys_tokenizer))

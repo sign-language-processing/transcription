@@ -21,6 +21,7 @@ def get_batch(bsz=4):
 
 
 class ModelOverfitTestCase(unittest.TestCase):
+
     def overfit_in_steps(self, steps: int):
         torch.manual_seed(42)
         random.seed(42)

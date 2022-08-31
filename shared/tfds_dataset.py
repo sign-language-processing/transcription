@@ -18,16 +18,22 @@ class ProcessedPoseDatum(TypedDict):
     tf_datum: dict
 
 
-def get_tfds_dataset(name, poses="holistic", fps=25, split="train",
-                     components: List[str] = None, data_dir=None, version="1.0.0"):
+def get_tfds_dataset(name,
+                     poses="holistic",
+                     fps=25,
+                     split="train",
+                     components: List[str] = None,
+                     data_dir=None,
+                     version="1.0.0"):
     dataset_module = importlib.import_module("sign_language_datasets.datasets." + name + "." + name)
 
     # Loading a dataset with custom configuration
-    config = SignDatasetConfig(name=poses + "-" + str(fps),
-                               version=version,  # Specific version
-                               include_video=False,  # Download and load dataset videos
-                               fps=fps,  # Load videos at constant fps
-                               include_pose=poses)  # Download and load Holistic pose estimation
+    config = SignDatasetConfig(
+        name=poses + "-" + str(fps),
+        version=version,  # Specific version
+        include_video=False,  # Download and load dataset videos
+        fps=fps,  # Load videos at constant fps
+        include_pose=poses)  # Download and load Holistic pose estimation
     tfds_dataset = tfds.load(name=name, builder_kwargs=dict(config=config), split=split, data_dir=data_dir)
 
     # pylint: disable=protected-access
@@ -38,7 +44,9 @@ def get_tfds_dataset(name, poses="holistic", fps=25, split="train",
     return [process_datum(datum, pose_header, normalization_info, components) for datum in tqdm(tfds_dataset)]
 
 
-def process_datum(datum, pose_header: PoseHeader, normalization_info,
+def process_datum(datum,
+                  pose_header: PoseHeader,
+                  normalization_info,
                   components: List[str] = None) -> ProcessedPoseDatum:
     tf_poses = {"": datum["pose"]} if "pose" in datum else datum["poses"]
     poses = {}

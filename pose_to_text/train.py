@@ -19,13 +19,18 @@ if __name__ == '__main__':
         if LOGGER.experiment.sweep_id is None:
             LOGGER.log_hyperparams(args)
 
-    train_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
-                                max_seq_size=args.max_seq_size, split="train[10:]")
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size,
-                              shuffle=True, collate_fn=zero_pad_collator)
+    train_dataset = get_dataset(poses=args.pose,
+                                fps=args.fps,
+                                components=args.pose_components,
+                                max_seq_size=args.max_seq_size,
+                                split="train[10:]")
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-    validation_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
-                                     max_seq_size=args.max_seq_size, split="train[:10]")
+    validation_dataset = get_dataset(poses=args.pose,
+                                     fps=args.fps,
+                                     components=args.pose_components,
+                                     max_seq_size=args.max_seq_size,
+                                     split="train[:10]")
     validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, collate_fn=zero_pad_collator)
 
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
@@ -49,14 +54,13 @@ if __name__ == '__main__':
     if LOGGER is not None:
         os.makedirs("models", exist_ok=True)
 
-        callbacks.append(ModelCheckpoint(
-            dirpath="models/" + LOGGER.experiment.id,
-            filename="model",
-            verbose=True,
-            save_top_k=1,
-            monitor='train_loss',
-            mode='min'
-        ))
+        callbacks.append(
+            ModelCheckpoint(dirpath="models/" + LOGGER.experiment.id,
+                            filename="model",
+                            verbose=True,
+                            save_top_k=1,
+                            monitor='train_loss',
+                            mode='min'))
 
     trainer = pl.Trainer(
         max_epochs=5000,

@@ -37,10 +37,8 @@ for datum in dicta_sign["train"]:
     spoken_f, signed_f = country_dirs[country]
 
     [sample_index, _] = _id.split('_')
-    country_dicts[country][sample_index] = (
-        "<" + spoken_language + "> " + spoken_text,
-        "<HNS> <" + country + "> <" + iana + "> | " + signed_text
-    )
+    country_dicts[country][sample_index] = ("<" + spoken_language + "> " + spoken_text,
+                                            "<HNS> <" + country + "> <" + iana + "> | " + signed_text)
 
 all_ids = sorted(list(set(chain.from_iterable((c.keys() for c in country_dicts.values())))))
 

@@ -15,6 +15,7 @@ def masked_mse_loss(pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torc
 
 
 class DistributionPredictionModel(nn.Module):
+
     def __init__(self, input_size: int):
         super().__init__()
 
@@ -34,16 +35,16 @@ class DistributionPredictionModel(nn.Module):
 
 
 class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
-    def __init__(
-            self,
-            tokenizer,
-            pose_dims: (int, int) = (137, 2),
-            hidden_dim: int = 128,
-            text_encoder_depth=2,
-            pose_encoder_depth=4,
-            encoder_heads=2,
-            encoder_dim_feedforward=2048,
-            max_seq_size: int = 1000):
+
+    def __init__(self,
+                 tokenizer,
+                 pose_dims: (int, int) = (137, 2),
+                 hidden_dim: int = 128,
+                 text_encoder_depth=2,
+                 pose_encoder_depth=4,
+                 encoder_heads=2,
+                 encoder_dim_feedforward=2048,
+                 max_seq_size: int = 1000):
         super().__init__()
 
         self.tokenizer = tokenizer
@@ -58,14 +59,19 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             padding_idx=tokenizer.pad_token_id,
         )
 
-        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims, hidden_dim=hidden_dim,
-                                             encoder_depth=pose_encoder_depth, encoder_heads=encoder_heads,
-                                             encoder_dim_feedforward=encoder_dim_feedforward, max_seq_size=max_seq_size,
+        self.pose_encoder = PoseEncoderModel(pose_dims=pose_dims,
+                                             hidden_dim=hidden_dim,
+                                             encoder_depth=pose_encoder_depth,
+                                             encoder_heads=encoder_heads,
+                                             encoder_dim_feedforward=encoder_dim_feedforward,
+                                             max_seq_size=max_seq_size,
                                              dropout=0)
 
         # Encoder
-        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=encoder_heads,
-                                                   dim_feedforward=encoder_dim_feedforward, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim,
+                                                   nhead=encoder_heads,
+                                                   dim_feedforward=encoder_dim_feedforward,
+                                                   batch_first=True)
         self.text_encoder = nn.TransformerEncoder(encoder_layer, num_layers=text_encoder_depth)
 
         # Predict sequence length

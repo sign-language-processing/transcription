@@ -25,9 +25,7 @@ def visualize_pose(pose: Pose, pose_name: str):
 
     # Draw original pose
     visualizer = PoseVisualizer(pose, thickness=2)
-    visualizer.save_video(os.path.join(args.pred_output, pose_name),
-                          visualizer.draw(),
-                          custom_ffmpeg=args.ffmpeg_path)
+    visualizer.save_video(os.path.join(args.pred_output, pose_name), visualizer.draw(), custom_ffmpeg=args.ffmpeg_path)
 
 
 def visualize_poses(_id: str, text: str, poses: List[Pose]) -> str:
@@ -52,8 +50,11 @@ if __name__ == '__main__':
 
     os.makedirs(args.pred_output, exist_ok=True)
 
-    dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components,
-                          max_seq_size=args.max_seq_size, split="train[:20]")
+    dataset = get_dataset(poses=args.pose,
+                          fps=args.fps,
+                          components=args.pose_components,
+                          max_seq_size=args.max_seq_size,
+                          split="train[:20]")
 
     _, num_pose_joints, num_pose_dims = dataset[0]["pose"]["data"].shape
     pose_header = dataset.data[0]["pose"].header
@@ -85,9 +86,8 @@ if __name__ == '__main__':
             predicted_pose = Pose(pose_header, pose_body)
             pose_hide_legs(predicted_pose)
 
-            html.append(visualize_poses(_id=datum["id"],
-                                        text=datum["text"],
-                                        poses=[datum["pose"]["obj"], predicted_pose]))
+            html.append(
+                visualize_poses(_id=datum["id"], text=datum["text"], poses=[datum["pose"]["obj"], predicted_pose]))
 
         # # Iterative change
         # datum = dataset[12]  # dataset[0] starts with an empty frame
