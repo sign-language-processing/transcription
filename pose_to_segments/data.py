@@ -5,7 +5,7 @@ import torch
 from pose_format import Pose
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
-from ..shared.tfds_dataset import get_tfds_dataset, ProcessedPoseDatum
+from shared.tfds_dataset import get_tfds_dataset, ProcessedPoseDatum
 
 
 class Segment(TypedDict):
@@ -27,6 +27,10 @@ def build_bio(timestamps: torch.Tensor, segments: List[Segment]):
 
     timestamp_i = 0
     for segment in segments:
+        if segment["start_time"] >= timestamps[-1]:
+            print("Segment", segment, "starts after the end of the pose", timestamps[-1])
+            continue
+
         while timestamps[timestamp_i] < segment["start_time"]:
             timestamp_i += 1
         segment_start_i = timestamp_i
@@ -81,7 +85,7 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
     poses: Dict[str, Pose] = datum["pose"]
 
     elan_path = datum["tf_datum"]["paths"]["eaf"].numpy().decode('utf-8')
-    sentences = get_elan_sentences(elan_path)
+    sentences = list(get_elan_sentences(elan_path))
 
     for person in ["a", "b"]:
         if len(poses[person].body.data) > 0:

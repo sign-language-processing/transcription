@@ -3,9 +3,11 @@ import pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
+from tqdm import tqdm
 
 from pose_to_segments.args import args
-from pose_to_segments.data import BIO
+from pose_to_segments.data import BIO, get_dataset
 from pose_to_segments.probs_to_segments import probs_to_segments
 
 
@@ -144,7 +146,6 @@ if __name__ == "__main__":
 
     SKIPS = 10
     matrix = np.zeros(shape=(100 // SKIPS, 100 // SKIPS), dtype=np.float32)
-    # matrix = np.random.randn(100, 100)
     b_thresholds = range(0, 100, SKIPS)
     o_thresholds = range(0, 100, SKIPS)
 
@@ -155,27 +156,27 @@ if __name__ == "__main__":
         pred_bio_50 = probs_to_segments(datum["probs"]["sign"], b_threshold=50., o_threshold=50.)
         print(len(gold_bio), len(pred_bio), len(pred_bio_50))
 
-        # for b_threshold in b_thresholds:
-        #     for o_threshold in o_thresholds:
-        #         corrected_b_threshold = 45 + b_threshold/10
-        #         corrected_o_threshold = 28 + o_threshold/10
-        #         pred_bio = probs_to_segments(datum["probs"]["sign"],
-        #                                      b_threshold=corrected_b_threshold,
-        #                                      o_threshold=corrected_o_threshold)
-        #         score = eval_segments(pred_bio, gold_bio) + eval_segments(gold_bio, pred_bio)
-        #         matrix[b_threshold // skips, o_threshold // skips] += score
+        for b_threshold in b_thresholds:
+            for o_threshold in o_thresholds:
+                corrected_b_threshold = 67 + b_threshold/10
+                corrected_o_threshold = 45 + o_threshold/10
+                pred_bio = probs_to_segments(datum["probs"]["sign"],
+                                             b_threshold=corrected_b_threshold,
+                                             o_threshold=corrected_o_threshold)
+                score = eval_segments(pred_bio, gold_bio) + eval_segments(gold_bio, pred_bio)
+                matrix[b_threshold // SKIPS, o_threshold // SKIPS] += score
         # break
 
-    # matrix = np.log(matrix)
-    #
-    # argmin = np.argmin(matrix, axis=None)
-    # print("best", np.unravel_index(argmin, matrix.shape))
-    # print(matrix)
-    #
-    # fig, ax = plt.subplots()
-    # b_labels = ["b" + str(i) for i in b_thresholds]
-    # o_labels = ["o" + str(i) for i in o_thresholds]
-    # im, cbar = heatmap(np.log(matrix), b_labels, o_labels, ax=ax,
-    #                    cmap="YlGn", cbarlabel="error")
-    # fig.tight_layout()
-    # plt.savefig("heatmap.png")
+    matrix = np.log(matrix)
+
+    argmin = np.argmin(matrix, axis=None)
+    print("best", np.unravel_index(argmin, matrix.shape))
+    print(matrix)
+
+    fig, ax = plt.subplots()
+    b_labels = ["b" + str(i) for i in b_thresholds]
+    o_labels = ["o" + str(i) for i in o_thresholds]
+    im, cbar = heatmap(np.log(matrix), b_labels, o_labels, ax=ax,
+                       cmap="YlGn", cbarlabel="error")
+    fig.tight_layout()
+    plt.savefig("heatmap.png")

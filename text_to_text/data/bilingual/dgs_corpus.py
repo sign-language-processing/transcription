@@ -38,8 +38,8 @@ signed = open(raw_dir.joinpath("signed.txt"), "w", encoding="utf-8")
 # for start, treat this as a dictionary
 for gloss, hamnosys in gloss_hamnosys_map.items():
     clean_text = re.compile(r'\d.*').sub('', gloss)
-    spoken.write(f"<de> {clean_text}\n")
-    signed.write(f"<SW> <de> <gsg> | {hamnosys}\n")
+    spoken.write(f"<de> {clean_text.capitalize()}\n")
+    signed.write(f"<HNS> <de> <gsg> | {hamnosys}\n")
 
 bad_glosses_counter = Counter()
 

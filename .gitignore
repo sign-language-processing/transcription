@@ -1,3 +1,4 @@
 .idea/
 __pycache__
 .pytest_cache
+pose_to_segments/PRIVATE.md

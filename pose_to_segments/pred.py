@@ -5,13 +5,14 @@ import torch
 from pose_format import Pose
 from pose_format.pose_visualizer import PoseVisualizer
 
+from shared.pose_utils import pose_normalization_info
 from .args import args
 from .data import BIO, get_dataset
 from .model import PoseTaggingModel
-from ..shared.pose_utils import pose_normalization_info
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 
+current_directory = os.path.dirname(os.path.realpath(__file__))
 
 def draw_frames(visualizer: PoseVisualizer, sign_probs: torch.Tensor):
     for sign_prob, frame in zip(sign_probs, visualizer.draw(max_frames=None)):
@@ -70,9 +71,10 @@ if __name__ == '__main__':
         # Save model as single file, without code
         pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
-        torch.jit.save(traced_cell, "dist/model.pth")
+        model_path = os.path.join(current_directory, "dist", "model.pth")
+        torch.jit.save(traced_cell, model_path)
 
-        model = torch.jit.load("dist/model.pth")
+        model = torch.jit.load(model_path)
         model.eval()
 
         for datum in dataset:

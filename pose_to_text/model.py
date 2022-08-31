@@ -34,7 +34,7 @@ class PoseToTextModel(JoeyNMTModel):
 
         self.pose_encoder = pose_encoder
 
-    def _encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor, **kwargs) \
+    def _encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor, **unused_kwargs) \
             -> (Tensor, Tensor):
         # Encode pose using the universal pose encoder
         pose_encoding = self.pose_encoder({

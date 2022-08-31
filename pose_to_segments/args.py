@@ -39,3 +39,6 @@ if args.seed == 0:  # Make seed random if 0
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 random.seed(args.seed)
+
+
+# conda update -n base -c defaults conda

@@ -17,7 +17,7 @@ experiment:
   # vocab training sample
   spm-sample-size: 10000000
 
-  best-model: chrf
+  best-model: ce-mean-words
 
   bicleaner:
     default-threshold: 0  # There is no bicleaner support for "spoken" and "signed". TODO: train such a cleaner?
@@ -34,7 +34,7 @@ marian-args:
   # these configs override pipeline/translate/decoder.yml
   decoding-backward:
     # 12 Gb GPU, s2s model
-    mini-batch-words: 2000
+    mini-batch-words: 1000
     beam-size: 12
   decoding-teacher:
     # 12 Gb GPU, ensemble of 2 teachers
@@ -46,11 +46,215 @@ marian-args:
 datasets:
   # parallel training corpus
   train:
+    - custom-corpus_/custom_corpus/bible/train
+    - custom-corpus_/custom_corpus/dgs_corpus/train
+    - custom-corpus_/custom_corpus/dicta_sign/train
     - custom-corpus_/custom_corpus/fingerspelling/train
+    - custom-corpus_/custom_corpus/sign2mint/train
+    - custom-corpus_/custom_corpus/sign_bank/10/train
+    - custom-corpus_/custom_corpus/sign_bank/103/train
+    - custom-corpus_/custom_corpus/sign_bank/104/train
+    - custom-corpus_/custom_corpus/sign_bank/105/train
+    - custom-corpus_/custom_corpus/sign_bank/11/train
+    - custom-corpus_/custom_corpus/sign_bank/111/train
+    - custom-corpus_/custom_corpus/sign_bank/114/train
+    - custom-corpus_/custom_corpus/sign_bank/116/train
+    - custom-corpus_/custom_corpus/sign_bank/119/train
+    - custom-corpus_/custom_corpus/sign_bank/126/train
+    - custom-corpus_/custom_corpus/sign_bank/127/train
+    - custom-corpus_/custom_corpus/sign_bank/129/train
+    - custom-corpus_/custom_corpus/sign_bank/135/train
+    - custom-corpus_/custom_corpus/sign_bank/143/train
+    - custom-corpus_/custom_corpus/sign_bank/147/train
+    - custom-corpus_/custom_corpus/sign_bank/151/train
+    - custom-corpus_/custom_corpus/sign_bank/152/train
+    - custom-corpus_/custom_corpus/sign_bank/153/train
+    - custom-corpus_/custom_corpus/sign_bank/16/train
+    - custom-corpus_/custom_corpus/sign_bank/18/train
+    - custom-corpus_/custom_corpus/sign_bank/19/train
+    - custom-corpus_/custom_corpus/sign_bank/21/train
+    - custom-corpus_/custom_corpus/sign_bank/23/train
+    - custom-corpus_/custom_corpus/sign_bank/25/train
+    - custom-corpus_/custom_corpus/sign_bank/26/train
+    - custom-corpus_/custom_corpus/sign_bank/28/train
+    - custom-corpus_/custom_corpus/sign_bank/31/train
+    - custom-corpus_/custom_corpus/sign_bank/33/train
+    - custom-corpus_/custom_corpus/sign_bank/34/train
+    - custom-corpus_/custom_corpus/sign_bank/36/train
+    - custom-corpus_/custom_corpus/sign_bank/4/train
+    - custom-corpus_/custom_corpus/sign_bank/40/train
+    - custom-corpus_/custom_corpus/sign_bank/41/train
+    - custom-corpus_/custom_corpus/sign_bank/43/train
+    - custom-corpus_/custom_corpus/sign_bank/44/train
+    - custom-corpus_/custom_corpus/sign_bank/46/train
+    - custom-corpus_/custom_corpus/sign_bank/47/train
+    - custom-corpus_/custom_corpus/sign_bank/48/train
+    - custom-corpus_/custom_corpus/sign_bank/49/train
+    - custom-corpus_/custom_corpus/sign_bank/5/train
+    - custom-corpus_/custom_corpus/sign_bank/51/train
+    - custom-corpus_/custom_corpus/sign_bank/52/train
+    - custom-corpus_/custom_corpus/sign_bank/53/train
+    - custom-corpus_/custom_corpus/sign_bank/54/train
+    - custom-corpus_/custom_corpus/sign_bank/55/train
+    - custom-corpus_/custom_corpus/sign_bank/56/train
+    - custom-corpus_/custom_corpus/sign_bank/57/train
+    - custom-corpus_/custom_corpus/sign_bank/58/train
+    - custom-corpus_/custom_corpus/sign_bank/59/train
+    - custom-corpus_/custom_corpus/sign_bank/6/train
+    - custom-corpus_/custom_corpus/sign_bank/63/train
+    - custom-corpus_/custom_corpus/sign_bank/64/train
+    - custom-corpus_/custom_corpus/sign_bank/65/train
+    - custom-corpus_/custom_corpus/sign_bank/67/train
+    - custom-corpus_/custom_corpus/sign_bank/69/train
+    - custom-corpus_/custom_corpus/sign_bank/7/train
+    - custom-corpus_/custom_corpus/sign_bank/71/train
+    - custom-corpus_/custom_corpus/sign_bank/72/train
+    - custom-corpus_/custom_corpus/sign_bank/74/train
+    - custom-corpus_/custom_corpus/sign_bank/75/train
+    - custom-corpus_/custom_corpus/sign_bank/76/train
+    - custom-corpus_/custom_corpus/sign_bank/78/train
+    - custom-corpus_/custom_corpus/sign_bank/8/train
+    - custom-corpus_/custom_corpus/sign_bank/80/train
+    - custom-corpus_/custom_corpus/sign_bank/81/train
+    - custom-corpus_/custom_corpus/sign_bank/82/train
+    - custom-corpus_/custom_corpus/sign_bank/84/train
+    - custom-corpus_/custom_corpus/sign_bank/88/train
+    - custom-corpus_/custom_corpus/sign_bank/9/train
+    - custom-corpus_/custom_corpus/sign_bank/93/train
   devtest:
+    - custom-corpus_/custom_corpus/bible/devtest
+    - custom-corpus_/custom_corpus/dgs_corpus/devtest
+    - custom-corpus_/custom_corpus/dicta_sign/devtest
     - custom-corpus_/custom_corpus/fingerspelling/devtest
+    - custom-corpus_/custom_corpus/sign2mint/devtest
+    - custom-corpus_/custom_corpus/sign_bank/103/devtest
+    - custom-corpus_/custom_corpus/sign_bank/104/devtest
+    - custom-corpus_/custom_corpus/sign_bank/105/devtest
+    - custom-corpus_/custom_corpus/sign_bank/11/devtest
+    - custom-corpus_/custom_corpus/sign_bank/111/devtest
+    - custom-corpus_/custom_corpus/sign_bank/114/devtest
+    - custom-corpus_/custom_corpus/sign_bank/116/devtest
+    - custom-corpus_/custom_corpus/sign_bank/119/devtest
+    - custom-corpus_/custom_corpus/sign_bank/127/devtest
+    - custom-corpus_/custom_corpus/sign_bank/129/devtest
+    - custom-corpus_/custom_corpus/sign_bank/147/devtest
+    - custom-corpus_/custom_corpus/sign_bank/151/devtest
+    - custom-corpus_/custom_corpus/sign_bank/152/devtest
+    - custom-corpus_/custom_corpus/sign_bank/153/devtest
+    - custom-corpus_/custom_corpus/sign_bank/16/devtest
+    - custom-corpus_/custom_corpus/sign_bank/19/devtest
+    - custom-corpus_/custom_corpus/sign_bank/21/devtest
+    - custom-corpus_/custom_corpus/sign_bank/23/devtest
+    - custom-corpus_/custom_corpus/sign_bank/25/devtest
+    - custom-corpus_/custom_corpus/sign_bank/26/devtest
+    - custom-corpus_/custom_corpus/sign_bank/28/devtest
+    - custom-corpus_/custom_corpus/sign_bank/31/devtest
+    - custom-corpus_/custom_corpus/sign_bank/4/devtest
+    - custom-corpus_/custom_corpus/sign_bank/40/devtest
+    - custom-corpus_/custom_corpus/sign_bank/41/devtest
+    - custom-corpus_/custom_corpus/sign_bank/43/devtest
+    - custom-corpus_/custom_corpus/sign_bank/44/devtest
+    - custom-corpus_/custom_corpus/sign_bank/46/devtest
+    - custom-corpus_/custom_corpus/sign_bank/47/devtest
+    - custom-corpus_/custom_corpus/sign_bank/48/devtest
+    - custom-corpus_/custom_corpus/sign_bank/49/devtest
+    - custom-corpus_/custom_corpus/sign_bank/5/devtest
+    - custom-corpus_/custom_corpus/sign_bank/51/devtest
+    - custom-corpus_/custom_corpus/sign_bank/52/devtest
+    - custom-corpus_/custom_corpus/sign_bank/53/devtest
+    - custom-corpus_/custom_corpus/sign_bank/54/devtest
+    - custom-corpus_/custom_corpus/sign_bank/55/devtest
+    - custom-corpus_/custom_corpus/sign_bank/56/devtest
+    - custom-corpus_/custom_corpus/sign_bank/58/devtest
+    - custom-corpus_/custom_corpus/sign_bank/59/devtest
+    - custom-corpus_/custom_corpus/sign_bank/63/devtest
+    - custom-corpus_/custom_corpus/sign_bank/64/devtest
+    - custom-corpus_/custom_corpus/sign_bank/65/devtest
+    - custom-corpus_/custom_corpus/sign_bank/67/devtest
+    - custom-corpus_/custom_corpus/sign_bank/69/devtest
+    - custom-corpus_/custom_corpus/sign_bank/7/devtest
+    - custom-corpus_/custom_corpus/sign_bank/72/devtest
+    - custom-corpus_/custom_corpus/sign_bank/74/devtest
+    - custom-corpus_/custom_corpus/sign_bank/75/devtest
+    - custom-corpus_/custom_corpus/sign_bank/78/devtest
+    - custom-corpus_/custom_corpus/sign_bank/8/devtest
+    - custom-corpus_/custom_corpus/sign_bank/80/devtest
+    - custom-corpus_/custom_corpus/sign_bank/81/devtest
+    - custom-corpus_/custom_corpus/sign_bank/9/devtest
+    - custom-corpus_/custom_corpus/sign_bank/93/devtest
   test:
+    - custom-corpus_/custom_corpus/bible/test
+    - custom-corpus_/custom_corpus/dgs_corpus/test
+    - custom-corpus_/custom_corpus/dicta_sign/test
     - custom-corpus_/custom_corpus/fingerspelling/test
+    - custom-corpus_/custom_corpus/sign2mint/test
+    - custom-corpus_/custom_corpus/sign_bank/10/test
+    - custom-corpus_/custom_corpus/sign_bank/103/test
+    - custom-corpus_/custom_corpus/sign_bank/104/test
+    - custom-corpus_/custom_corpus/sign_bank/105/test
+    - custom-corpus_/custom_corpus/sign_bank/11/test
+    - custom-corpus_/custom_corpus/sign_bank/111/test
+    - custom-corpus_/custom_corpus/sign_bank/114/test
+    - custom-corpus_/custom_corpus/sign_bank/116/test
+    - custom-corpus_/custom_corpus/sign_bank/119/test
+    - custom-corpus_/custom_corpus/sign_bank/127/test
+    - custom-corpus_/custom_corpus/sign_bank/129/test
+    - custom-corpus_/custom_corpus/sign_bank/135/test
+    - custom-corpus_/custom_corpus/sign_bank/143/test
+    - custom-corpus_/custom_corpus/sign_bank/147/test
+    - custom-corpus_/custom_corpus/sign_bank/151/test
+    - custom-corpus_/custom_corpus/sign_bank/152/test
+    - custom-corpus_/custom_corpus/sign_bank/153/test
+    - custom-corpus_/custom_corpus/sign_bank/16/test
+    - custom-corpus_/custom_corpus/sign_bank/18/test
+    - custom-corpus_/custom_corpus/sign_bank/19/test
+    - custom-corpus_/custom_corpus/sign_bank/21/test
+    - custom-corpus_/custom_corpus/sign_bank/23/test
+    - custom-corpus_/custom_corpus/sign_bank/25/test
+    - custom-corpus_/custom_corpus/sign_bank/26/test
+    - custom-corpus_/custom_corpus/sign_bank/28/test
+    - custom-corpus_/custom_corpus/sign_bank/31/test
+    - custom-corpus_/custom_corpus/sign_bank/34/test
+    - custom-corpus_/custom_corpus/sign_bank/36/test
+    - custom-corpus_/custom_corpus/sign_bank/4/test
+    - custom-corpus_/custom_corpus/sign_bank/40/test
+    - custom-corpus_/custom_corpus/sign_bank/41/test
+    - custom-corpus_/custom_corpus/sign_bank/43/test
+    - custom-corpus_/custom_corpus/sign_bank/44/test
+    - custom-corpus_/custom_corpus/sign_bank/46/test
+    - custom-corpus_/custom_corpus/sign_bank/47/test
+    - custom-corpus_/custom_corpus/sign_bank/48/test
+    - custom-corpus_/custom_corpus/sign_bank/49/test
+    - custom-corpus_/custom_corpus/sign_bank/5/test
+    - custom-corpus_/custom_corpus/sign_bank/51/test
+    - custom-corpus_/custom_corpus/sign_bank/52/test
+    - custom-corpus_/custom_corpus/sign_bank/53/test
+    - custom-corpus_/custom_corpus/sign_bank/54/test
+    - custom-corpus_/custom_corpus/sign_bank/55/test
+    - custom-corpus_/custom_corpus/sign_bank/56/test
+    - custom-corpus_/custom_corpus/sign_bank/57/test
+    - custom-corpus_/custom_corpus/sign_bank/58/test
+    - custom-corpus_/custom_corpus/sign_bank/59/test
+    - custom-corpus_/custom_corpus/sign_bank/6/test
+    - custom-corpus_/custom_corpus/sign_bank/63/test
+    - custom-corpus_/custom_corpus/sign_bank/64/test
+    - custom-corpus_/custom_corpus/sign_bank/65/test
+    - custom-corpus_/custom_corpus/sign_bank/67/test
+    - custom-corpus_/custom_corpus/sign_bank/69/test
+    - custom-corpus_/custom_corpus/sign_bank/7/test
+    - custom-corpus_/custom_corpus/sign_bank/71/test
+    - custom-corpus_/custom_corpus/sign_bank/72/test
+    - custom-corpus_/custom_corpus/sign_bank/74/test
+    - custom-corpus_/custom_corpus/sign_bank/75/test
+    - custom-corpus_/custom_corpus/sign_bank/76/test
+    - custom-corpus_/custom_corpus/sign_bank/78/test
+    - custom-corpus_/custom_corpus/sign_bank/8/test
+    - custom-corpus_/custom_corpus/sign_bank/80/test
+    - custom-corpus_/custom_corpus/sign_bank/81/test
+    - custom-corpus_/custom_corpus/sign_bank/82/test
+    - custom-corpus_/custom_corpus/sign_bank/84/test
+    - custom-corpus_/custom_corpus/sign_bank/9/test
+    - custom-corpus_/custom_corpus/sign_bank/93/test
   # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
   # to be translated by the teacher model
   mono-src: # TODO, create monolingual spoken language data in many languages, with <SW> or <HNS> initials

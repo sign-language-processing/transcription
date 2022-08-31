@@ -21,8 +21,8 @@ pigz -dc "${corpus_trg}" >"${vocab_dir}/data.trg.txt"
 
 "${MARIAN}/spm_train" --bos_id=-1 --eos_id=0 --unk_id=1 \
   --model_type="unigram" --split_by_number=0 --split_by_unicode_script=0 \
-  --user_defined_symbols='$dsl$,$ni$,$sq$,$be$,$ru$,$hi$,$gsg$,$hu$,$el$,$se$,$gb$,$ar$,$ase$,$ca$,$it$,$br$,$pl$,$da$,$mfs$,$ssp$,$en$,$fa$,$swl$,$bg$,$sv$,$ko$,$tr$,$isg$,$sgg$,$ise$,$us$,$th$,$tsq$,$ja$,$pt$,$hn$,$bfi$,$he$,$mx$,$SW$,$no$,$de$,$bzs$,$fr$,$bn$,$sk$,$lv$,$sfb$,$cn$,$csl$,$et$,$fsl$,$lt$,$nl$,$vi$,$ie$,$sr$,$mk$,$uk$,$psr$,$nsl$,$dk$,$ch$,$sl$,$ncs$,$af$,$fi$,$eo$,$vgt$,$jsl$,$cs$,$es$,$zh$,$id$,$hds$,$ro$,$kk$' \
-  --model_prefix="${vocab_dir}/vocab" --vocab_size=32000 \
+  --user_defined_symbols='$SW$,$HNS$,$de$,$az$,$hi$,$dsl$,$lv$,$ro$,$kbh$,$ak$,$psr$,$nsl$,$af$,$vn$,$zh-tw$,$bg$,$eu$,$cb$,$sn$,$mx$,$za$,$kr$,$nh$,$po$,$di$,$sh$,$sgg$,$gv$,$th$,$kk$,$bfi$,$rm$,$hu$,$al$,$eg$,$gsg$,$np$,$he$,$sv$,$kb$,$gd$,$pe$,$es$,$cs$,$jk$,$cz$,$nl$,$ve$,$xh$,$tmh$,$pck$,$hds$,$tsq$,$ji$,$my$,$bn$,$eo$,$uy$,$gb$,$it$,$br$,$da$,$chr$,$gr$,$ru$,$py$,$sr$,$oj$,$cj$,$swl$,$ca$,$do$,$pp$,$cq$,$fsl$,$ise$,$ssp$,$is$,$gj$,$et$,$vi$,$cn$,$vgt$,$zu$,$tu$,$ss$,$pot$,$csl$,$ka$,$qc$,$uk$,$bzs$,$ac$,$ml$,$am$,$sk$,$lt$,$el$,$dk$,$mfs$,$pt$,$gss$,$jp$,$sy$,$ko$,$dj$,$en$,$tw$,$fil$,$jsl$,$ie$,$ja$,$ncs$,$mr$,$sa$,$mi$,$cp$,$mk$,$up$,$so$,$ag$,$fi$,$ni$,$pl$,$se$,$ph$,$isg$,$sq$,$tl$,$sg$,$us$,$mm$,$bs$,$ck$,$tr$,$cl$,$sfb$,$no$,$fa$,$te$,$co$,$ar$,$qu$,$mt$,$wa$,$fr$,$ew$,$id$,$ase$,$tn$,$be$,$hy$,$sl$,$wo$,$ke$,$ch$,$gn$,$zh$,$hn$' \
+  --model_prefix="${vocab_dir}/vocab" --vocab_size=16000 \
   --input="${vocab_dir}/data.src.txt,${vocab_dir}/data.trg.txt" \
   --input_sentence_size="${sample_size}" --shuffle_input_sentence=true
 
