@@ -6,6 +6,7 @@ from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
 from shared.collator.collator import zero_pad_collator
+
 from .args import args
 from .data import get_dataset
 from .model import PoseTaggingModel

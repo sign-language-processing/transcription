@@ -1,8 +1,8 @@
 from pathlib import Path
 
-import tensorflow_datasets as tfds
 # pylint: disable=unused-import
 import sign_language_datasets.datasets
+import tensorflow_datasets as tfds
 from sign_language_datasets.datasets.config import SignDatasetConfig
 
 config = SignDatasetConfig(name="only-annotations", version="1.0.0", include_video=False)

@@ -1,5 +1,5 @@
 import re
-from typing import List, TypedDict, Tuple
+from typing import List, Tuple, TypedDict
 
 
 class SignSymbol(TypedDict):

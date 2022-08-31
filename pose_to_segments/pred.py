@@ -6,6 +6,7 @@ from pose_format import Pose
 from pose_format.pose_visualizer import PoseVisualizer
 
 from shared.pose_utils import pose_normalization_info
+
 from .args import args
 from .data import BIO, get_dataset
 from .model import PoseTaggingModel

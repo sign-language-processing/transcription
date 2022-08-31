@@ -1,6 +1,6 @@
 import unittest
 
-from .signwriting import join_signs, fsw_to_sign
+from .signwriting import fsw_to_sign, join_signs
 
 
 class ParseSignCase(unittest.TestCase):

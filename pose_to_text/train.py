@@ -5,10 +5,9 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-
-from text_to_pose.args import args
 from pose_to_text.data import get_dataset
 from pose_to_text.model import PoseToTextModel
+from text_to_pose.args import args
 
 from ..shared.collator import zero_pad_collator
 from ..shared.tokenizers import SignLanguageTokenizer

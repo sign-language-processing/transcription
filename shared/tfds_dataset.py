@@ -1,16 +1,15 @@
 import importlib
-from typing import List, TypedDict, Union, Dict
+from typing import Dict, List, TypedDict, Union
 
 import tensorflow_datasets as tfds
-from sign_language_datasets.datasets import SignDatasetConfig
-
 from pose_format import Pose
-from pose_format.pose_header import PoseHeader
 from pose_format.numpy.pose_body import NumPyPoseBody
+from pose_format.pose_header import PoseHeader
 from pose_format.utils.reader import BufferReader
+from sign_language_datasets.datasets import SignDatasetConfig
 from tqdm import tqdm
 
-from .pose_utils import pose_normalization_info, pose_hide_legs
+from .pose_utils import pose_hide_legs, pose_normalization_info
 
 
 class ProcessedPoseDatum(TypedDict):

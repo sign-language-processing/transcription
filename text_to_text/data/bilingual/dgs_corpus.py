@@ -2,9 +2,9 @@ import re
 from collections import Counter
 from pathlib import Path
 
-import tensorflow_datasets as tfds
 # pylint: disable=unused-import
 import sign_language_datasets.datasets
+import tensorflow_datasets as tfds
 from sign_language_datasets.datasets.config import SignDatasetConfig
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 

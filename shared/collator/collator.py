@@ -1,8 +1,8 @@
 from typing import Dict, List, Tuple, Union
 
+import numpy as np
 import torch
 from pose_format.torch.masked import MaskedTensor, MaskedTorch
-import numpy as np
 
 
 def collate_tensors(batch: List) -> torch.Tensor:

@@ -1,13 +1,12 @@
 import logging
 from functools import partial
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import torch
-from torch.utils.data import DataLoader
-
 from joeynmt.batch import Batch
 from joeynmt.constants import PAD_ID
 from joeynmt.training import make_data_iter
+from torch.utils.data import DataLoader
 
 from pose_to_text.batch import SignBatch
 from shared.collator.collator import zero_pad_collator

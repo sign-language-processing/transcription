@@ -1,12 +1,12 @@
 from itertools import chain
 
+from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_TOKEN, UNK_TOKEN
+from joeynmt.vocabulary import Vocabulary
 from torch.utils.data import Dataset
 
 from shared.tokenizers import SignLanguageTokenizer
-from text_to_pose.data import get_dataset as get_single_dataset, TextPoseDataset
-
-from joeynmt.constants import UNK_TOKEN, EOS_TOKEN, BOS_TOKEN, PAD_TOKEN
-from joeynmt.vocabulary import Vocabulary
+from text_to_pose.data import TextPoseDataset
+from text_to_pose.data import get_dataset as get_single_dataset
 
 
 class PoseTextDataset(Dataset):

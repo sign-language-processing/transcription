@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+
 import cv2
 from pose_format.utils.holistic import load_holistic
 

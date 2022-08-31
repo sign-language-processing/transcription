@@ -3,6 +3,7 @@ import random
 import re
 import string
 from pathlib import Path
+
 import numpy as np
 
 from ....shared.signwriting.signwriting import join_signs

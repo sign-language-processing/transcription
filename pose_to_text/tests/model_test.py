@@ -4,6 +4,7 @@ import torch
 from joeynmt.vocabulary import Vocabulary
 
 from pose_to_text.batch import SignBatch
+
 from ..model import build_model
 
 

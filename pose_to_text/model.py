@@ -1,16 +1,15 @@
 from typing import Tuple
 
 import torch
-from torch import Tensor
-
 from joeynmt.constants import PAD_TOKEN
 from joeynmt.decoders import Decoder, TransformerDecoder
 from joeynmt.embeddings import Embeddings
 from joeynmt.encoders import Encoder, TransformerEncoder
+from joeynmt.helpers import ConfigurationError
 from joeynmt.initialization import initialize_model
 from joeynmt.model import Model as JoeyNMTModel
 from joeynmt.vocabulary import Vocabulary
-from joeynmt.helpers import ConfigurationError
+from torch import Tensor
 
 from shared.models.pose_encoder import PoseEncoderModel
 

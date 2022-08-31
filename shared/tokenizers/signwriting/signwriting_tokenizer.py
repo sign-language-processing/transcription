@@ -2,7 +2,7 @@ import re
 from itertools import chain
 from typing import List
 
-from ...signwriting.signwriting import fsw_to_sign, SignSymbol
+from ...signwriting.signwriting import SignSymbol, fsw_to_sign
 from ...tokenizers.base_tokenizer import BaseTokenizer
 
 

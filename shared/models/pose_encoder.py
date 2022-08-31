@@ -1,7 +1,7 @@
+import numpy as np
+import pytorch_lightning as pl
 import torch
 from torch import nn
-import pytorch_lightning as pl
-import numpy as np
 
 
 # TODO @AmitMY - 3D normalize hand and face

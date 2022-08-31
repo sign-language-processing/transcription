@@ -1,7 +1,7 @@
-import torch
 import numpy as np
-from torch.autograd import Variable
+import torch
 from pytorch2keras import pytorch_to_keras
+from torch.autograd import Variable
 
 
 def load_torch_model():

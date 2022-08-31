@@ -3,8 +3,8 @@ import unittest
 
 import torch
 
-from ..model import IterativeTextGuidedPoseGenerationModel
 from ...shared.tokenizers.dummy_tokenizer import DummyTokenizer
+from ..model import IterativeTextGuidedPoseGenerationModel
 
 
 def get_batch(bsz=4):

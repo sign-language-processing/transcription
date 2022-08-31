@@ -2,7 +2,7 @@ import numpy as np
 from numpy import ma
 from pose_format import Pose
 from pose_format.numpy import NumPyPoseBody
-from pose_format.pose_header import PoseHeaderDimensions, PoseHeader
+from pose_format.pose_header import PoseHeader, PoseHeaderDimensions
 from pose_format.utils.openpose import OpenPose_Components
 
 

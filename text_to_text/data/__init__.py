@@ -4,7 +4,7 @@ import os
 import pathlib
 import random
 import re
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from random import shuffle
 from typing import List
 

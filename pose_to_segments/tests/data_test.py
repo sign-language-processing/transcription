@@ -3,8 +3,9 @@ from typing import List
 
 import torch
 
-from ..data import PoseSegmentsDatum, Segment, PoseSegmentsDataset
 from shared.pose_utils import fake_pose
+
+from ..data import PoseSegmentsDataset, PoseSegmentsDatum, Segment
 
 
 def single_datum(num_frames, segments: List[List[Segment]]) -> PoseSegmentsDatum:
