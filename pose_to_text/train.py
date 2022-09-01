@@ -1,72 +1,104 @@
-import os
+import argparse
+import logging
+import shutil
+from pathlib import Path
 
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers import WandbLogger
-from torch.utils.data import DataLoader
+from joeynmt.helpers import load_config, log_cfg, make_logger, make_model_dir, set_seed
+from joeynmt.prediction import test
+from joeynmt.training import TrainManager
 
-from pose_to_text.data import get_dataset
-from pose_to_text.model import PoseToTextModel
-from text_to_pose.args import args
+from pose_to_text.dataset import get_dataset
+from pose_to_text.model import build_model
 
-from ..shared.collator import zero_pad_collator
-from ..shared.tokenizers import SignLanguageTokenizer
+logger = logging.getLogger(__name__)
 
-if __name__ == '__main__':
-    LOGGER = None
-    if not args.no_wandb:
-        LOGGER = WandbLogger(project="pose-to-text", log_model=False, offline=False)
-        if LOGGER.experiment.sweep_id is None:
-            LOGGER.log_hyperparams(args)
 
-    train_dataset = get_dataset(poses=args.pose,
-                                fps=args.fps,
-                                components=args.pose_components,
-                                max_seq_size=args.max_seq_size,
-                                split="train[10:]")
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+def train(cfg_file: str, skip_test: bool = False) -> None:
+    """
+    Main training function. After training, also test on test data if given.
+    :param cfg_file: path to configuration yaml file
+    :param skip_test: whether a test should be run or not after training
+    """
+    # read config file
+    cfg = load_config(Path(cfg_file))
 
-    validation_dataset = get_dataset(poses=args.pose,
-                                     fps=args.fps,
-                                     components=args.pose_components,
-                                     max_seq_size=args.max_seq_size,
-                                     split="train[:10]")
-    validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, collate_fn=zero_pad_collator)
+    # make logger
+    model_dir = make_model_dir(
+        Path(cfg["training"]["model_dir"]),
+        overwrite=cfg["training"].get("overwrite", False),
+    )
+    joeynmt_version = make_logger(model_dir, mode="train")
+    if "joeynmt_version" in cfg:
+        assert str(joeynmt_version) == str(
+            cfg["joeynmt_version"]), (f"You are using JoeyNMT version {joeynmt_version}, "
+                                      f'but {cfg["joeynmt_version"]} is expected in the given config.')
 
-    _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
+    # write all entries of config to the log
+    log_cfg(cfg)
 
-    # Model Arguments
-    model_args = dict(tokenizer=SignLanguageTokenizer(),
-                      pose_dims=(num_pose_joints, num_pose_dims),
-                      hidden_dim=args.hidden_dim,
-                      text_encoder_depth=args.text_encoder_depth,
-                      pose_encoder_depth=args.pose_encoder_depth,
-                      encoder_heads=args.encoder_heads,
-                      max_seq_size=args.max_seq_size,
-                      max_decode_seq_size=30)
+    # store copy of original training config in model dir
+    shutil.copy2(cfg_file, (model_dir / "config.yaml").as_posix())
 
-    if args.checkpoint is not None:
-        model = PoseToTextModel.load_from_checkpoint(args.checkpoint, **model_args)
+    # set the random seed
+    set_seed(seed=cfg["training"].get("random_seed", 42))
+
+    # load the data
+    data_args = {
+        "poses": cfg["data"]["pose"],
+        "fps": cfg["data"]["fps"],
+        "components": cfg["data"]["components"],
+        "max_seq_size": cfg["data"]["max_seq_size"]
+    }
+    train_data = get_dataset(**data_args, split="train[50:]")
+    dev_data = get_dataset(**data_args, split="train[:50]")
+    test_data = dev_data
+
+    trg_vocab = train_data.trg_vocab
+
+    trg_vocab.to_file(model_dir / "trg_vocab.txt")
+    if hasattr(train_data.tokenizer[train_data.trg_lang], "copy_cfg_file"):
+        train_data.tokenizer[train_data.trg_lang].copy_cfg_file(model_dir)
+
+    # build an encoder-decoder model
+    _, num_pose_joints, num_pose_dims = train_data[0][0].shape
+    model = build_model(pose_dims=(num_pose_joints, num_pose_dims), cfg=cfg["model"], trg_vocab=trg_vocab)
+
+    # for training management, e.g. early stopping and model selection
+    trainer = TrainManager(model=model, cfg=cfg)
+
+    # train the model
+    trainer.train_and_validate(train_data=train_data, valid_data=dev_data)
+
+    if not skip_test:
+        # predict with the best model on validation and test
+        # (if test data is available)
+
+        ckpt = model_dir / f"{trainer.stats.best_ckpt_iter}.ckpt"
+        output_path = model_dir / f"{trainer.stats.best_ckpt_iter:08d}.hyps"
+
+        datasets_to_test = {
+            "dev": dev_data,
+            "test": test_data,
+            "src_vocab": None,
+            "trg_vocab": trg_vocab,
+        }
+        test(
+            cfg_file,
+            ckpt=ckpt.as_posix(),
+            output_path=output_path.as_posix(),
+            datasets=datasets_to_test,
+        )
     else:
-        model = PoseToTextModel(**model_args)
+        logger.info("Skipping test after training")
 
-    callbacks = []
-    if LOGGER is not None:
-        os.makedirs("models", exist_ok=True)
 
-        callbacks.append(
-            ModelCheckpoint(dirpath="models/" + LOGGER.experiment.id,
-                            filename="model",
-                            verbose=True,
-                            save_top_k=1,
-                            monitor='train_loss',
-                            mode='min'))
-
-    trainer = pl.Trainer(
-        max_epochs=5000,
-        check_val_every_n_epoch=1,  # validation is really slow
-        logger=LOGGER,
-        callbacks=callbacks,
-        gpus=args.gpus)
-
-    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser("Joey-NMT")
+    parser.add_argument(
+        "--config",
+        default="configs/default.yaml",
+        type=str,
+        help="Training configuration file (yaml).",
+    )
+    args = parser.parse_args()
+    train(cfg_file=args.config)

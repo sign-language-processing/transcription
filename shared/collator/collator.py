@@ -5,7 +5,7 @@ import torch
 from pose_format.torch.masked import MaskedTensor, MaskedTorch
 
 
-def collate_tensors(batch: List) -> torch.Tensor:
+def collate_tensors(batch: List, pad_value=0) -> torch.Tensor:
     datum = batch[0]
 
     if isinstance(datum, dict):  # Recurse over dictionaries
@@ -27,7 +27,7 @@ def collate_tensors(batch: List) -> torch.Tensor:
             missing[0] = max_len - tensor.shape[0]
 
             if missing[0] > 0:
-                padding_tensor = torch.zeros(missing, dtype=tensor.dtype, device=tensor.device)
+                padding_tensor = torch.full(missing, fill_value=pad_value, dtype=tensor.dtype, device=tensor.device)
                 tensor = torch_cls.cat([tensor, padding_tensor], dim=0)
 
             new_batch.append(tensor)

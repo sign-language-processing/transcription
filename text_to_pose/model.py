@@ -8,10 +8,15 @@ from torch import nn
 from ..shared.models.pose_encoder import PoseEncoderModel
 
 
-def masked_mse_loss(pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torch.Tensor):
+def masked_loss(loss_type, pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torch.Tensor):
     # Loss by confidence. If missing joint, no loss. If less likely joint, less gradients.
-    sq_error = torch.pow(pose - pose_hat, 2).sum(-1)
-    return (sq_error * confidence).mean()
+    if loss_type == 'l1':
+        error = torch.abs(pose - pose_hat).sum(-1)
+    elif loss_type == 'l2':
+        error = torch.pow(pose - pose_hat, 2).sum(-1)
+    else:
+        raise NotImplementedError()
+    return (error * confidence).mean()
 
 
 class DistributionPredictionModel(nn.Module):
@@ -44,7 +49,8 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
                  pose_encoder_depth=4,
                  encoder_heads=2,
                  encoder_dim_feedforward=2048,
-                 max_seq_size: int = 1000):
+                 max_seq_size: int = 1000,
+                 loss_type='l1'):
         super().__init__()
 
         self.tokenizer = tokenizer
@@ -84,6 +90,9 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             nn.Linear(hidden_dim, self.pose_encoder.pose_dim),
         )
 
+        # Loss
+        self.loss_type = loss_type
+
     def encode_text(self, texts: List[str]):
         tokenized = self.tokenizer(texts, device=self.device)
         positional_embedding = self.positional_embeddings(tokenized["positions"])
@@ -115,10 +124,10 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             step = self.refine_pose_sequence(pose_sequence, text_encoding)
             pose_sequence["data"] = pose_sequence["data"] + step_size * step
 
-    def training_step(self, batch, *unused_args, steps=10):
+    def training_step(self, batch, *unused_args, steps=100):
         return self.step(batch, *unused_args, steps=steps, name="train")
 
-    def validation_step(self, batch, *unused_args, steps=10):
+    def validation_step(self, batch, *unused_args, steps=100):
         return self.step(batch, *unused_args, steps=steps, name="validation")
 
     def step(self, batch, *unused_args, steps: int, name: str):
@@ -140,10 +149,9 @@ class IterativeTextGuidedPoseGenerationModel(pl.LightningModule):
             pose_sequence["data"] = pose_sequence["data"].detach()  # Detach from graph
             l1_gold = pose["data"] - pose_sequence["data"]
             l1_predicted = self.refine_pose_sequence(pose_sequence, text_encoding)
-            refinement_loss += masked_mse_loss(l1_gold, l1_predicted, confidence=pose["confidence"])
+            refinement_loss += masked_loss(self.loss_type, l1_gold, l1_predicted, confidence=pose["confidence"])
 
-            step_shape = [batch_size, 1, 1, 1]
-            step_size = 1 + torch.randn(step_shape, device=self.device) / 10
+            step_size = 1 / steps
             l1_step = l1_gold if name == "validation" else l1_predicted
             pose_sequence["data"] = pose_sequence["data"] + step_size * l1_step
 

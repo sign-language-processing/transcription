@@ -33,10 +33,17 @@ class PoseToTextModel(JoeyNMTModel):
     def _encode(self, src: Tensor, src_length: Tensor, src_mask: Tensor, **unused_kwargs) \
             -> (Tensor, Tensor):
         # Encode pose using the universal pose encoder
-        pose_encoding = self.pose_encoder({"data": src, "mask": torch.logical_not(src_mask)})
+        pose_mask = torch.logical_not(torch.squeeze(src_mask, dim=1))
+        pose_encoding = self.pose_encoder({"data": src, "mask": pose_mask})
 
         # Encode using additional custom  JoeyNMT encoder
         return self.encoder(pose_encoding, src_length, src_mask)
+
+    def to(self, *args, **kwargs):
+        super().to(*args, **kwargs)
+        # TODO figure out why this is not happening by default
+        self.pose_encoder.to(*args, **kwargs)
+        return self
 
 
 def build_model(pose_dims: Tuple[int, int], cfg: dict, trg_vocab: Vocabulary) -> PoseToTextModel:
@@ -46,9 +53,11 @@ def build_model(pose_dims: Tuple[int, int], cfg: dict, trg_vocab: Vocabulary) ->
     trg_embed = Embeddings(**cfg["decoder"]["embeddings"], vocab_size=len(trg_vocab), padding_idx=trg_padding_idx)
 
     # Build encoder
+    assert cfg["encoder"]["type"] == "transformer", "Only transformer encoder is supported"
     encoder = TransformerEncoder(**cfg["encoder"])
 
     # Build decoder
+    assert cfg["decoder"]["type"] == "transformer", "Only transformer decoder is supported"
     decoder = TransformerDecoder(**cfg["decoder"],
                                  encoder=encoder,
                                  vocab_size=len(trg_vocab),

@@ -3,11 +3,9 @@ import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
-from tqdm import tqdm
 
 from pose_to_segments.args import args
-from pose_to_segments.data import BIO, get_dataset
+from pose_to_segments.data import BIO
 from pose_to_segments.probs_to_segments import probs_to_segments
 
 
@@ -82,6 +80,7 @@ def eval_segments(segments1, segments2):
     return error
 
 
+# pylint: disable=all
 def heatmap(data, row_labels, col_labels, ax=None, cbarlabel="", **kwargs):
     """
     Create a heatmap from a numpy array and two lists of labels.

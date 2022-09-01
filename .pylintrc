@@ -6,6 +6,7 @@ disable=
 	R0801, # (duplicate-code)
 	R0901, # (too-many-ancestors)
 	R0902, # (too-many-instance-attributes)
+	R0903, # (too-few-public-methods)
 	R0913, # (too-many-arguments)
 	R0914, # (too-many-locals)
 	R1732, # (consider-using-with)

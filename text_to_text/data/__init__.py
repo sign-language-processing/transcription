@@ -63,6 +63,7 @@ def write_line(f, line):
     f.write(line.strip() + "\n")
 
 
+# pylint: disable=too-many-branches
 def build_bilingual():
     statistics = defaultdict(Counter)
 
@@ -171,5 +172,3 @@ if __name__ == "__main__":
 
     print("CONTROL WORDS:")
     print(",".join(list(CONTROL_WORDS)))
-
-# $de$,$az$,$hi$,$dsl$,$lv$,$ro$,$kbh$,$281$,$ak$,$psr$,$nsl$,$af$,$vn$,$zh-tw$,$bg$,$eu$,$cb$,$sn$,$mx$,$za$,$i$,$kr$,$SW$,$nh$,$po$,$di$,$sh$,$sgg$,$gv$,$th$,$kk$,$bfi$,$rm$,$hu$,$al$,$eg$,$gsg$,$np$,$he$,$sv$,$kb$,$gd$,$pe$,$es$,$cs$,$jk$,$cz$,$nl$,$ve$,$xh$,$tmh$,$pck$,$hds$,$tsq$,$ji$,$my$,$bn$,$eo$,$uy$,$gb$,$it$,$br$,$da$,$chr$,$gr$,$ru$,$py$,$sr$,$oj$,$cj$,$swl$,$ca$,$do$,$pp$,$cq$,$fsl$,$ise$,$ssp$,$is$,$gj$,$et$,$vi$,$cn$,$vgt$,$zu$,$tu$,$ss$,$pot$,$csl$,$HNS$,$ka$,$qc$,$uk$,$bzs$,$ac$,$ml$,$am$,$sk$,$lt$,$el$,$dk$,$mfs$,$pt$,$gss$,$jp$,$sy$,$ko$,$dj$,$en$,$tw$,$fil$,$jsl$,$ie$,$ja$,$ncs$,$mr$,$sa$,$mi$,$cp$,$mk$,$up$,$so$,$ag$,$fi$,$ni$,$pl$,$se$,$ph$,$isg$,$sq$,$tl$,$sg$,$us$,$mm$,$bs$,$ck$,$tr$,$cl$,$sfb$,$no$,$fa$,$te$,$co$,$ar$,$qu$,$mt$,$wa$,$fr$,$ew$,$id$,$ase$,$tn$,$be$,$hy$,$sl$,$wo$,$ke$,$ch$,$gn$,$zh$,$hn$

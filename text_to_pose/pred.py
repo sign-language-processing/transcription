@@ -4,7 +4,7 @@ from typing import List
 
 import torch
 from pose_format import Pose
-from pose_format.numpy import NumPyPoseBody
+from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.pose_visualizer import PoseVisualizer
 
 from ..shared.pose_utils import pose_hide_legs, pose_normalization_info

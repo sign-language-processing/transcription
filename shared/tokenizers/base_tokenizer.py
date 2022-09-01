@@ -25,10 +25,11 @@ class BaseTokenizer:
         self.unk_token = unk_token
 
         self.i2s = {(i + starting_index): c for i, c in enumerate(tokens)}
-        self.i2s[0] = self.pad_token
-        self.i2s[1] = self.bos_token
-        self.i2s[2] = self.eos_token
-        self.i2s[3] = self.unk_token
+        # Following the same ID scheme as JoeyNMT
+        self.i2s[0] = self.unk_token
+        self.i2s[1] = self.pad_token
+        self.i2s[2] = self.bos_token
+        self.i2s[3] = self.eos_token
         self.s2i = {c: i for i, c in self.i2s.items()}
 
         self.pad_token_id = self.s2i[self.pad_token]
@@ -54,6 +55,7 @@ class BaseTokenizer:
             tokens.insert(0, self.bos_token_id)
         if eos:
             tokens.append(self.eos_token_id)
+
         return tokens
 
     def detokenize(self, tokens: List[int]):
@@ -61,6 +63,8 @@ class BaseTokenizer:
             return ""
         if tokens[0] == self.bos_token_id:
             tokens = tokens[1:]
+        if tokens[-1] == self.eos_token_id:
+            tokens = tokens[:-1]
 
         try:
             padding_index = tokens.index(self.pad_token_id)

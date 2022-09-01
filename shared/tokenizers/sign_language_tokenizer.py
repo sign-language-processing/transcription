@@ -33,3 +33,10 @@ class SignLanguageTokenizer(BaseTokenizer):
             return self.signwriting_tokenizer.tokens_to_text(tokens)
 
         return self.hamnosys_tokenizer.tokens_to_text(tokens)
+
+    # pylint: disable=unused-argument
+    def post_process(self, tokens: List[str], generate_unk: bool = True):
+        """
+        JoeyNMT expects this method to exist for BLEU calculation.
+        """
+        return " ".join(tokens)

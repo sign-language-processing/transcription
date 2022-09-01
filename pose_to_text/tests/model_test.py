@@ -4,6 +4,7 @@ import torch
 from joeynmt.vocabulary import Vocabulary
 
 from pose_to_text.batch import SignBatch
+from shared.collator.collator import collate_tensors
 
 from ..model import build_model
 
@@ -41,9 +42,9 @@ class ModelTestCase(unittest.TestCase):
 
     def get_batch(self):
         return SignBatch(src=torch.rand(1, self.seq_length, *self.pose_dim),
-                         src_length=torch.tensor([self.seq_length]),
+                         src_length=collate_tensors([self.seq_length]),
                          trg=torch.zeros(1, self.seq_length, dtype=torch.long),
-                         trg_length=torch.tensor([self.seq_length]),
+                         trg_length=collate_tensors([self.seq_length]),
                          device=torch.device("cpu"))
 
     def test_forward_expected_loss_finite(self):

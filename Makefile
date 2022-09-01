@@ -6,7 +6,7 @@ packages=pose_to_segments pose_to_text shared text_to_pose text_to_text video_to
 check:
 	pylint --rcfile=.pylintrc ${packages}
 	yapf -dr ${packages}
-	flake8 --max-line-length 88 ${packages}
+	#flake8 --max-line-length 120 ${packages}
 
 # Format source code automatically
 format:

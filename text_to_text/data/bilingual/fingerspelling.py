@@ -44,8 +44,8 @@ for f_name in fingerspelling_dir.iterdir():
     spoken, country, iana, local_name = f_name.name.split(".")[0].split("-")
     with open(f_name, "r", encoding="utf-8") as f:
         content = re.sub(r'#.*$', '', f.read())  # Remove comments
-        lines = [l.strip().split(",") for l in content.splitlines() if len(l.strip()) > 0]
-        chars = {l[0].lower(): l[1:] for l in lines}
+        lines = [line.strip().split(",") for line in content.splitlines() if len(line.strip()) > 0]
+        chars = {first.lower(): others for [first, *others] in lines}
 
     signed_f = open(raw_dir.joinpath("signed." + country + '-' + iana), "w", encoding="utf-8")
 

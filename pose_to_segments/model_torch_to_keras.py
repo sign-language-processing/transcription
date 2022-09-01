@@ -9,7 +9,6 @@ def load_torch_model():
 
 
 def convert_torch_to_keras(model, shape: tuple):
-
     input_np = np.random.uniform(0, 1, (1, *[1 if v is None else v for v in shape]))
     input_var = Variable(torch.FloatTensor(input_np))
 
