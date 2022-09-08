@@ -27,7 +27,7 @@ marian-args:
   # these configs override pipeline/train/configs
   training-backward:
     # change based on available training data
-    after: 10e
+    after: 50e
   #  training-teacher-base:
   #    # remove for low resource languages or if training without augmentation
   #    after: 2e
@@ -135,6 +135,7 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/114/devtest
     - custom-corpus_/custom_corpus/sign_bank/116/devtest
     - custom-corpus_/custom_corpus/sign_bank/119/devtest
+    - custom-corpus_/custom_corpus/sign_bank/126/devtest
     - custom-corpus_/custom_corpus/sign_bank/127/devtest
     - custom-corpus_/custom_corpus/sign_bank/129/devtest
     - custom-corpus_/custom_corpus/sign_bank/147/devtest
@@ -149,6 +150,7 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/26/devtest
     - custom-corpus_/custom_corpus/sign_bank/28/devtest
     - custom-corpus_/custom_corpus/sign_bank/31/devtest
+    - custom-corpus_/custom_corpus/sign_bank/33/devtest
     - custom-corpus_/custom_corpus/sign_bank/4/devtest
     - custom-corpus_/custom_corpus/sign_bank/40/devtest
     - custom-corpus_/custom_corpus/sign_bank/41/devtest
@@ -180,6 +182,7 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/8/devtest
     - custom-corpus_/custom_corpus/sign_bank/80/devtest
     - custom-corpus_/custom_corpus/sign_bank/81/devtest
+    - custom-corpus_/custom_corpus/sign_bank/88/devtest
     - custom-corpus_/custom_corpus/sign_bank/9/devtest
     - custom-corpus_/custom_corpus/sign_bank/93/devtest
   test:
@@ -193,10 +196,10 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/104/test
     - custom-corpus_/custom_corpus/sign_bank/105/test
     - custom-corpus_/custom_corpus/sign_bank/11/test
-    - custom-corpus_/custom_corpus/sign_bank/111/test
     - custom-corpus_/custom_corpus/sign_bank/114/test
     - custom-corpus_/custom_corpus/sign_bank/116/test
     - custom-corpus_/custom_corpus/sign_bank/119/test
+    - custom-corpus_/custom_corpus/sign_bank/126/test
     - custom-corpus_/custom_corpus/sign_bank/127/test
     - custom-corpus_/custom_corpus/sign_bank/129/test
     - custom-corpus_/custom_corpus/sign_bank/135/test
@@ -214,8 +217,8 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/26/test
     - custom-corpus_/custom_corpus/sign_bank/28/test
     - custom-corpus_/custom_corpus/sign_bank/31/test
+    - custom-corpus_/custom_corpus/sign_bank/33/test
     - custom-corpus_/custom_corpus/sign_bank/34/test
-    - custom-corpus_/custom_corpus/sign_bank/36/test
     - custom-corpus_/custom_corpus/sign_bank/4/test
     - custom-corpus_/custom_corpus/sign_bank/40/test
     - custom-corpus_/custom_corpus/sign_bank/41/test
@@ -253,8 +256,8 @@ datasets:
     - custom-corpus_/custom_corpus/sign_bank/81/test
     - custom-corpus_/custom_corpus/sign_bank/82/test
     - custom-corpus_/custom_corpus/sign_bank/84/test
+    - custom-corpus_/custom_corpus/sign_bank/88/test
     - custom-corpus_/custom_corpus/sign_bank/9/test
-    - custom-corpus_/custom_corpus/sign_bank/93/test
   # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
   # to be translated by the teacher model
   mono-src: # TODO, create monolingual spoken language data in many languages, with <SW> or <HNS> initials

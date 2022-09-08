@@ -28,8 +28,8 @@ class PoseTaggingModel(pl.LightningModule):
         self.sign_bio_head = nn.Linear(hidden_dim, 3)
         self.sentence_bio_head = nn.Linear(hidden_dim, 3)
 
-        self.loss_function = nn.NLLLoss(reduction='none', weight=torch.tensor([1, 25, 1],
-                                                                              dtype=torch.float))  # B is important
+        self.loss_function = nn.NLLLoss(reduction='none',
+                                        weight=torch.tensor([1, 25, 1], dtype=torch.float))  # B is important
 
     def forward(self, pose_data: torch.Tensor):
         batch_size, seq_length, _, _ = pose_data.shape

@@ -41,8 +41,8 @@ signed = open(raw_dir.joinpath("signed.txt"), "w", encoding="utf-8")
 # for start, treat this as a dictionary
 for gloss, hamnosys in gloss_hamnosys_map.items():
     clean_text = re.compile(r'\d.*').sub('', gloss)
-    spoken.write(f"<de> {clean_text.capitalize()}\n")
-    signed.write(f"<HNS> <de> <gsg> | {hamnosys}\n")
+    spoken.write(f"$de$ | {clean_text.capitalize()}\n")
+    signed.write(f"$HNS$ $de$ $gsg$ | {hamnosys}\n")
 
 bad_glosses_counter = Counter()
 
@@ -59,8 +59,8 @@ for datum in dgs_corpus["train"]:
             hamnosys = [gloss_hamnosys_map[g] for g in glosses]
             signed_text = " ".join(hamnosys)
 
-            spoken.write(f"<de> {spoken_text}\n")
-            signed.write(f"<HNS> <de> <gsg> | {signed_text}\n")
+            spoken.write(f"$de$ | {spoken_text}\n")
+            signed.write(f"$HNS$ $de$ $gsg$ | {signed_text}\n")
         else:
             for bad_gloss in bad_glosses:
                 bad_glosses_counter[bad_gloss] += 1

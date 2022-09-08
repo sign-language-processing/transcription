@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ....shared.signwriting.signwriting import join_signs
+from shared.signwriting.signwriting import join_signs
 
 current_dir = Path(__file__).parent
 wordslist_dir = current_dir.joinpath('wordslist')
@@ -47,7 +47,7 @@ for f_name in fingerspelling_dir.iterdir():
         lines = [line.strip().split(",") for line in content.splitlines() if len(line.strip()) > 0]
         chars = {first.lower(): others for [first, *others] in lines}
 
-    signed_f = open(raw_dir.joinpath("signed." + country + '-' + iana), "w", encoding="utf-8")
+    signed_f = open(raw_dir.joinpath(f"signed.{country}-{iana}"), "w", encoding="utf-8")
 
     counter = 0
     for name in names:
@@ -66,7 +66,7 @@ for f_name in fingerspelling_dir.iterdir():
 
         if caret == len(name):
             counter += 1
-            signed_f.write("<SW> <" + country + "> <" + iana + "> | " + join_signs(*sl, spacing=10) + "\n")
+            signed_f.write(f"$SW$ ${country}$ ${iana}$ | {join_signs(*sl, spacing=10)}\n")
         else:
             signed_f.write("\n")
 

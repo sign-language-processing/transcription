@@ -75,14 +75,26 @@ class PoseSegmentsDataset(Dataset):
         pose_data = torch_body.data.tensor[:, 0, :, :]
         return {
             "id": datum["id"],
-            "sentence_bio": sign_bio,
-            "sign_bio": sentence_bio,
+            "sentence_bio": sentence_bio,
+            "sign_bio": sign_bio,
             "mask": torch.ones(len(sign_bio), dtype=torch.float),
             "pose": {
                 "obj": pose,
                 "data": pose_data
             }
         }
+
+    def inverse_classes_ratio(self) -> List[float]:
+        counter = Counter()
+        for i in range(len(self)):
+            datum = self[i]
+        for datum in self.data:
+            classes = self.build_classes_vectors(datum)
+            for hand_classes in classes.values():
+                counter += Counter(hand_classes.numpy().tolist())
+        sum_counter = sum(counter.values())
+        print(counter)
+        return [sum_counter / counter[i] for c, i in CLASSES.items()]
 
 
 def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:

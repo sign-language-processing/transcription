@@ -130,7 +130,7 @@ for asl_bible_id in [151, 152]:
 
     # Sort the verses because a verse may be split into multiple parts
     for spoken, signed in sorted(zip(spoken_texts, signed_texts), key=lambda x: x[0]):
-        spoken = spoken[5:]
+        spoken = spoken[7:]
         if spoken.startswith("Title"):
             spoken = spoken[len("Title"):]
         spoken = spoken.strip()
@@ -175,7 +175,7 @@ all_keys = sorted(
     set(chain.from_iterable([v.keys() for v in verse_dict.values()] + [v.keys() for v in sign_verse_dict.values()])))
 
 for lang, verses in verse_dict.items():
-    text = "\n".join([(f"<{lang}> {verses[key]}") if key in verses else "" for key in all_keys])
+    text = "\n".join([(f"${lang}$ | {verses[key]}") if key in verses else "" for key in all_keys])
     with open(raw_dir.joinpath("spoken." + lang), "w", encoding="utf-8") as f:
         f.write(text)
 

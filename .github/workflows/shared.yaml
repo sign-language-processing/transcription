@@ -9,6 +9,10 @@ on:
     paths-ignore:
       - 'pose_to_segments/**'
       - 'text_to_pose/**'
+      - 'pose_to_video/**'
+      - 'video_to_pose/**'
+      - 'text_to_text/**'
+      - 'pose_to_text/**'
 
 
 jobs:

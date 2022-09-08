@@ -5,7 +5,7 @@ import torch
 from pose_format.torch.masked import MaskedTensor, MaskedTorch
 
 
-def collate_tensors(batch: List, pad_value=0) -> torch.Tensor:
+def collate_tensors(batch: List, pad_value=0) -> torch.Tensor | List:
     datum = batch[0]
 
     if isinstance(datum, dict):  # Recurse over dictionaries

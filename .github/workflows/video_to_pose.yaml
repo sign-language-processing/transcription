@@ -11,6 +11,7 @@ on:
       - 'text_to_pose/**'
       - 'pose_to_text/**'
       - 'text_to_text/**'
+      - 'pose_to_video/**'
 
 
 jobs:

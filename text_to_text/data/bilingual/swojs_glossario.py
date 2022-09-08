@@ -24,11 +24,11 @@ for datum in swojs_glossario["train"]:
     spoken_languages = decode(datum['spoken_language'])
     signed_languages = decode(datum['signed_language'])
 
-    spoken_text = datum['title'].numpy().decode('utf-8')
-    signed_text = " ".join(decode(datum['sign_writing']))
+    spoken_text = datum['title'].numpy().decode('utf-8').strip()
+    signed_text = " ".join(decode(datum['sign_writing'])).strip()
 
     spoken_f.write(spoken_text + "\n")
-    signed_f.write("<SW> | " + signed_text + "\n")
+    signed_f.write(f"$SW$ | {signed_text}\n")
 
 spoken_f.close()
 signed_f.close()

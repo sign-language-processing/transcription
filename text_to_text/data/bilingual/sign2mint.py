@@ -16,10 +16,10 @@ spoken = open(raw_dir.joinpath("spoken.txt"), "w", encoding="utf-8")
 signed = open(raw_dir.joinpath("signed.txt"), "w", encoding="utf-8")
 
 for datum in sign2mint["train"]:
-    spoken_text = datum['fachbegriff'].numpy().decode('utf-8')
-    signed_text = datum['gebaerdenschrift']['fsw'].numpy().decode('utf-8')
-    spoken.write("<de> " + spoken_text + "\n")
-    signed.write("<SW> <de> <gsg> | " + signed_text)
+    spoken_text = datum['fachbegriff'].numpy().decode('utf-8').strip()
+    signed_text = datum['gebaerdenschrift']['fsw'].numpy().decode('utf-8').strip()
+    spoken.write(f"$de$ | {spoken_text}\n")
+    signed.write(f"$SW$ $de$ $gsg$ | {signed_text}\n")
 
 spoken.close()
 signed.close()

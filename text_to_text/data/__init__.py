@@ -26,10 +26,10 @@ def detokenize(text):
 def load_pair(spoken_files: List[str], signed_files: List[str]):
     for spoken in spoken_files:
         with open(spoken, "r", encoding="utf-8") as spoken_f:
-            spoken_lines = spoken_f.read().splitlines()
+            spoken_lines = spoken_f.read().strip().splitlines()
         for signed in signed_files:
             with open(signed, "r", encoding="utf-8") as signed_f:
-                signed_lines = signed_f.read().splitlines()
+                signed_lines = signed_f.read().strip().splitlines()
 
             for sp, si in zip(spoken_lines, signed_lines):
                 if sp != "" and si != "":
@@ -53,9 +53,6 @@ CONTROL_WORDS = set()
 
 
 def write_line(f, line):
-    # We can't have "<" and ">" because bergamot (browser) thinks it is html
-    line = line.replace('<', '$').replace('>', '$')
-
     # Extract control words
     for match in re.finditer(r'\$.*?\$', line):
         CONTROL_WORDS.add(match.group(0))
@@ -84,12 +81,19 @@ def build_bilingual():
 
         # At least 100 examples per dataset
         if len(data_list) < 100:
+            print("Dataset", name, len(data_list), "SKIPPED")
+            print('----------------\n')
             continue
+
+        print("Dataset", name, len(data_list))
+        print("Spoken:\t", data_list[0][0])
+        print("Signed:\t", data_list[0][1])
+        print('----------------\n')
 
         for split, split_start, split_end in [('train', 0, 99.5), ('devtest', 99.5, 99.75), ('test', 99.75, 100)]:
             start_index, end_index = int(len(data_list) * split_start / 100), int(len(data_list) * split_end / 100)
             split_data = data_list[start_index:end_index]
-            if len(split_data) == 0:
+            if len(split_data) < 10:
                 continue
 
             sets[split].append(name)
@@ -101,9 +105,9 @@ def build_bilingual():
                     mono += 1
                     continue
 
-                if sp[0] == '<' and "<" in si[1:]:
+                if sp[0] == '$' and "$" in si[1:]:
                     language = sp[1:3]
-                    signed_second_tax = si[1:].index('<') + 2
+                    signed_second_tax = si[1:].index('$') + 2
                     country = si[signed_second_tax:signed_second_tax + 2]
                     statistics[country][language] += 1
 
@@ -117,8 +121,22 @@ def build_bilingual():
 
                 # Unreasonable lengths
                 if len(src) < 512 and len(tgt) < 2048:
+                    tokenized = tokenize(tgt)
                     write_line(spoken_f, src)
-                    write_line(signed_f, tokenize(tgt))
+                    write_line(signed_f, tokenized)
+
+                    if " | " in src:
+                        src_tags, _, src_text = src.partition(" | ")
+                        # Lowercase
+                        write_line(spoken_f, f"{src_tags} | {src_text.lower()}")
+                        write_line(signed_f, tokenized)
+                        # Uppercase
+                        write_line(spoken_f, f"{src_tags} | {src_text.upper()}")
+                        write_line(signed_f, tokenized)
+                        # Capitalized
+                        write_line(spoken_f, f"{src_tags} | {src_text.capitalize()}")
+                        write_line(signed_f, tokenized)
+
                 else:
                     too_long += 1
 
@@ -160,7 +178,7 @@ def build_monolingual():
                         for line in f.read().splitlines():
                             _format = random.choice(formats)
                             _target_language = random.choice(target_languages)
-                            src = f"<{_format}> <{_target_language[0]}> <{_target_language[1]}> {line}"
+                            src = f"${_format}$ ${_target_language[0]}$ ${_target_language[1]}$ {line}"
                             write_line(spoken_f, src)
 
                 print(f"- custom-mono_/custom_corpus/{match.name}/mono")

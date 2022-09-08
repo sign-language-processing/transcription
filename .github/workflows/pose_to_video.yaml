@@ -1,4 +1,4 @@
-name: Text-to-Text
+name: Pose-to-Video
 
 
 on:
@@ -10,8 +10,8 @@ on:
       - 'pose_to_segments/**'
       - 'text_to_pose/**'
       - 'pose_to_text/**'
+      - 'text_to_text/**'
       - 'video_to_pose/**'
-      - 'pose_to_video/**'
 
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
           pip install .[dev]
 
       - name: Lint Code
-        run: pylint text_to_text
+        run: pylint pose_to_video
 
       - name: Run tests
-        run: pytest text_to_text
+        run: pytest pose_to_video

@@ -44,12 +44,12 @@ for datum in tqdm(signbank["train"]):
     clean_spoken_text = spoken_text.replace('\n', ' ')
 
     if spoken_language != "":
-        clean_spoken_text = f"<{spoken_language}> {clean_spoken_text}"
+        clean_spoken_text = f"${spoken_language}$ | {clean_spoken_text}"
 
     if country != "":
-        sign_writing = f"<SW> <{country}> | {sign_writing}"
+        sign_writing = f"$SW$ ${country}$ | {sign_writing}"
     else:
-        sign_writing = f"<SW> | {sign_writing}"
+        sign_writing = f"$SW$ | {sign_writing}"
 
     spoken_f.write(f"{clean_spoken_text}\n")
     signed_f.write(f"{sign_writing}\n")
