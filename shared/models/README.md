@@ -8,7 +8,11 @@ It has a limited length (marked with `max_seq_size`) given that it relies on lea
 
 It might not be the best we can do.
 
-## New Implementation: TODO
+## New Implementation: Graph (TODO)
+We can use https://www.pyg.org/ to encode the pose data as a graph,
+making edge indexes between the limbs within a frame, and joints between frames.
+
+## New Implementation: Visual (TODO)
 
 Naturally, a pose is visual. It has spatiotemporal information, with a strong bias towards neighboring frames.
 Therefore, we should use a CNN to encode the pose.
@@ -20,10 +24,23 @@ Using the `FastAndUglyPoseVisualizer`, we can visualize each of the pose's compo
 ![download-3](https://user-images.githubusercontent.com/5757359/188336805-029f6d7a-7a18-4100-9eed-7c9f781a489b.gif) 
 ![download-2](https://user-images.githubusercontent.com/5757359/188336804-3e583427-9f97-4657-8aba-f56437e4fd64.gif) 
 
-The rational behind having each component as a separate video is that we want to cover as much as the video as possible, and avoid white space.
+The rationale behind having each component as a separate video is that we want to cover as much as the video as possible, and avoid white space.
 To generate a video with hands and face clearly visible, we would need very high video resolution.
 
 While we can treat this as a `Nx64x64x4` tensor, it doesn't really makes sense to perform 4D convolutions.
 Instead, we can use a 3D CNN (`Nx64x64`), with multiple layers, 
 to "compress" the `64x64` frames to a `256` dimensional vector, for example, 
 and finally convolve over the `Nx256x4` tensor, or concatenate to `Nx1024` vectors, and encode them with a transformer.
+
+### Possible advantages
+1. Better encoding of spatiotemporal information
+2. Probably fewer parameters
+3. No limit on sequence length
+
+### Possible disadvantages
+1. Drawing poses is slow-ish (we can do 70000 frames per second)
+
+### Pose-to-Video usage
+We could try to diffuse between the representations learned by this model,
+and a VAE representations to generate videos.
+We will have three models: 1. the pose encoder; 2. the diffuser; 3. the VAE.

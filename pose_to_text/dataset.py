@@ -14,6 +14,7 @@ from shared.collator import collate_tensors
 from shared.tokenizers import SignLanguageTokenizer
 from text_to_pose.data import TextPoseDataset
 from text_to_pose.data import get_dataset as get_single_dataset
+from pose_to_text.batch_sampler import MaxMemoryInputAwareBatchSampler
 
 logger = logging.getLogger(__name__)
 CPU_DEVICE = torch.device("cpu")
@@ -96,17 +97,29 @@ class PoseTextDataset(Dataset):
             is_train=is_train,
         )
 
-    # TODO remove once this is the default in JoeyNMT
     def make_iter(self, pad_index: int = PAD_ID, device: torch.device = CPU_DEVICE, **kwargs) -> DataLoader:
         data_loader = make_data_iter(self, pad_index=pad_index, device=device, **kwargs)
-        data_loader.collate_fn = partial(
+        collate_fn = partial(
             self.collate_fn,
             pad_index=pad_index,
             device=device,
             has_trg=True,
             is_train=self.split == "train",
         )
-        return data_loader
+
+        batch_sampler = MaxMemoryInputAwareBatchSampler(
+            sampler=data_loader.batch_sampler.sampler,
+            memory_size=int(4e+9),  # 4GB attempt
+            drop_last=False)
+
+        # data iterator
+        return DataLoader(
+            dataset=self,
+            batch_sampler=batch_sampler,
+            collate_fn=collate_fn,
+            num_workers=data_loader.num_workers,
+            pin_memory=True,
+        )
 
 
 def get_dataset(split_name="train", **kwargs):

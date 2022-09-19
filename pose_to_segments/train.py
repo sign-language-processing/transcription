@@ -11,6 +11,16 @@ from .args import args
 from .data import get_dataset
 from .model import PoseTaggingModel
 
+
+def data_loader(dataset, shuffle=False):
+    return DataLoader(dataset,
+                      batch_size=args.batch_size,
+                      shuffle=shuffle,
+                      pin_memory=True,
+                      num_workers=4,
+                      collate_fn=zero_pad_collator)
+
+
 if __name__ == '__main__':
     os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
@@ -21,13 +31,10 @@ if __name__ == '__main__':
             LOGGER.log_hyperparams(args)
 
     train_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components, split="train[10:]")
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+    train_loader = data_loader(train_dataset, shuffle=True)
 
     validation_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components, split="train[:10]")
-    validation_loader = DataLoader(validation_dataset,
-                                   batch_size=args.batch_size,
-                                   shuffle=False,
-                                   collate_fn=zero_pad_collator)
+    validation_loader = data_loader(validation_dataset)
 
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
 

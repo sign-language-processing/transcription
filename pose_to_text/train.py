@@ -13,12 +13,7 @@ from pose_to_text.model import build_model
 logger = logging.getLogger(__name__)
 
 
-def train(cfg_file: str, skip_test: bool = False) -> None:
-    """
-    Main training function. After training, also test on test data if given.
-    :param cfg_file: path to configuration yaml file
-    :param skip_test: whether a test should be run or not after training
-    """
+def setup_training(cfg_file: str):
     # read config file
     cfg = load_config(Path(cfg_file))
 
@@ -27,11 +22,11 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
         Path(cfg["training"]["model_dir"]),
         overwrite=cfg["training"].get("overwrite", False),
     )
-    joeynmt_version = make_logger(model_dir, mode="train")
-    if "joeynmt_version" in cfg:
-        assert str(joeynmt_version) == str(
-            cfg["joeynmt_version"]), (f"You are using JoeyNMT version {joeynmt_version}, "
-                                      f'but {cfg["joeynmt_version"]} is expected in the given config.')
+    # joeynmt_version = make_logger(model_dir, mode="train")
+    # if "joeynmt_version" in cfg:
+    #     assert str(joeynmt_version) == str(
+    #         cfg["joeynmt_version"]), (f"You are using JoeyNMT version {joeynmt_version}, "
+    #                                   f'but {cfg["joeynmt_version"]} is expected in the given config.')
 
     # write all entries of config to the log
     log_cfg(cfg)
@@ -62,6 +57,17 @@ def train(cfg_file: str, skip_test: bool = False) -> None:
     # build an encoder-decoder model
     _, num_pose_joints, num_pose_dims = train_data[0][0].shape
     model = build_model(pose_dims=(num_pose_joints, num_pose_dims), cfg=cfg["model"], trg_vocab=trg_vocab)
+
+    return cfg, model, train_data, dev_data, test_data, trg_vocab, model_dir
+
+def train(cfg_file: str, skip_test: bool = False) -> None:
+    """
+    Main training function. After training, also test on test data if given.
+    :param cfg_fiale: path to configuration yaml file
+    :param skip_test: whether a test should be run or not after training
+    """
+
+    cfg, model, train_data, dev_data, test_data, trg_vocab, model_dir = setup_training(cfg_file)
 
     # for training management, e.g. early stopping and model selection
     trainer = TrainManager(model=model, cfg=cfg)
