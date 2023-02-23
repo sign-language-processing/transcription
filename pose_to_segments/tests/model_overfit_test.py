@@ -13,8 +13,10 @@ def get_batch(bsz=4):
             "data": data_tensor.expand(bsz, *data_tensor.shape),
         },
         "mask": torch.ones([bsz, 3], dtype=torch.float),
-        "sign_bio": torch.stack([torch.tensor([0, 2, 1], dtype=torch.long)] * bsz),
-        "sentence_bio": torch.stack([torch.tensor([1, 0, 2], dtype=torch.long)] * bsz),
+        "bio": {
+            "sign": torch.stack([torch.tensor([0, 2, 1], dtype=torch.long)] * bsz),
+            "sentence": torch.stack([torch.tensor([1, 0, 2], dtype=torch.long)] * bsz)
+        }
     }
 
 
@@ -27,6 +29,8 @@ class ModelOverfitTestCase(unittest.TestCase):
         batch = get_batch(bsz=1)
 
         model = PoseTaggingModel(
+            sign_class_weights=[1/27, 25/27, 1/27],
+            sentence_class_weights=[1/27, 25/27, 1/27],
             hidden_dim=10,
             pose_dims=(1, 2),
         )
@@ -54,11 +58,11 @@ class ModelOverfitTestCase(unittest.TestCase):
 
         sign_argmax = torch.argmax(prob["sign"], dim=-1)
         print("sign_argmax", sign_argmax)
-        self.assertTrue(torch.all(torch.eq(sign_argmax, batch["sign_bio"][0])))
+        self.assertTrue(torch.all(torch.eq(sign_argmax, batch["bio"]["sign"][0])))
 
         sentence_argmax = torch.argmax(prob["sentence"], dim=-1)
         print("sentence_argmax", sentence_argmax)
-        self.assertTrue(torch.all(torch.eq(sentence_argmax, batch["sentence_bio"][0])))
+        self.assertTrue(torch.all(torch.eq(sentence_argmax, batch["bio"]["sentence"][0])))
 
 
 if __name__ == '__main__':

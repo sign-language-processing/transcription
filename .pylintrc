@@ -10,6 +10,7 @@ disable=
 	R0913, # (too-many-arguments)
 	R0914, # (too-many-locals)
 	R1732, # (consider-using-with)
+	R1735, # (use-dict-literal)
 	C0103, # (invalid-name)
     C0114, # (missing-module-docstring)
 	C0115, # (missing-class-docstring)

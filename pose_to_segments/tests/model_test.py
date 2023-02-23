@@ -15,7 +15,12 @@ class ModelTestCase(unittest.TestCase):
         self.hidden_dim = 4
 
     def model_setup(self):
-        model = PoseTaggingModel(hidden_dim=self.hidden_dim, pose_dims=self.pose_dim, encoder_depth=2)
+        model = PoseTaggingModel(
+            sign_class_weights=[1/27, 25/27, 1/27],
+            sentence_class_weights=[1/27, 25/27, 1/27],
+            pose_dims=self.pose_dim,
+            hidden_dim=self.hidden_dim,
+            encoder_depth=2)
         model.log = MagicMock(return_value=True)
         return model
 
@@ -25,8 +30,10 @@ class ModelTestCase(unittest.TestCase):
                 "data": torch.ones([2, self.seq_length, *self.pose_dim], dtype=torch.float),
             },
             "mask": torch.ones([2, self.seq_length], dtype=torch.float),
-            "sign_bio": torch.zeros((2, self.seq_length), dtype=torch.long),
-            "sentence_bio": torch.zeros((2, self.seq_length), dtype=torch.long)
+            "bio": {
+                "sign": torch.zeros((2, self.seq_length), dtype=torch.long),
+                "sentence": torch.zeros((2, self.seq_length), dtype=torch.long)
+            }
         }
 
     def test_forward_yields_bio_probs(self):
@@ -35,8 +42,8 @@ class ModelTestCase(unittest.TestCase):
         log_probs = model.forward(batch["pose"]["data"])
 
         # shape check
-        self.assertEqual(log_probs["sign"].shape, (len(batch["sign_bio"]), self.seq_length, 3))
-        self.assertEqual(log_probs["sentence"].shape, (len(batch["sign_bio"]), self.seq_length, 3))
+        self.assertEqual(log_probs["sign"].shape, (len(batch["bio"]["sign"]), self.seq_length, 3))
+        self.assertEqual(log_probs["sentence"].shape, (len(batch["bio"]["sentence"]), self.seq_length, 3))
 
         # nan / inf check
         self.assertTrue(torch.all(torch.isfinite(log_probs["sign"])))

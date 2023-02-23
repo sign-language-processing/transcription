@@ -1,11 +1,10 @@
-from torch import autocast
-import torch
-import PIL
 import cv2
+import PIL
+import torch
+from diffusers import StableDiffusionInpaintPipeline
 from pose_format.pose import Pose
 from pose_format.pose_visualizer import PoseVisualizer
-
-from diffusers import StableDiffusionInpaintPipeline
+from torch import autocast
 
 
 def load_model():
@@ -13,12 +12,10 @@ def load_model():
 
     device = "cuda"
     model_id_or_path = "CompVis/stable-diffusion-v1-4"
-    pipe = StableDiffusionInpaintPipeline.from_pretrained(
-        model_id_or_path,
-        revision="fp16",
-        torch_dtype=torch.float16,
-        use_auth_token="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"
-    )
+    pipe = StableDiffusionInpaintPipeline.from_pretrained(model_id_or_path,
+                                                          revision="fp16",
+                                                          torch_dtype=torch.float16,
+                                                          use_auth_token="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")
     # or download via git clone https://huggingface.co/CompVis/stable-diffusion-v1-4
     # and pass `model_id_or_path="./stable-diffusion-v1-4"` without having to use `use_auth_token=True`.
     pipe = pipe.to(device)
@@ -30,6 +27,7 @@ def diffuse(pipeline, prompt: str, init_image: PIL.Image, mask_image: PIL.Image)
     with autocast("cuda"):
         images = pipeline(prompt=prompt, init_image=init_image, mask_image=mask_image, strength=0.75)["sample"]
     return images[0]
+
 
 def pose_to_video(style_img: PIL.Image, style_pose: Pose, pose: Pose):
     width, height = style_img.size

@@ -1,11 +1,10 @@
 import numpy as np
-import pytorch_lightning as pl
 import torch
 from torch import nn
 
 
 # TODO @AmitMY - 3D normalize hand and face
-class PoseEncoderModel(pl.LightningModule):
+class PoseEncoderModel(nn.Module):
 
     def __init__(self,
                  pose_dims: (int, int) = (137, 2),
@@ -47,11 +46,12 @@ class PoseEncoderModel(pl.LightningModule):
         # Repeat the first frame for initial prediction
         batch_size, seq_length, _, _ = pose["data"].shape
 
-        positions = torch.arange(0, seq_length, dtype=torch.int, device=self.device)
-        positional_embedding = self.positional_embeddings(positions)
-
         pose_data = self.dropout(pose["data"])
         flat_pose_data = pose_data.reshape(batch_size, seq_length, -1)
+
+        positions = torch.arange(0, seq_length, dtype=torch.int, device=pose_data.device)
+        positional_embedding = self.positional_embeddings(positions)
+
         # Encode pose sequence
         embedding = self.pose_projection(flat_pose_data) + positional_embedding
         mask = pose["mask"]

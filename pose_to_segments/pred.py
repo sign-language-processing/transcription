@@ -47,11 +47,11 @@ def visualize_pose(pose: Pose, pose_name: str, sign_probs: torch.Tensor):
 
 if __name__ == '__main__':
     if args.checkpoint is None:
-        raise Exception("Must specify `checkpoint`")
+        raise ValueError("Must specify `checkpoint`")
     if args.pred_output is None:
-        raise Exception("Must specify `pred_output`")
+        raise ValueError("Must specify `pred_output`")
     if args.ffmpeg_path is None:
-        raise Exception("Must specify `ffmpeg_path`")
+        raise ValueError("Must specify `ffmpeg_path`")
 
     os.makedirs(args.pred_output, exist_ok=True)
 

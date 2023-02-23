@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -7,7 +9,12 @@ from torch import nn
 
 class PoseTaggingModel(pl.LightningModule):
 
-    def __init__(self, pose_dims: (int, int) = (137, 2), hidden_dim: int = 128, encoder_depth=2):
+    def __init__(self,
+                 sign_class_weights: List[float],
+                 sentence_class_weights: List[float],
+                 pose_dims: (int, int) = (137, 2),
+                 hidden_dim: int = 128,
+                 encoder_depth=2):
         super().__init__()
 
         self.pose_dims = pose_dims
@@ -25,11 +32,14 @@ class PoseTaggingModel(pl.LightningModule):
                                bidirectional=True)
 
         # tag sequence for sign bio / sentence bio
-        self.sign_bio_head = nn.Linear(hidden_dim, 3)
-        self.sentence_bio_head = nn.Linear(hidden_dim, 3)
 
-        self.loss_function = nn.NLLLoss(reduction='none',
-                                        weight=torch.tensor([1, 25, 1], dtype=torch.float))  # B is important
+        self.sign_bio_head = nn.Linear(hidden_dim, 3)
+        sign_loss_weight = torch.tensor(sign_class_weights, dtype=torch.float)
+        self.sign_loss_function = nn.NLLLoss(reduction='none', weight=sign_loss_weight)
+
+        self.sentence_bio_head = nn.Linear(hidden_dim, 3)
+        sentence_loss_weight = torch.tensor(sentence_class_weights, dtype=torch.float)
+        self.sentence_loss_function = nn.NLLLoss(reduction='none', weight=sentence_loss_weight)
 
     def forward(self, pose_data: torch.Tensor):
         batch_size, seq_length, _, _ = pose_data.shape
@@ -57,9 +67,9 @@ class PoseTaggingModel(pl.LightningModule):
 
         loss_mask = batch["mask"].reshape(-1)
 
-        sign_losses = self.loss_function(log_probs["sign"].reshape(-1, 3), batch["sign_bio"].reshape(-1))
+        sign_losses = self.loss_function(log_probs["sign"].reshape(-1, 3), batch["bio"]["sign"].reshape(-1))
         sign_loss = (sign_losses * loss_mask).mean()
-        sentence_losses = self.loss_function(log_probs["sentence"].reshape(-1, 3), batch["sentence_bio"].reshape(-1))
+        sentence_losses = self.loss_function(log_probs["sentence"].reshape(-1, 3), batch["bio"]["sentence"].reshape(-1))
         sentence_loss = (sentence_losses * loss_mask).mean()
         loss = sign_loss + sentence_loss
 

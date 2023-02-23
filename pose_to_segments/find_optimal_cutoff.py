@@ -29,10 +29,7 @@ def prepare_predictions():
     #             probs = model.forward(pose_data)
     #             cache[datum["id"]] = {
     #                 "probs": probs,
-    #                 "bio": {
-    #                     "sign": datum["sign_bio"],
-    #                     "sentence": datum["sentence_bio"],
-    #                 }
+    #                 "bio": datum["bio"]
     #             }
     #
     #     with open(pred_cache_file, 'wb') as handle:

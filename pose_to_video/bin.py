@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import argparse
-
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 import cv2
 import numpy as np
+from diffusion.one_shot import pose_to_video
 from PIL import Image
 from pose_format.pose import Pose
-from diffusion.one_shot import pose_to_video
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -39,7 +39,7 @@ def main():
     for frame in pose_to_video(image, image_pose, pose):
         if video is None:
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-            video = cv2.VideoWriter(args.o,fourcc, pose.body.fps,frame.size)
+            video = cv2.VideoWriter(args.o, fourcc, pose.body.fps, frame.size)
 
         video.write(cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))
         frame.save("test.png")
@@ -49,6 +49,7 @@ def main():
     print('Saving to disk ...')
     with open(args.o, "wb") as f:
         pose.write(f)
+
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,4 @@
+from collections import Counter
 from itertools import chain
 from typing import Dict, Iterable, List, TypedDict
 
@@ -53,48 +54,43 @@ class PoseSegmentsDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+    def build_classes_vectors(self, datum):
+        pose = datum["pose"]
+        pose_length = len(pose.body.data)
+        timestamps = torch.div(torch.arange(0, pose_length), pose.body.fps)
+
+        sign_segments = [segment for sentence_segments in datum["segments"] for segment in sentence_segments]
+        sentence_segments = sentence_segments = [{
+            "start_time": segments[0]["start_time"],
+            "end_time": segments[-1]["end_time"]
+        } for segments in datum["segments"]]
+
+        return {"sign": build_bio(timestamps, sign_segments), "sentence": build_bio(timestamps, sentence_segments)}
+
     def __getitem__(self, index):
         datum = self.data[index]
         pose = datum["pose"]
 
-        pose_length = len(pose.body.data)
-        timestamps = torch.div(torch.arange(0, pose_length), pose.body.fps)
-
-        # Build sign BIO
-        sign_bio = build_bio(timestamps,
-                             [segment for sentence_segments in datum["segments"] for segment in sentence_segments])
-
-        # Build sentence BIO
-        sentence_segments = [{
-            "start_time": segments[0]["start_time"],
-            "end_time": segments[-1]["end_time"]
-        } for segments in datum["segments"]]
-        sentence_bio = build_bio(timestamps, sentence_segments)
-
         torch_body = pose.body.torch()
         pose_data = torch_body.data.tensor[:, 0, :, :]
+        bio = self.build_classes_vectors(datum)
         return {
             "id": datum["id"],
-            "sentence_bio": sentence_bio,
-            "sign_bio": sign_bio,
-            "mask": torch.ones(len(sign_bio), dtype=torch.float),
+            "bio": bio,
+            "mask": torch.ones(len(bio["sign"]), dtype=torch.float),
             "pose": {
                 "obj": pose,
                 "data": pose_data
             }
         }
 
-    def inverse_classes_ratio(self) -> List[float]:
+    def inverse_classes_ratio(self, kind: str) -> List[float]:
         counter = Counter()
-        for i in range(len(self)):
-            datum = self[i]
         for datum in self.data:
             classes = self.build_classes_vectors(datum)
-            for hand_classes in classes.values():
-                counter += Counter(hand_classes.numpy().tolist())
+            counter += Counter(classes[kind].numpy().tolist())
         sum_counter = sum(counter.values())
-        print(counter)
-        return [sum_counter / counter[i] for c, i in CLASSES.items()]
+        return [sum_counter / counter[i] for c, i in BIO.items()]
 
 
 def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
