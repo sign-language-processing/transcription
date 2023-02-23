@@ -32,7 +32,9 @@ if __name__ == '__main__':
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
 
     # Model Arguments
-    model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
+    model_args = dict(sign_class_weights=train_dataset.inverse_classes_ratio("sign"),
+                      sentence_class_weights=train_dataset.inverse_classes_ratio("sentence"),
+                      pose_dims=(num_pose_joints, num_pose_dims),
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth)
 
