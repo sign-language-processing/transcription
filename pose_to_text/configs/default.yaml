@@ -1,5 +1,5 @@
 name: "toy_experiment"              # name of experiment
-joeynmt_version: "2.0.0"            # joeynmt version
+joeynmt_version: "2.2.0"            # joeynmt version
 
 data:
   pose: "holistic"

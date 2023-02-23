@@ -11,7 +11,7 @@ dependencies = [
     "tqdm",
     "numpy",
     "torch",
-    "joeynmt",
+    "joeynmt==2.2.0",
     "opencv-python",
 ]
 

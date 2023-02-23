@@ -17,6 +17,21 @@ able to encode arbitrary pose sequence lengths, and pre-trained on non-autoregre
 pip install git+git://github.com/sign-language-processing/transcription.git
 ```
 
+## Development Setup
+```bash
+# Update conda
+conda update -n base -c defaults conda
+
+# Mandatory conda dependencies
+conda install -c conda-forge sentencepiece
+
+# Install pytorch
+# Instructions: https://pytorch.org/get-started/locally/
+
+# Install other dependencies
+pip install .[dev]
+```
+
 ## Example Usage: Video-to-Text
 
 Let's start with having a video file of a sign language sentence, word, or conversation.
