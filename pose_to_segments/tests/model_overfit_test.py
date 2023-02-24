@@ -29,12 +29,11 @@ class ModelOverfitTestCase(unittest.TestCase):
         batch = get_batch(bsz=1)
 
         model = PoseTaggingModel(
-            sign_class_weights=[1/27, 25/27, 1/27],
-            sentence_class_weights=[1/27, 25/27, 1/27],
+            sign_class_weights=[1, 1, 1],
+            sentence_class_weights=[1, 1, 1],
             hidden_dim=10,
             pose_dims=(1, 2),
         )
-        model.loss_function.weight = torch.ones(3, dtype=torch.float)  # Override the loss weight
         optimizer = model.configure_optimizers()
 
         model.train()

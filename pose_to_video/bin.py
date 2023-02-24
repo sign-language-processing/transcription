@@ -2,13 +2,13 @@
 import argparse
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
 import cv2
 import numpy as np
 from diffusion.one_shot import pose_to_video
 from PIL import Image
 from pose_format.pose import Pose
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def get_args():

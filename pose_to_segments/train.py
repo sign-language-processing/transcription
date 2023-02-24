@@ -5,7 +5,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-from shared.collator import zero_pad_collator
+from _shared.collator import zero_pad_collator
 
 from .args import args
 from .data import get_dataset

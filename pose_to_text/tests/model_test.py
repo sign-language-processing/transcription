@@ -4,7 +4,7 @@ import torch
 from joeynmt.vocabulary import Vocabulary
 
 from pose_to_text.batch import SignBatch
-from shared.collator.collator import collate_tensors
+from ..._shared.collator import collate_tensors
 
 from ..model import build_model
 
@@ -23,7 +23,8 @@ class ModelTestCase(unittest.TestCase):
             "hidden_size": 10,
             "ff_size": 20,
             "dropout": 0.1,
-            "emb_dropout": 0.1
+            "emb_dropout": 0.1,
+            "type": "transformer"
         }
         cfg = {
             "decoder": {

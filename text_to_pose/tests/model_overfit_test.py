@@ -3,7 +3,7 @@ import unittest
 
 import torch
 
-from ...shared.tokenizers.dummy_tokenizer import DummyTokenizer
+from ..._shared.tokenizers.dummy_tokenizer import DummyTokenizer
 from ..model import IterativeTextGuidedPoseGenerationModel
 
 

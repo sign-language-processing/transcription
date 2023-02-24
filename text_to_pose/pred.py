@@ -7,8 +7,8 @@ from pose_format import Pose
 from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.pose_visualizer import PoseVisualizer
 
-from ..shared.pose_utils import pose_hide_legs, pose_normalization_info
-from ..shared.tokenizers import HamNoSysTokenizer
+from .._shared.pose_utils import pose_hide_legs, pose_normalization_info
+from .._shared.tokenizers import HamNoSysTokenizer
 from .args import args
 from .data import get_dataset
 from .model import IterativeTextGuidedPoseGenerationModel
@@ -42,11 +42,11 @@ def visualize_poses(_id: str, text: str, poses: List[Pose]) -> str:
 
 if __name__ == '__main__':
     if args.checkpoint is None:
-        raise Exception("Must specify `checkpoint`")
+        raise ValueError("Must specify `checkpoint`")
     if args.pred_output is None:
-        raise Exception("Must specify `pred_output`")
+        raise ValueError("Must specify `pred_output`")
     if args.ffmpeg_path is None:
-        raise Exception("Must specify `ffmpeg_path`")
+        raise ValueError("Must specify `ffmpeg_path`")
 
     os.makedirs(args.pred_output, exist_ok=True)
 

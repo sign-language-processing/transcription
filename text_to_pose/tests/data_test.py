@@ -4,9 +4,9 @@ import numpy as np
 import tensorflow as tf
 from torch.utils.data import DataLoader
 
-from ...shared.collator import zero_pad_collator
-from ...shared.pose_utils import fake_pose
-from ...shared.tfds_dataset import ProcessedPoseDatum
+from ..._shared.collator import zero_pad_collator
+from ..._shared.pose_utils import fake_pose
+from ..._shared.tfds_dataset import ProcessedPoseDatum
 from ..data import TextPoseDataset, TextPoseDatum, process_datum
 
 

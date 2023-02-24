@@ -5,8 +5,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-from ..shared.collator import zero_pad_collator
-from ..shared.tokenizers import HamNoSysTokenizer
+from .._shared.collator import zero_pad_collator
+from .._shared.tokenizers import HamNoSysTokenizer
 from .args import args
 from .data import get_dataset
 from .model import IterativeTextGuidedPoseGenerationModel

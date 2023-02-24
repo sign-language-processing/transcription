@@ -37,7 +37,7 @@ column_limit = 120
 
 [tool.setuptools]
 packages = [
-    "shared",
+    "_shared",
     "video_to_pose",
     "pose_to_video",
     "pose_to_segments",
@@ -52,7 +52,7 @@ pose_to_segments = ["*.pth"]
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = [
-    "shared",
+    "_shared",
     "video_to_pose",
     "pose_to_video",
     "pose_to_segments",

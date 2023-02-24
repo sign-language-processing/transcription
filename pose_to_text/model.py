@@ -11,7 +11,7 @@ from joeynmt.model import Model as JoeyNMTModel
 from joeynmt.vocabulary import Vocabulary
 from torch import Tensor
 
-from shared.models.pose_encoder import PoseEncoderModel
+from .._shared.models.pose_encoder import PoseEncoderModel
 
 
 class PoseToTextModel(JoeyNMTModel):

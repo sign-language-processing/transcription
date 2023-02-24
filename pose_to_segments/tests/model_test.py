@@ -15,12 +15,11 @@ class ModelTestCase(unittest.TestCase):
         self.hidden_dim = 4
 
     def model_setup(self):
-        model = PoseTaggingModel(
-            sign_class_weights=[1/27, 25/27, 1/27],
-            sentence_class_weights=[1/27, 25/27, 1/27],
-            pose_dims=self.pose_dim,
-            hidden_dim=self.hidden_dim,
-            encoder_depth=2)
+        model = PoseTaggingModel(sign_class_weights=[1 / 27, 25 / 27, 1 / 27],
+                                 sentence_class_weights=[1 / 27, 25 / 27, 1 / 27],
+                                 pose_dims=self.pose_dim,
+                                 hidden_dim=self.hidden_dim,
+                                 encoder_depth=2)
         model.log = MagicMock(return_value=True)
         return model
 

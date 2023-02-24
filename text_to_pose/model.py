@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from ..shared.models.pose_encoder import PoseEncoderModel
+from .._shared.models.pose_encoder import PoseEncoderModel
 
 
 def masked_loss(loss_type, pose: torch.Tensor, pose_hat: torch.Tensor, confidence: torch.Tensor):

@@ -3,7 +3,7 @@ from typing import List
 
 import torch
 
-from shared.pose_utils import fake_pose
+from ..._shared.pose_utils import fake_pose
 
 from ..data import PoseSegmentsDataset, PoseSegmentsDatum, Segment
 
@@ -23,7 +23,7 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(pose["data"].shape, (5, 137, 2))
 
         for bio_type in ["sign", "sentence"]:
-            bio = dataset[0][bio_type + "_bio"]
+            bio = dataset[0]["bio"][bio_type]
             self.assertEqual(bio.shape, tuple([5]))
             self.assertTrue(torch.all(torch.eq(torch.zeros_like(bio), bio)))
 
@@ -41,7 +41,7 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(pose["data"].shape, (100, 137, 2))
 
         for bio_type in ["sign", "sentence"]:
-            bio = dataset[0][bio_type + "_bio"]
+            bio = dataset[0]["bio"][bio_type]
             self.assertEqual(bio.shape, tuple([100]))
             self.assertEqual(bio[0], 1)
             rest_bio = bio[1:]

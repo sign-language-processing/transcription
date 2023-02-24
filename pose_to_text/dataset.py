@@ -6,11 +6,10 @@ import torch
 from joeynmt.constants import BOS_TOKEN, EOS_TOKEN, PAD_ID, PAD_TOKEN, UNK_TOKEN
 from joeynmt.datasets import BaseDataset
 from joeynmt.vocabulary import Vocabulary
-from torch.utils.data import DataLoader, Dataset
 
 from pose_to_text.batch import SignBatch
-from shared.collator import collate_tensors
-from shared.tokenizers import SignLanguageTokenizer
+from .._shared.collator import collate_tensors
+from .._shared.tokenizers import SignLanguageTokenizer
 from text_to_pose.data import TextPoseDataset
 from text_to_pose.data import get_dataset as get_single_dataset
 

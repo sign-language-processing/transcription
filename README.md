@@ -5,7 +5,7 @@ Repository for sign language transcription related models.
 Ideally pose based models should use a shared large-pose-language-model,
 able to encode arbitrary pose sequence lengths, and pre-trained on non-autoregressive reconstruction.
 
-- [shared](shared) - includes shared utilities for all models
+- [_shared](_shared) - includes shared utilities for all models
 - [video_to_pose](video_to_pose) - performs pose estimation on a video
 - [pose_to_segments](pose_to_segments) - segments pose sequences
 - [text_to_pose](text_to_pose) - animates poses using text
@@ -22,11 +22,15 @@ pip install git+git://github.com/sign-language-processing/transcription.git
 # Update conda
 conda update -n base -c defaults conda
 
-# Mandatory conda dependencies
-conda install -c conda-forge sentencepiece
+# Create environment
+conda create --name transcription python=3.10
+conda activate transcription
 
 # Install pytorch
 # Instructions: https://pytorch.org/get-started/locally/
+
+# Mandatory conda dependencies
+conda install -c conda-forge sentencepiece pytorch-lightning
 
 # Install other dependencies
 pip install .[dev]
