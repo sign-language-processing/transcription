@@ -16,10 +16,11 @@ refinement process is conditioned on the text input.
 text_embedding = embed(text)
 sequence_length = predict_length(text_embedding)
 initial_pose_sequence = initial_frame.repeat(sequence_length)
-while True:
+for i in reversed(range(num_steps)):
     yield initial_pose_sequence
     refinement = predict_change(text_embedding, initial_pose_sequence)
-    initial_pose_sequence += refinement
+    step_size = get_step_size(i)
+    initial_pose_sequence += step_size * refinement
 ```
 
 ## Advantages:

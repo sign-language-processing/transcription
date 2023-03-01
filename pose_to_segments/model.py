@@ -69,7 +69,8 @@ class PoseTaggingModel(pl.LightningModule):
 
         sign_losses = self.sign_loss_function(log_probs["sign"].reshape(-1, 3), batch["bio"]["sign"].reshape(-1))
         sign_loss = (sign_losses * loss_mask).mean()
-        sentence_losses = self.sentence_loss_function(log_probs["sentence"].reshape(-1, 3), batch["bio"]["sentence"].reshape(-1))
+        sentence_losses = self.sentence_loss_function(log_probs["sentence"].reshape(-1, 3),
+                                                      batch["bio"]["sentence"].reshape(-1))
         sentence_loss = (sentence_losses * loss_mask).mean()
         loss = sign_loss + sentence_loss
 

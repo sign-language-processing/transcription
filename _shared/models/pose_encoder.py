@@ -47,6 +47,7 @@ class PoseEncoderModel(nn.Module):
         batch_size, seq_length, _, _ = pose["data"].shape
 
         pose_data = self.dropout(pose["data"])
+
         flat_pose_data = pose_data.reshape(batch_size, seq_length, -1)
 
         positions = torch.arange(0, seq_length, dtype=torch.int, device=pose_data.device)

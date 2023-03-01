@@ -10,29 +10,51 @@ root_dir = path.dirname(path.realpath(__file__))
 parser = ArgumentParser()
 
 parser.add_argument('--no_wandb', type=bool, default=False, help='ignore wandb?')
+parser.add_argument('--config_file', type=str, default="", help='path to yaml config file')
+
 # Training Arguments
 parser.add_argument('--seed', type=int, default=42, help='random seed')
-parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
-parser.add_argument('--batch_size', type=int, default=32, help='batch size')
+parser.add_argument('--num_gpus', type=int, default=1, help='how many gpus?')
+parser.add_argument('--batch_size', type=int, default=200, help='batch size')
+parser.add_argument('--max_epochs', type=int, default=2000, help='max number of epochs')
+parser.add_argument('--learning_rate', type=float, default=1e-3, help='optimizer learning rate')
 
 # Data Arguments
-parser.add_argument('--max_seq_size', type=int, default=100, help='input sequence size')
+parser.add_argument('--max_seq_size', type=int, default=200, help='input sequence size')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
-parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
+parser.add_argument('--pose',
+                    choices=['openpose', 'holistic'],
+                    default='holistic',
+                    help='which pose estimation model to use?')
 parser.add_argument(
     '--pose_components',
     type=list,
     default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
     help='what pose components to use?')
+
 # Model Arguments
+parser.add_argument('--model_name', type=str, default="ham2pose", help='name of the model')
+parser.add_argument('--noise_epsilon', type=float, default=1e-4, help='noise epsilon')
+parser.add_argument('--seq_len_loss_weight',
+                    type=float,
+                    default=2e-5,
+                    help='sequence length weight in loss calculation')
+
+parser.add_argument('--num_steps', type=int, default=10, help='number of pose refinement steps')
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--text_encoder_depth', type=int, default=2, help='number of layers for the text encoder')
 parser.add_argument('--pose_encoder_depth', type=int, default=4, help='number of layers for the pose encoder')
 parser.add_argument('--encoder_heads', type=int, default=2, help='number of heads for the encoder')
+parser.add_argument('--encoder_dim_feedforward', type=int, default=2048, help='size of encoder dim feedforward')
 
 # Prediction args
 parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")
-parser.add_argument('--pred_output', type=str, default=None, metavar='PATH', help="Path for saving prediction files")
+parser.add_argument('--output_dir',
+                    type=str,
+                    default="videos",
+                    metavar='PATH',
+                    help="output videos directory name "
+                    "inside model directory")
 parser.add_argument('--ffmpeg_path', type=str, default=None, metavar='PATH', help="Path for ffmpeg executable")
 
 args = parser.parse_args()
@@ -46,4 +68,4 @@ random.seed(args.seed)
 
 # Set Available GPUs
 gpus = ["0", "1", "2", "3"]
-os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(gpus[:args.gpus])
+os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(gpus[:args.num_gpus])

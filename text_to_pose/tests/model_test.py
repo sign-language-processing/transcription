@@ -3,8 +3,11 @@ from unittest.mock import MagicMock
 
 import torch
 
+from _shared.models import PoseEncoderModel
+from text_to_pose.model.text_encoder import TextEncoderModel
+
 from ..._shared.tokenizers.dummy_tokenizer import DummyTokenizer
-from ..model import IterativeTextGuidedPoseGenerationModel
+from ..model.iterative_decoder import IterativeGuidedPoseGenerationModel
 
 
 class ModelTestCase(unittest.TestCase):
@@ -16,29 +19,24 @@ class ModelTestCase(unittest.TestCase):
         self.hidden_dim = 2
 
     def test_encode_text(self):
-        model = IterativeTextGuidedPoseGenerationModel(
-            tokenizer=DummyTokenizer(),
-            hidden_dim=self.hidden_dim,
-            pose_dims=self.pose_dim,
-        )
-        encoded_text, predicted_length = model.encode_text(["test"])
-        self.assertTrue(torch.all(torch.isfinite(predicted_length)))
+        text_encoder = TextEncoderModel(tokenizer=DummyTokenizer(), hidden_dim=self.hidden_dim)
+        encoded_text = text_encoder(["test"])
         self.assertTrue(torch.all(torch.isfinite(encoded_text["data"])))
         self.assertTrue(torch.all(torch.eq(torch.zeros_like(encoded_text["mask"]), encoded_text["mask"])))
 
     def model_setup(self):
-        model = IterativeTextGuidedPoseGenerationModel(
-            tokenizer=DummyTokenizer(),
-            hidden_dim=self.hidden_dim,
-            pose_dims=self.pose_dim,
-        )
-        model.encode_text = MagicMock(return_value=(
-            {
-                "data": torch.ones([1, 2, self.hidden_dim]),
-                "mask": torch.zeros([1, 2], dtype=torch.bool),
-            },
-            torch.tensor([self.seq_length]),
-        ))
+        pose_encoder = PoseEncoderModel(pose_dims=self.pose_dim,
+                                        hidden_dim=self.hidden_dim,
+                                        max_seq_size=self.seq_length)
+
+        text_encoder = MagicMock(return_value={
+            "data": torch.ones([1, 2, self.hidden_dim]),
+            "mask": torch.zeros([1, 2], dtype=torch.bool),
+        })
+        model = IterativeGuidedPoseGenerationModel(text_encoder=text_encoder,
+                                                   pose_encoder=pose_encoder,
+                                                   hidden_dim=self.hidden_dim,
+                                                   max_seq_size=self.seq_length)
         model.log = MagicMock(return_value=True)
         return model
 
@@ -77,17 +75,18 @@ class ModelTestCase(unittest.TestCase):
 
     def test_training_step_expected_loss_zero(self):
         model = self.model_setup()
+        model.seq_len_loss_weight = 0
         batch = self.get_batch(confidence=0)
 
-        loss = float(model.training_step(batch, None, steps=1))
-        self.assertEqual(loss, 0)
+        loss = float(model.training_step(batch))
+        self.assertEqual(0, loss)
 
     def test_training_step_expected_loss_finite(self):
         model = self.model_setup()
         batch = self.get_batch(confidence=1)
 
-        loss = model.training_step(batch, None, steps=1)
-        self.assertNotEqual(float(loss), 0)
+        loss = model.training_step(batch)
+        self.assertNotEqual(0, float(loss))
         self.assertTrue(torch.isfinite(loss))
 
 

@@ -6,8 +6,8 @@ import pympi
 import torch
 from pose_format import Pose
 
-from pose_to_segments.probs_to_segments import probs_to_segments
 from _shared.pose_utils import pose_hide_legs, pose_normalization_info
+from pose_to_segments.probs_to_segments import probs_to_segments
 
 
 def load_pose(pose_path):

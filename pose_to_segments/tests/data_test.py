@@ -4,7 +4,6 @@ from typing import List
 import torch
 
 from ..._shared.pose_utils import fake_pose
-
 from ..data import PoseSegmentsDataset, PoseSegmentsDatum, Segment
 
 

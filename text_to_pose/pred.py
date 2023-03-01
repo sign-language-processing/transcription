@@ -11,7 +11,7 @@ from .._shared.pose_utils import pose_hide_legs, pose_normalization_info
 from .._shared.tokenizers import HamNoSysTokenizer
 from .args import args
 from .data import get_dataset
-from .model import IterativeTextGuidedPoseGenerationModel
+from .model.iterative_decoder import IterativeGuidedPoseGenerationModel
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 
@@ -67,7 +67,7 @@ if __name__ == '__main__':
                       encoder_heads=args.encoder_heads,
                       max_seq_size=args.max_seq_size)
 
-    model = IterativeTextGuidedPoseGenerationModel.load_from_checkpoint(args.checkpoint, **model_args)
+    model = IterativeGuidedPoseGenerationModel.load_from_checkpoint(args.checkpoint, **model_args)
     model.eval()
 
     html = []

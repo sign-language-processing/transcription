@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from ..model import DistributionPredictionModel
+from ..model.distribution import DistributionPredictionModel
 
 
 class DistributionModelTestCase(unittest.TestCase):
