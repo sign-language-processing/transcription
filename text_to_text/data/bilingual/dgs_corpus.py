@@ -3,16 +3,15 @@ from collections import Counter
 from pathlib import Path
 
 # pylint: disable=unused-import
-import sign_language_datasets.datasets
 import tensorflow_datasets as tfds
-from sign_language_datasets.datasets.config import SignDatasetConfig
+from sign_language_datasets.datasets.dgs_corpus import DgsCorpusConfig
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 
 current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('dgs_corpus')
 raw_dir.mkdir(exist_ok=True, parents=True)
 
-config = SignDatasetConfig(name="texts-new",
+config = DgsCorpusConfig(name="texts-new",
                            version="3.0.0",
                            include_video=False,
                            process_video=False,
