@@ -22,11 +22,20 @@ many-to-many aligned.
 To create all data, run:
 
 ```bash
-python fingerspelling.py # SW Fingerspelling in multiple languages
-python dicta_sign.py # HamNoSys single words
-python dgs_corpus.py # HamNoSys sentences
-python sign_bank.py # SW words and sentences in multiple languages 
-python swojs_glossario.py # SW sentences for Brazilian sign language
-python bible.py # SignBank Bible + the multilingual bible corpus
-python sign2mint.py # Sign2Mint - technical terms in German sign language
+python bilingual/fingerspelling.py # SW Fingerspelling in multiple languages
+python bilingual/dicta_sign.py # HamNoSys single words
+python bilingual/dgs_corpus.py # HamNoSys sentences
+python bilingual/sign_bank.py # SW words and sentences in multiple languages 
+python bilingual/swojs_glossario.py # SW sentences for Brazilian sign language
+python bilingual/bible.py # SignBank Bible + the multilingual bible corpus
+python bilingual/sign2mint.py # Sign2Mint - technical terms in German sign language
 ```
+
+
+The NMT model of bergamot also uses monolingual data that is back-translated and used to further train and enhance the
+model. Therefore, you also have to run:
+
+```bash
+python monolingual/common_words.py
+```
+
