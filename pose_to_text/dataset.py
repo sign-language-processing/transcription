@@ -19,34 +19,6 @@ CPU_DEVICE = torch.device("cpu")
 
 
 class PoseTextDataset(BaseDataset):
-
-    #     def __init__(
-    #         self,
-    #         path: str,
-    #         src_lang: str,
-    #         trg_lang: str,
-    #         split: int = "train",
-    #         has_trg: bool = True,
-    #         tokenizer: Dict[str, BasicTokenizer] = None,
-    #         sequence_encoder: Dict[str, Callable] = None,
-    #         random_subset: int = -1,
-    #     ):
-    #         self.path = path
-    #         self.src_lang = src_lang
-    #         self.trg_lang = trg_lang
-    #         self.has_trg = has_trg
-    #         self.split = split
-    #         if self.split == "train":
-    #             assert self.has_trg
-    #
-    #         _place_holder = {self.src_lang: None, self.trg_lang: None}
-    #         self.tokenizer = _place_holder if tokenizer is None else tokenizer
-    #         self.sequence_encoder = (_place_holder
-    #                                  if sequence_encoder is None else sequence_encoder)
-    #
-    #         # for ransom subsampling
-    #         self.random_subset =
-
     def __init__(self, dataset: TextPoseDataset, split: str, has_trg: bool = True, random_subset=0):
         trg_lang = "signed"
         src_lang = "poses"
@@ -99,17 +71,6 @@ class PoseTextDataset(BaseDataset):
         trg = self.tokenizer[self.trg_lang].tokenize(datum["text"], bos=True, eos=True)
         trg = torch.tensor(trg, dtype=torch.long)
         return src, trg
-
-    # def get_item(self, idx: int, lang: str) -> List[str]:
-    #     """
-    #     seek one src/trg item of given index.
-    #         - tokenization is applied here.
-    #         - length-filtering, bpe-dropout etc also triggered if self.split == "train"
-    #     """
-    #     if lang == self.src_lang:
-    #         return []
-    #
-    #     return self.trg[idx].split(" ")
 
     def collate_fn(
         self,

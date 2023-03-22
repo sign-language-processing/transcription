@@ -7,6 +7,7 @@ from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.pose_header import PoseHeader
 from pose_format.utils.reader import BufferReader
 from sign_language_datasets.datasets import SignDatasetConfig
+from sign_language_datasets.datasets.dgs_corpus import DgsCorpusConfig
 from tqdm import tqdm
 
 from .pose_utils import pose_hide_legs, pose_normalization_info
@@ -27,13 +28,18 @@ def get_tfds_dataset(name,
                      version="1.0.0"):
     dataset_module = importlib.import_module("sign_language_datasets.datasets." + name + "." + name)
 
+    config_kwargs = dict(name=poses + "-" + str(fps),
+                         version=version,  # Specific version
+                         include_video=False,  # Download and load dataset videos
+                         fps=fps,  # Load videos at constant fps
+                         include_pose=poses)
+
     # Loading a dataset with custom configuration
-    config = SignDatasetConfig(
-        name=poses + "-" + str(fps),
-        version=version,  # Specific version
-        include_video=False,  # Download and load dataset videos
-        fps=fps,  # Load videos at constant fps
-        include_pose=poses)  # Download and load Holistic pose estimation
+    if name == "dgs_corpus":
+        config = DgsCorpusConfig(**config_kwargs, split="3.0.0-uzh-document")
+    else:
+        config = SignDatasetConfig(**config_kwargs)
+
     tfds_dataset = tfds.load(name=name, builder_kwargs=dict(config=config), split=split, data_dir=data_dir)
 
     # pylint: disable=protected-access

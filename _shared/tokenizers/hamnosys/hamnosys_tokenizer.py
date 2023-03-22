@@ -17,9 +17,12 @@ class HamNoSysTokenizer(BaseTokenizer):
         super().__init__(tokens=tokens, starting_index=starting_index, **kwargs)
 
     def text_to_tokens(self, text: str) -> List[str]:
-        return list(text)
+        return [self.bos_token] + list(text)
 
     def tokens_to_text(self, tokens: List[str]) -> str:
+        if tokens[0] == self.bos_token:
+            tokens = tokens[1:]
+
         return "".join(tokens)
 
 

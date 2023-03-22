@@ -13,8 +13,10 @@ parser.add_argument('--no_wandb', type=bool, default=False, help='ignore wandb?'
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
 parser.add_argument('--batch_size', type=int, default=4, help='batch size')
+parser.add_argument('--learning_rate', type=float, default=5e-4, help='optimizer learning rate')
 
 # Data Arguments
+parser.add_argument('--dataset', choices=['dgs_corpus'], default='dgs_corpus', help='which dataset to use?')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
 parser.add_argument(
@@ -25,6 +27,7 @@ parser.add_argument(
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
+parser.add_argument('--encoder_bidirectional', type=bool, default=True, help='should use a bidirectional encoder?')
 
 # Prediction args
 parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")

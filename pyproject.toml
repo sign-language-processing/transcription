@@ -7,26 +7,24 @@ authors = [
 ]
 readme = "README.md"
 dependencies = [
-    "pose_format",
-    "tqdm",
+    "joeynmt",
+    "sentencepiece",
     "numpy",
-    "torch",
-    "joeynmt>=2.1.0",
     "opencv-python",
+    "pose_format",
+    "torch",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
 dev = [
     "tensorflow",
-    "tensorflow_datasets",
+    "fonttools",
+    "tensorflow-datasets",
     "sign-language-datasets",
     "wandb",
     "pytorch_lightning",
-    "pytorch2keras",
-    "torchmetrics",
     "mediapipe",
-    "transformers",
-    "diffusers",
     "pytest",
     "pylint"
 ]

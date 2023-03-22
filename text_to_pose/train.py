@@ -10,7 +10,7 @@ from _shared.models import PoseEncoderModel
 from _shared.tokenizers import HamNoSysTokenizer
 
 from .args import args
-from .data import get_dataset
+from .data import get_dataset, get_datasets
 from .model.iterative_decoder import IterativeGuidedPoseGenerationModel
 from .model.text_encoder import TextEncoderModel
 
@@ -21,18 +21,18 @@ if __name__ == '__main__':
         if LOGGER.experiment.sweep_id is None:
             LOGGER.log_hyperparams(args)
 
-    train_dataset = get_dataset(poses=args.pose,
-                                fps=args.fps,
-                                components=args.pose_components,
-                                max_seq_size=args.max_seq_size,
-                                split="train[10:]")
+    train_dataset = get_datasets(poses=args.pose,
+                                 fps=args.fps,
+                                 components=args.pose_components,
+                                 max_seq_size=args.max_seq_size,
+                                 split="train[10:]")
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-    validation_dataset = get_dataset(poses=args.pose,
-                                     fps=args.fps,
-                                     components=args.pose_components,
-                                     max_seq_size=args.max_seq_size,
-                                     split="train[:10]")
+    validation_dataset = get_datasets(poses=args.pose,
+                                      fps=args.fps,
+                                      components=args.pose_components,
+                                      max_seq_size=args.max_seq_size,
+                                      split="train[:10]")
     validation_loader = DataLoader(validation_dataset, batch_size=args.batch_size, collate_fn=zero_pad_collator)
 
     _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
@@ -55,7 +55,10 @@ if __name__ == '__main__':
     # Model Arguments
     model_args = dict(pose_encoder=pose_encoder,
                       text_encoder=text_encoder,
+                      hidden_dim=args.hidden_dim,
                       learning_rate=args.learning_rate,
+                      seq_len_loss_weight=args.seq_len_loss_weight,
+                      smoothness_loss_weight=args.smoothness_loss_weight,
                       noise_epsilon=args.noise_epsilon,
                       num_steps=args.num_steps)
 
@@ -76,6 +79,6 @@ if __name__ == '__main__':
                             monitor='train_loss',
                             mode='min'))
 
-    trainer = pl.Trainer(max_epochs=5000, logger=LOGGER, callbacks=callbacks, gpus=args.num_gpus)
+    trainer = pl.Trainer(max_epochs=5000, logger=LOGGER, callbacks=callbacks, accelerator='gpu', devices=args.num_gpus)
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)

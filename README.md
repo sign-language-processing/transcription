@@ -23,19 +23,15 @@ pip install git+git://github.com/sign-language-processing/transcription.git
 conda update -n base -c defaults conda
 
 # Create environment
-conda create --name sign python=3.10
+conda create -y --name sign python=3.10
 conda activate sign
 
-# Install pytorch
-# Instructions: https://pytorch.org/get-started/locally/
-conda install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia # For example
-
-# Mandatory conda dependencies
-conda install -c conda-forge sentencepiece pytorch-lightning
-
-# Install other dependencies
+# Install all dependencies, may cause a segmentation fault
 pip install .[dev]
+
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 ```
+
 
 ## Example Usage: Video-to-Text
 

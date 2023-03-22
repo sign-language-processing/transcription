@@ -4,9 +4,9 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pose_to_segments.args import args
-from pose_to_segments.data import BIO
-from pose_to_segments.probs_to_segments import probs_to_segments
+from pose_to_segments.src.args import args
+from pose_to_segments.src.data import BIO
+from pose_to_segments.src.probs_to_segments import probs_to_segments
 
 
 def prepare_predictions():

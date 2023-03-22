@@ -57,7 +57,7 @@ class ModelOverfitTestCase(unittest.TestCase):
 
         # Simple training loop
         losses = []
-        for _ in range(50):
+        for _ in range(100):
             loss = model.training_step(batch)
             loss_float = float(loss.detach())
             losses.append(loss_float)

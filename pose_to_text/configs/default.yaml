@@ -9,49 +9,50 @@ data:
     - "RIGHT_HAND_LANDMARKS"
   fps: 25
   max_seq_size: 1000
+  writing: "signwriting"          # "signwriting" or "text"
 
 testing: # specify which inference algorithm to use for testing (for validation it's always greedy decoding)
   n_best: 1                       # n_best size, must be smaller than or equal to beam_size
   beam_size: 5                    # size of the beam for beam search
   beam_alpha: 1.0                 # length penalty for beam search
-  batch_size: 1024                  # mini-batch size for evaluation
-  batch_type: "token"          # evaluation batch type ("sentence", default) or tokens ("token")
-  eval_metrics: [ "bleu", "chrf" ]          # validation metric, default: "bleu", other options: "chrf", "token_accuracy", "sequence_accuracy"
+  batch_size: 1024                # mini-batch size for evaluation
+  batch_type: "token"             # evaluation batch type ("sentence", default) or tokens ("token")
+  eval_metrics: [ "bleu", "chrf" ]# validation metric, default: "bleu", other options: "chrf", "token_accuracy", "sequence_accuracy"
   max_output_length: 50           # maximum output length for decoding, default: None. If set to None, allow sentences of max 1.5*src length
   min_output_length: 1            # minimum output length for decoding, default: 1.
   return_prob: "none"             # whether to return probabilities of references ("ref") or hypotheses ("hyp"). default: "none".
   return_attention: False         # whether to return attention scores, default: False. (enabled if --save_attention flag is set.)
   generate_unk: True              # whether to generate unk token
-  no_repeat_ngram_size: 1        # ngram size to prohibit repetition, default -1. If set to -1, no blocker applied.
+  no_repeat_ngram_size: 1         # ngram size to prohibit repetition, default -1. If set to -1, no blocker applied.
   repetition_penalty: -1          # repetition penalty, default: -1. If set to -1, no penalty applied.
-  sacrebleu_cfg: # sacrebleu options
-    whitespace: False           # `whitespace` option in sacrebleu.metrics.CHRF() class (default: False)
-    tokenize: "13a"             # `tokenize` option in sacrebleu.metrics.BLEU() class (default: 13a)
+  sacrebleu_cfg:                  # sacrebleu options
+    whitespace: False             # `whitespace` option in sacrebleu.metrics.CHRF() class (default: False)
+    tokenize: "13a"               # `tokenize` option in sacrebleu.metrics.BLEU() class (default: 13a)
 
 training: # specify training details here
   random_seed: 42                 # set this seed to make training deterministic
   optimizer: "adam"               # choices: "sgd", "adam", "adadelta", "adagrad", "rmsprop", default is SGD
-  adam_betas: [ 0.9, 0.98 ]        # beta parameters for Adam. These are the defaults. Typically these are different for Transformer models.
+  adam_betas: [ 0.9, 0.98 ]       # beta parameters for Adam. These are the defaults. Typically these are different for Transformer models.
   learning_rate: 0.001            # initial learning rate, default: 3.0e-4
-  learning_rate_min: 0.00000001       # stop learning when learning rate is reduced below this threshold, default: 1.0e-8
+  learning_rate_min: 0.00000001   # stop learning when learning rate is reduced below this threshold, default: 1.0e-8
   #learning_rate_factor: 1        # factor for Noam scheduler (used with Transformer)
-  learning_rate_warmup: 4000     # warmup steps for Noam scheduler (used with Transformer)
-  #  clip_grad_val: 0              # clip the gradients to this value when they exceed it, optional
-  clip_grad_norm: 1.0            # norm clipping instead of value clipping
+  learning_rate_warmup: 4000      # warmup steps for Noam scheduler (used with Transformer)
+  #  clip_grad_val: 0             # clip the gradients to this value when they exceed it, optional
+  clip_grad_norm: 1.0             # norm clipping instead of value clipping
   weight_decay: 0.                # l2 regularization, default: 0
   loss: "crossentropy"            # loss type, default: "crossentropy"
   label_smoothing: 0.1            # label smoothing: reference tokens will have 1-label_smoothing probability instead of 1, rest of probability mass is uniformly distributed over the rest of the vocabulary, default: 0.0 (off)
-  batch_size: 8192                  # mini-batch size as number of sentences (when batch_type is "sentence"; default) or total number of tokens (when batch_type is "token"). When you use more than 1 GPUs, the actual batch size per device will be: batch_size // n_gpu.
-  batch_type: "token"          # create batches with sentences ("sentence", default) or tokens ("token")
+  batch_size: 8192                # mini-batch size as number of sentences (when batch_type is "sentence"; default) or total number of tokens (when batch_type is "token"). When you use more than 1 GPUs, the actual batch size per device will be: batch_size // n_gpu.
+  batch_type: "token"             # create batches with sentences ("sentence", default) or tokens ("token")
   batch_multiplier: 1             # increase the effective batch size with values >1 to batch_multiplier*batch_size without increasing memory consumption by making updates only every batch_multiplier batches
-  normalization: "tokens"          # loss normalization of a mini-batch, default: "batch" (by number of sequences in batch), other options: "tokens" (by number of tokens in batch), "none" (don't normalize, sum up loss)
+  normalization: "tokens"         # loss normalization of a mini-batch, default: "batch" (by number of sequences in batch), other options: "tokens" (by number of tokens in batch), "none" (don't normalize, sum up loss)
   scheduling: "warmupinversesquareroot"           # learning rate scheduling, optional, if not specified stays constant, options: "plateau", "exponential", "decaying", "noam" (for Transformer), "warmupexponentialdecay", "warmupinversesquareroot"
   patience: 5                     # specific to plateau scheduler: wait for this many validations without improvement before decreasing the learning rate
   decrease_factor: 0.5            # specific to plateau & exponential scheduler: decrease the learning rate by this factor
-  epochs: 100                       # train for this many epochs (will be reset in resumed process)
-  updates: 36000                    # train for this many updates (won't be reset in resumed process)
-  validation_freq: 1000             # validate after this many updates (number of mini-batches), default: 1000
-  logging_freq: 100                # log the training progress after this many updates, default: 100
+  epochs: 100                     # train for this many epochs (will be reset in resumed process)
+  updates: 36000                  # train for this many updates (won't be reset in resumed process)
+  validation_freq: 1000           # validate after this many updates (number of mini-batches), default: 1000
+  logging_freq: 100               # log the training progress after this many updates, default: 100
   early_stopping_metric: "ppl"   # when a new high score on this metric is achieved, a checkpoint is written, when "eval_metric" (default) is maximized, when "loss" or "ppl" is minimized
   model_dir: "toy_transformer"    # directory where models and validation results are stored, required
   overwrite: True                # overwrite existing model directory, default: False. Do not set to True unless for debugging!

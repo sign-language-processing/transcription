@@ -43,6 +43,27 @@ for i in reversed(range(num_steps)):
 - Multiple-GPUs not tested
 
 
+
+Instead of predicting the noise as formulated by Ho et al. (2020) `Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. Advances in
+Neural Information Processing Systems, 33:6840–6851, 2020.`,
+we follow Ramesh et al. (2022) `Aditya Ramesh, Prafulla Dhariwal, Alex Nichol, Casey Chu, and Mark Chen. Hierarchical textconditional image generation with clip latents. arXiv preprint arXiv:2204.06125, 2022.`
+and predict the signal itself, i.e., `xˆ0 = G(xt, t, c)`.
+
+## Inference types
+
+In every time step `t` we predict the clean sample `x_0 = Model(x_t, t, c)` and noise it back to `x_{t−1}`.
+
+Normal
+
+Or
+
+Guidance free
+```
+unconditional = Model(x_t, t, ∅)
+conditional = Model(x_t, t, c)
+Model_f(x_t, t, c) = unconditional + s * (conditional - unconditional)
+```
+
 ## Example
 
 Given the following never-seen HamNoSys text sequence:

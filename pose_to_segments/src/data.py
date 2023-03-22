@@ -1,13 +1,13 @@
 from collections import Counter
 from itertools import chain
-from typing import Dict, Iterable, List, TypedDict
+from typing import Dict, Iterable, List, TypedDict, Optional, Tuple
 
 import torch
 from pose_format import Pose
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
 
-from .._shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
+from _shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
 
 
 class Segment(TypedDict):
@@ -15,10 +15,22 @@ class Segment(TypedDict):
     end_time: float
 
 
+class SegmentsDict(TypedDict):
+    sign: List[Segment]
+    sentence: List[Segment]
+
+
+class BIODict(TypedDict):
+    sign: torch.LongTensor
+    sentence: torch.LongTensor
+
+
 class PoseSegmentsDatum(TypedDict):
     id: str
     segments: List[List[Segment]]
     pose: Pose
+    bio: Optional[BIODict]
+    segments: Optional[SegmentsDict]
 
 
 BIO = {"O": 0, "B": 1, "I": 2}
@@ -54,30 +66,40 @@ class PoseSegmentsDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def build_classes_vectors(self, datum):
+    def build_classes_vectors(self, datum) -> Tuple[SegmentsDict, BIODict]:
         pose = datum["pose"]
         pose_length = len(pose.body.data)
         timestamps = torch.div(torch.arange(0, pose_length), pose.body.fps)
 
         sign_segments = [segment for sentence_segments in datum["segments"] for segment in sentence_segments]
-        sentence_segments = sentence_segments = [{
+
+        sentence_segments = [{
             "start_time": segments[0]["start_time"],
             "end_time": segments[-1]["end_time"]
         } for segments in datum["segments"]]
 
-        return {"sign": build_bio(timestamps, sign_segments), "sentence": build_bio(timestamps, sentence_segments)}
+        segments = {"sign": sign_segments, "sentence": sentence_segments}
+        bio = {kind: build_bio(timestamps, segments[kind]) for kind in segments}
+        return segments, bio
 
     def __getitem__(self, index):
         datum = self.data[index]
         pose = datum["pose"]
 
         torch_body = pose.body.torch()
-        pose_data = torch_body.data.tensor[:, 0, :, :]
-        bio = self.build_classes_vectors(datum)
+        pose_data = torch_body.data.tensor.squeeze(1)
+
+        if "bio" not in datum:
+            # Cache for future iterations
+            segments, bio = self.build_classes_vectors(datum)
+            datum["segments"] = segments
+            datum["bio"] = bio
+
         return {
             "id": datum["id"],
-            "bio": bio,
-            "mask": torch.ones(len(bio["sign"]), dtype=torch.float),
+            "segments": datum["segments"],  # For evaluation purposes
+            "bio": datum["bio"],
+            "mask": torch.ones(len(datum["bio"]["sign"]), dtype=torch.float),
             "pose": {
                 "obj": pose,
                 "data": pose_data
@@ -101,15 +123,13 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
 
     for person in ["a", "b"]:
         if len(poses[person].body.data) > 0:
+            sentences = [s for s in sentences if s["participant"].lower() == person and len(s["glosses"]) > 0]
             segments = [[{
                 "start_time": gloss["start"] / 1000,
                 "end_time": gloss["end"] / 1000
-            }
-                         for gloss in s["glosses"]]
-                        for s in sentences
-                        if s["participant"].lower() == person and len(s["glosses"]) > 0]
-            if len(segments) > 0:
-                yield {"id": datum["id"] + "_" + person, "pose": poses[person], "segments": segments}
+            } for gloss in s["glosses"]] for s in sentences]
+
+            yield {"id": f"{datum['id']}_{person}", "pose": poses[person], "segments": segments}
 
 
 def get_dataset(name="dgs_corpus",
@@ -118,7 +138,8 @@ def get_dataset(name="dgs_corpus",
                 split="train",
                 components: List[str] = None,
                 data_dir=None):
-    data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split, components=components, data_dir=data_dir)
+    data = get_tfds_dataset(name=name, poses=poses, fps=fps,
+                            split=split, components=components, data_dir=data_dir)
 
     data = list(chain.from_iterable([process_datum(d) for d in data]))
 

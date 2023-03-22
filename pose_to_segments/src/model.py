@@ -1,42 +1,49 @@
 from typing import List
 
 import numpy as np
-import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from torch import nn
+import pytorch_lightning as pl
 
 
 class PoseTaggingModel(pl.LightningModule):
-
     def __init__(self,
                  sign_class_weights: List[float],
                  sentence_class_weights: List[float],
                  pose_dims: (int, int) = (137, 2),
                  hidden_dim: int = 128,
-                 encoder_depth=2):
+                 encoder_depth=2,
+                 encoder_bidirectional=True,
+                 learning_rate=1e-3):
         super().__init__()
+
+        self.learning_rate = learning_rate
 
         self.pose_dims = pose_dims
         pose_dim = int(np.prod(pose_dims))
 
         self.pose_projection = nn.Linear(pose_dim, hidden_dim)
 
-        assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
+        if encoder_bidirectional:
+            assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
+            lstm_hidden_dim = hidden_dim // 2
+        else:
+            lstm_hidden_dim = hidden_dim
 
         # Encoder
         self.encoder = nn.LSTM(hidden_dim,
-                               hidden_dim // 2,
+                               lstm_hidden_dim,
                                num_layers=encoder_depth,
                                batch_first=True,
-                               bidirectional=True)
+                               bidirectional=encoder_bidirectional)
 
-        # tag sequence for sign bio / sentence bio
-
+        # tag sequence for sign bio
         self.sign_bio_head = nn.Linear(hidden_dim, 3)
         sign_loss_weight = torch.tensor(sign_class_weights, dtype=torch.float)
         self.sign_loss_function = nn.NLLLoss(reduction='none', weight=sign_loss_weight)
 
+        # tag sequence for sentence bio
         self.sentence_bio_head = nn.Linear(hidden_dim, 3)
         sentence_loss_weight = torch.tensor(sentence_class_weights, dtype=torch.float)
         self.sentence_loss_function = nn.NLLLoss(reduction='none', weight=sentence_loss_weight)
@@ -51,7 +58,10 @@ class PoseTaggingModel(pl.LightningModule):
         sign_bio_logits = self.sign_bio_head(pose_encoding)
         sentence_bio_logits = self.sentence_bio_head(pose_encoding)
 
-        return {"sign": F.log_softmax(sign_bio_logits, dim=-1), "sentence": F.log_softmax(sentence_bio_logits, dim=-1)}
+        return {
+            "sign": F.log_softmax(sign_bio_logits, dim=-1),
+            "sentence": F.log_softmax(sentence_bio_logits, dim=-1)
+        }
 
     def training_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="train")
@@ -69,15 +79,19 @@ class PoseTaggingModel(pl.LightningModule):
 
         sign_losses = self.sign_loss_function(log_probs["sign"].reshape(-1, 3), batch["bio"]["sign"].reshape(-1))
         sign_loss = (sign_losses * loss_mask).mean()
+
         sentence_losses = self.sentence_loss_function(log_probs["sentence"].reshape(-1, 3),
                                                       batch["bio"]["sentence"].reshape(-1))
         sentence_loss = (sentence_losses * loss_mask).mean()
+
         loss = sign_loss + sentence_loss
 
-        self.log(name + "_sign_loss", sign_loss, batch_size=batch_size)
-        self.log(name + "_sentence_loss", sentence_loss, batch_size=batch_size)
-        self.log(name + "_loss", loss, batch_size=batch_size)
+        self.log(f"{name}_sign_loss", sign_loss, batch_size=batch_size)
+        self.log(f"{name}_sentence_loss", sentence_loss, batch_size=batch_size)
+        self.log(f"{name}_loss", loss, batch_size=batch_size)
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+

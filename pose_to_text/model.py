@@ -15,7 +15,6 @@ from .._shared.models.pose_encoder import PoseEncoderModel
 
 
 class PoseToTextModel(JoeyNMTModel):
-
     def __init__(self, pose_encoder: PoseEncoderModel, encoder: Encoder, decoder: Decoder, trg_embed: Embeddings,
                  trg_vocab: Vocabulary):
         # Setup fake "src" parameters
