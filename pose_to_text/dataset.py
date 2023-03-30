@@ -19,6 +19,7 @@ CPU_DEVICE = torch.device("cpu")
 
 
 class PoseTextDataset(BaseDataset):
+
     def __init__(self, dataset: TextPoseDataset, split: str, has_trg: bool = True, random_subset=0):
         trg_lang = "signed"
         src_lang = "poses"
