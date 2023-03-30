@@ -3,8 +3,13 @@ from typing import List
 
 import torch
 
+from pose_to_segments.src.core.data import (
+    PoseSegmentsDataset,
+    PoseSegmentsDatum,
+    Segment,
+)
+
 from ..._shared.pose_utils import fake_pose
-from pose_to_segments.src.data import PoseSegmentsDataset, PoseSegmentsDatum, Segment
 
 
 def single_datum(num_frames, segments: List[List[Segment]]) -> PoseSegmentsDatum:

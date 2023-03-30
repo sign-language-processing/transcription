@@ -7,7 +7,7 @@ import torch
 from pose_format import Pose
 
 from _shared.pose_utils import pose_hide_legs, pose_normalization_info
-from pose_to_segments.src.probs_to_segments import probs_to_segments
+from pose_to_segments.src.utils.probs_to_segments import probs_to_segments
 
 
 def load_pose(pose_path):
@@ -42,7 +42,7 @@ def main():
 
     print('Loading model ...')
     install_dir = os.path.dirname(os.path.abspath(__file__))
-    model = torch.jit.load(os.path.join(install_dir, "dist", "model.pth"))
+    model = torch.jit.load(os.path.join(install_dir, "../../dist", "model.pth"))
     model.eval()
 
     print('Estimating segments ...')

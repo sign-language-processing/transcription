@@ -28,11 +28,12 @@ def get_tfds_dataset(name,
                      version="1.0.0"):
     dataset_module = importlib.import_module("sign_language_datasets.datasets." + name + "." + name)
 
-    config_kwargs = dict(name=poses + "-" + str(fps),
-                         version=version,  # Specific version
-                         include_video=False,  # Download and load dataset videos
-                         fps=fps,  # Load videos at constant fps
-                         include_pose=poses)
+    config_kwargs = dict(
+        name=poses + "-" + str(fps),
+        version=version,  # Specific version
+        include_video=False,  # Download and load dataset videos
+        fps=fps,  # Load videos at constant fps
+        include_pose=poses)
 
     # Loading a dataset with custom configuration
     if name == "dgs_corpus":
