@@ -58,7 +58,7 @@ def process_datum(datum: ProcessedPoseDatum) -> List[TextPoseDatum]:
 
     data = []
     for pose in poses:
-        pose.body.data = pose.body.data[:, :, :, :3] # X,Y,Z
+        pose.body.data = pose.body.data[:, :, :, :3]  # X,Y,Z
         # Prune all leading frames containing only zeros
         for i in range(len(pose.body.data)):
             if pose.body.confidence[i].sum() != 0:
@@ -89,16 +89,20 @@ def get_dataset(name="dicta_sign",
     return TextPoseDataset(data)
 
 
-def get_datasets(poses="holistic",
-                 fps=25,
-                 split="train",
-                 components: List[str] = None,
-                 max_seq_size=1000):
-    dicta_sign = get_dataset(name="dicta_sign", poses=poses, fps=fps, split=split, components=components,
+def get_datasets(poses="holistic", fps=25, split="train", components: List[str] = None, max_seq_size=1000):
+    dicta_sign = get_dataset(name="dicta_sign",
+                             poses=poses,
+                             fps=fps,
+                             split=split,
+                             components=components,
                              max_seq_size=max_seq_size)
     # dgs_types = get_dataset(name="dgs_types", poses=poses, fps=fps, split=split, components=components,
     #                         max_seq_size=max_seq_size)
-    autsl = get_dataset(name="autsl", poses=poses, fps=fps, split=split, components=components,
+    autsl = get_dataset(name="autsl",
+                        poses=poses,
+                        fps=fps,
+                        split=split,
+                        components=components,
                         max_seq_size=max_seq_size)
 
     all_data = dicta_sign.data + autsl.data

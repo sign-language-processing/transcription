@@ -122,7 +122,9 @@ class IterativeGuidedPoseGenerationModel(pl.LightningModule):
         sizes = [self.step_size(step) for step in steps]
         return torch.tensor(sizes, device=self.device, dtype=torch.float)
 
-    def forward(self, text: str, first_pose: torch.FloatTensor,
+    def forward(self,
+                text: str,
+                first_pose: torch.FloatTensor,
                 force_sequence_length: int = None,
                 classifier_free_guidance=None):
         empty_text_encoding = self.text_encoder([""]) if classifier_free_guidance is not None else None
@@ -162,7 +164,9 @@ class IterativeGuidedPoseGenerationModel(pl.LightningModule):
                 # Now we need to noise the predicted sequence "back" to time t
                 x_t = self.noise_pose_sequence(x_0, x_T, step_num - 1)
 
-    def noise_pose_sequence(self, x_0: torch.FloatTensor, x_T: torch.FloatTensor,
+    def noise_pose_sequence(self,
+                            x_0: torch.FloatTensor,
+                            x_T: torch.FloatTensor,
                             batch_step: torch.LongTensor,
                             deviation=0):
         noise_proportion = self.get_batch_step_proportion(batch_step).view(-1, 1, 1, 1)
@@ -183,11 +187,7 @@ class IterativeGuidedPoseGenerationModel(pl.LightningModule):
         shifted_pose = torch.roll(pose_sequence, 1, dims=1)
         shifted_confidence = torch.roll(confidence, 1, dims=1)
         confidence = confidence * shifted_confidence
-        return masked_loss('l1',
-                           pose_sequence,
-                           shifted_pose,
-                           confidence=confidence,
-                           model_num_steps=self.num_steps)
+        return masked_loss('l1', pose_sequence, shifted_pose, confidence=confidence, model_num_steps=self.num_steps)
 
     def step(self, batch, *unused_args, steps: List[int]):
         if self.training:
@@ -226,17 +226,21 @@ class IterativeGuidedPoseGenerationModel(pl.LightningModule):
         for step in steps:
             # Similar to diffusion, we will choose a random step number for every sample from the batch
             if step == -1:
-                batch_step = torch.randint(low=0, high=self.num_steps, size=[batch_size],
-                                           dtype=torch.long, device=self.device)
+                batch_step = torch.randint(low=0,
+                                           high=self.num_steps,
+                                           size=[batch_size],
+                                           dtype=torch.long,
+                                           device=self.device)
             else:
                 # We want to make sure that we always use the same step number for validation loss calculation
-                batch_step = torch.full([batch_size], fill_value=step,
-                                        dtype=torch.long, device=self.device)
+                batch_step = torch.full([batch_size], fill_value=step, dtype=torch.long, device=self.device)
 
             # Let's randomly add noise based on the step
             deviation = self.noise_epsilon if self.training else 0
-            pose_sequence["data"] = self.noise_pose_sequence(pose["data"], pose_sequence["data"],
-                                                             batch_step, deviation=deviation)
+            pose_sequence["data"] = self.noise_pose_sequence(pose["data"],
+                                                             pose_sequence["data"],
+                                                             batch_step,
+                                                             deviation=deviation)
 
             if self.training:  # multiply by just a little noise while training
                 noise = 1 + torch.randn_like(pose_sequence["data"]) * self.noise_epsilon

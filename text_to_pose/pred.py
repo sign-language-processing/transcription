@@ -11,10 +11,11 @@ from pose_format.pose_visualizer import PoseVisualizer
 from _shared.models import PoseEncoderModel
 from _shared.pose_utils import pose_hide_legs, pose_normalization_info
 from _shared.tokenizers import HamNoSysTokenizer
+
 from .args import args
 from .data import get_dataset, get_datasets
-from .model.text_encoder import TextEncoderModel
 from .model.iterative_decoder import IterativeGuidedPoseGenerationModel
+from .model.text_encoder import TextEncoderModel
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Only use CPU
 
@@ -107,18 +108,18 @@ if __name__ == '__main__':
             sequence_length = pose_data.shape[0]
             # datum["text"] = ""
             pred_normal = model.forward(text=datum["text"], first_pose=first_pose)
-            pred_len = model.forward(text=datum["text"], first_pose=first_pose,
-                                     force_sequence_length=sequence_length)
-            pred_cfg = model.forward(text=datum["text"], first_pose=first_pose,
-                                     classifier_free_guidance=2.5)
+            pred_len = model.forward(text=datum["text"], first_pose=first_pose, force_sequence_length=sequence_length)
+            pred_cfg = model.forward(text=datum["text"], first_pose=first_pose, classifier_free_guidance=2.5)
 
             html.append(
-                visualize_poses(_id=datum["id"], text=datum["text"], poses=[
-                    datum["pose"]["obj"],
-                    data_to_pose(pred_normal, pose_header),
-                    data_to_pose(pred_len, pose_header),
-                    data_to_pose(pred_cfg, pose_header)
-                ]))
+                visualize_poses(_id=datum["id"],
+                                text=datum["text"],
+                                poses=[
+                                    datum["pose"]["obj"],
+                                    data_to_pose(pred_normal, pose_header),
+                                    data_to_pose(pred_len, pose_header),
+                                    data_to_pose(pred_cfg, pose_header)
+                                ]))
 
         # # Iterative change
         # datum = dataset[12]  # dataset[0] starts with an empty frame
@@ -148,7 +149,6 @@ if __name__ == '__main__':
         f.write("<br><br><br>".join(html))
 
     shutil.copyfile(text_encoder.tokenizer.font_path, os.path.join(args.output_dir, "HamNoSys.ttf"))
-
 """
 python -m text_to_pose.pred --checkpoint=/home/nlp/amit/sign-language/transcription/models/puog3tv3/model.ckpt --ffmpeg_path=/home/nlp/amit/libs/anaconda3/bin/ffmpeg --output_dir=/home/nlp/amit/WWW/tmp/ham2pose/
 """

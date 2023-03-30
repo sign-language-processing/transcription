@@ -11,11 +11,7 @@ current_dir = Path(__file__).parent
 raw_dir = current_dir.joinpath('raw').joinpath('dgs_corpus')
 raw_dir.mkdir(exist_ok=True, parents=True)
 
-config = DgsCorpusConfig(name="texts-new",
-                           version="3.0.0",
-                           include_video=False,
-                           process_video=False,
-                           include_pose=None)
+config = DgsCorpusConfig(name="texts-new", version="3.0.0", include_video=False, process_video=False, include_pose=None)
 dgs_types = tfds.load(name='dgs_types', builder_kwargs={"config": config})
 dgs_corpus = tfds.load(name='dgs_corpus', builder_kwargs={"config": config})
 

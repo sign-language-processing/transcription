@@ -75,3 +75,31 @@ text_to_text --sign_language=us --spoken_language=en --eaf=sign.eaf
 ```
 
 </details>
+
+
+## Example Usage: Text-to-Video
+
+Let's start with having a spoken language word, or sentence - "Hello World".
+
+<details>
+  <summary>Next Steps</summary>
+
+First, we'll translate it into sign language text, in SignWriting format:
+
+```bash
+text_to_text --spoken_language=en --sign_language=us \
+  --notation=signwriting --text="Hello World" > sign.txt
+```
+
+Next, we'll animate the sign language text into a pose sequence:
+
+```bash
+text_to_pose --notation=signwriting --text=$(cat sign.txt) --pose=sign.pose
+```
+
+Finally, we'll animate the pose sequence into a video:
+
+```bash
+pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4
+```
+</details>

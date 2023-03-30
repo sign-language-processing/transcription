@@ -46,15 +46,18 @@ parser.add_argument('--encoder_heads', type=int, default=4, help='number of head
 parser.add_argument('--encoder_dim_feedforward', type=int, default=2048, help='size of encoder dim feedforward')
 
 # Prediction args
-parser.add_argument("--guidance_param", default=2.5, type=float,
-                    help="For classifier-free sampling - specifies the s parameter, as defined in https://arxiv.org/abs/2209.14916.")
+parser.add_argument(
+    "--guidance_param",
+    default=2.5,
+    type=float,
+    help="For classifier-free sampling - specifies the s parameter, as defined in https://arxiv.org/abs/2209.14916.")
 parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")
 parser.add_argument('--output_dir',
                     type=str,
                     default="videos",
                     metavar='PATH',
                     help="output videos directory name "
-                         "inside model directory")
+                    "inside model directory")
 parser.add_argument('--ffmpeg_path', type=str, default=None, metavar='PATH', help="Path for ffmpeg executable")
 
 args = parser.parse_args()
