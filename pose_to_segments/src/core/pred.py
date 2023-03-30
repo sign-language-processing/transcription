@@ -73,7 +73,7 @@ if __name__ == '__main__':
         # Save model as single file, without code
         pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
-        model_path = os.path.join(current_directory, "../dist", "model.pth")
+        model_path = os.path.join(current_directory, "../../dist", "model.pth")
         torch.jit.save(traced_cell, model_path)
 
         model = torch.jit.load(model_path)

@@ -1,6 +1,6 @@
 from collections import Counter
 from itertools import chain
-from typing import Dict, Iterable, List, TypedDict, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, TypedDict
 
 import torch
 from pose_format import Pose
@@ -79,7 +79,7 @@ class PoseSegmentsDataset(Dataset):
         } for segments in datum["segments"]]
 
         segments = {"sign": sign_segments, "sentence": sentence_segments}
-        bio = {kind: build_bio(timestamps, segments[kind]) for kind in segments}
+        bio = {kind: build_bio(timestamps, s) for kind, s in segments.items()}
         return segments, bio
 
     def __getitem__(self, index):
@@ -138,8 +138,7 @@ def get_dataset(name="dgs_corpus",
                 split="train",
                 components: List[str] = None,
                 data_dir=None):
-    data = get_tfds_dataset(name=name, poses=poses, fps=fps,
-                            split=split, components=components, data_dir=data_dir)
+    data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split, components=components, data_dir=data_dir)
 
     data = list(chain.from_iterable([process_datum(d) for d in data]))
 

@@ -1,13 +1,14 @@
 from typing import List
 
 import numpy as np
+import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from torch import nn
-import pytorch_lightning as pl
 
 
 class PoseTaggingModel(pl.LightningModule):
+
     def __init__(self,
                  sign_class_weights: List[float],
                  sentence_class_weights: List[float],
@@ -58,10 +59,7 @@ class PoseTaggingModel(pl.LightningModule):
         sign_bio_logits = self.sign_bio_head(pose_encoding)
         sentence_bio_logits = self.sentence_bio_head(pose_encoding)
 
-        return {
-            "sign": F.log_softmax(sign_bio_logits, dim=-1),
-            "sentence": F.log_softmax(sentence_bio_logits, dim=-1)
-        }
+        return {"sign": F.log_softmax(sign_bio_logits, dim=-1), "sentence": F.log_softmax(sentence_bio_logits, dim=-1)}
 
     def training_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="train")
@@ -93,5 +91,3 @@ class PoseTaggingModel(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-
-

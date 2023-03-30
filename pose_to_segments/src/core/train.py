@@ -48,12 +48,7 @@ if __name__ == '__main__':
     else:
         model = PoseTaggingModel(**model_args)
 
-    callbacks = [
-        EarlyStopping(monitor='validation_loss',
-                      patience=100,
-                      verbose=True,
-                      mode='min')
-    ]
+    callbacks = [EarlyStopping(monitor='validation_loss', patience=100, verbose=True, mode='min')]
 
     if LOGGER is not None:
         os.makedirs("models", exist_ok=True)
