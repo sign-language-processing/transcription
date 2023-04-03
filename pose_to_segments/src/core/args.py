@@ -24,6 +24,10 @@ parser.add_argument(
     type=list,
     default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
     help='what pose components to use?')
+parser.add_argument('--hand_normalization', type=bool, default=False,
+                    help='Should we perform 3D normalization on hands?')
+parser.add_argument('--optical_flow', type=bool, default=False, help='Should we use optical flow?')
+
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
