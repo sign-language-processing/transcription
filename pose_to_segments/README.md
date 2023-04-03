@@ -41,7 +41,7 @@ Watch [this video](https://youtu.be/pCKRWSNIaNQ?t=191) to see how it's done.
 
 ## Reproducing Experiments
 
-# Warning! Training loss becomes NaN after 5~ epochs
+
 
 ### E0: Moryossef et al. (2020)
 This is an attempt to reproduce the methodology of Moryossef et al. (2020) on the DGS corpus.

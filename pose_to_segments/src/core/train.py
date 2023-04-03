@@ -19,10 +19,16 @@ if __name__ == '__main__':
         if LOGGER.experiment.sweep_id is None:
             LOGGER.log_hyperparams(args)
 
-    train_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components, split="train")
+    data_args = dict(poses=args.pose,
+                     fps=args.fps,
+                     components=args.pose_components,
+                     hand_normalization=args.hand_normalization,
+                     optical_flow=args.optical_flow)
+
+    train_dataset = get_dataset(split="train", **data_args)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-    validation_dataset = get_dataset(poses=args.pose, fps=args.fps, components=args.pose_components, split="validation")
+    validation_dataset = get_dataset(split="validation", **data_args)
     validation_loader = DataLoader(validation_dataset,
                                    batch_size=args.batch_size,
                                    shuffle=False,
