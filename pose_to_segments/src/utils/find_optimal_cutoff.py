@@ -4,8 +4,8 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pose_to_segments.src.core.args import args
-from pose_to_segments.src.core.data import BIO
+from pose_to_segments.src.args import args
+from pose_to_segments.src.data import BIO
 from pose_to_segments.src.utils.probs_to_segments import probs_to_segments
 
 

@@ -6,7 +6,7 @@ from pose_format import Pose
 from pose_format.numpy.pose_body import NumPyPoseBody
 from pose_format.pose_header import PoseHeader
 from pose_format.utils.reader import BufferReader
-from sign_language_datasets.datasets import SignDatasetConfig
+from sign_language_datasets.datasets.config import SignDatasetConfig
 from sign_language_datasets.datasets.dgs_corpus import DgsCorpusConfig
 from tqdm import tqdm
 

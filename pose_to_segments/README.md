@@ -49,7 +49,7 @@ Since they used a different document split, our results are not directly compara
 (This also adds weighted loss for the B/I/O tags)
 ```bash
 CUDA_VISIBLE_DEVICES=3
-python -m pose_to_segments.src.core.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
+python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
   --hidden_dim=256 --encoder_depth=1 --encoder_bidirectional=false
 ```
 
@@ -58,6 +58,15 @@ This is an attempt to reproduce the methodology of Moryossef et al. (2020) on th
 Since they used a different document split, our results are not directly comparable.
 ```bash
 export CUDA_VISIBLE_DEVICES=3
-python -m pose_to_segments.src.core.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
+python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
   --hidden_dim=256 --encoder_depth=1 --encoder_bidirectional=true
+```
+
+### E4: 3D Hand Normalization + Optical Flow + Bidirectional Tagger + 4 Layers
+This is an attempt to reproduce the methodology of Moryossef et al. (2020) on the DGS corpus.
+Since they used a different document split, our results are not directly comparable.
+```bash
+export CUDA_VISIBLE_DEVICES=3
+python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
+  --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --hand_normalization=true --optical_flow=true
 ```

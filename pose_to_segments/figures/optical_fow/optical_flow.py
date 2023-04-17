@@ -6,7 +6,7 @@ from pose_format.numpy.representation.distance import DistanceRepresentation
 from pose_format.utils.normalization_3d import PoseNormalizer
 from pose_format.utils.optical_flow import OpticalFlowCalculator
 
-from pose_to_segments.src.core.data import get_dataset
+from pose_to_segments.src.data import get_dataset
 
 # Get the first datum
 dataset = get_dataset(poses="holistic",
