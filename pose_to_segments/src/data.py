@@ -1,15 +1,14 @@
 from collections import Counter
 from itertools import chain
-from typing import Dict, Iterable, List, Optional, Tuple, TypedDict, Any
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TypedDict
 
 import numpy as np
 import torch
-from pose_format import Pose
-from pose_format.utils.normalization_3d import PoseNormalizer
+from numpy import ma
+from pose_format import Pose, PoseHeader
 from pose_format.numpy.representation.distance import DistanceRepresentation
+from pose_format.utils.normalization_3d import PoseNormalizer
 from pose_format.utils.optical_flow import OpticalFlowCalculator
-
-
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
 
@@ -64,6 +63,20 @@ def build_bio(timestamps: torch.Tensor, segments: List[Segment]):
     return bio
 
 
+def hands_components(pose_header: PoseHeader):
+    if pose_header.components[0].name == "POSE_LANDMARKS":
+        return ("LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"), \
+               ("WRIST", "PINKY_MCP", "INDEX_FINGER_MCP"), \
+               ("WRIST", "MIDDLE_FINGER_MCP")
+
+    if pose_header.components[0].name == "pose_keypoints_2d":
+        return ("hand_left_keypoints_2d", "hand_right_keypoints_2d"), \
+               ("BASE", "P_CMC", "I_CMC"), \
+               ("BASE", "M_CMC")
+
+    raise ValueError("Unknown pose header")
+
+
 class PoseSegmentsDataset(Dataset):
 
     def __init__(self, data: List[PoseSegmentsDatum], hand_normalization=False, optical_flow=False):
@@ -92,21 +105,24 @@ class PoseSegmentsDataset(Dataset):
         bio = {kind: build_bio(timestamps, s) for kind, s in segments.items()}
         return segments, bio
 
-    def normalize_hand(self, pose, component_name: str):
-        component = [c for c in pose.header.components if c.name == component_name][0]
-        plane = pose.header.normalization_info(p1=(component_name, "WRIST"),
-                                               p2=(component_name, "PINKY_MCP"),
-                                               p3=(component_name, "INDEX_FINGER_MCP"))
-        line = pose.header.normalization_info(p1=(component_name, "WRIST"),
-                                              p2=(component_name, "MIDDLE_FINGER_MCP"))
+    def normalize_hand(self, pose, component_name: str, plane: Tuple[str, str, str], line: Tuple[str, str]):
+        hand_pose = pose.get_components([component_name])
+        plane = hand_pose.header.normalization_info(p1=(component_name, plane[0]),
+                                                    p2=(component_name, plane[1]),
+                                                    p3=(component_name, plane[2]))
+        line = hand_pose.header.normalization_info(p1=(component_name, line[0]),
+                                                   p2=(component_name, line[1]))
         normalizer = PoseNormalizer(plane=plane, line=line)
-        normalized_hand = normalizer(pose.body.data)
-        print("normalized_hand.shape", normalized_hand.shape)
+        normalized_hand = normalizer(hand_pose.body.data)
+
+        # Add normalized hand to pose
+        pose.body.data = ma.concatenate([pose.body.data, normalized_hand], axis=2)
+        pose.body.confidence = np.concatenate([pose.body.confidence, hand_pose.body.confidence], axis=2)
 
     def add_optical_flow(self, pose):
         calculator = OpticalFlowCalculator(fps=pose.body.fps, distance=DistanceRepresentation())
-        flow = calculator(pose.body.data)  # frames - 1, people, points
-        flow = flow.expand_dims(-1)  # frames - 1, people, points, 1
+        flow = calculator(pose.body.data)  # numpy: frames - 1, people, points
+        flow = np.expand_dims(flow, axis=-1)  # frames - 1, people, points, 1
         # add one fake frame in numpy
         flow = np.concatenate([np.zeros((1, *flow.shape[1:]), dtype=flow.dtype), flow], axis=0)
 
@@ -117,8 +133,9 @@ class PoseSegmentsDataset(Dataset):
         pose = datum["pose"]
 
         if self.hand_normalization:
-            self.normalize_hand(pose, "LEFT_HAND_LANDMARKS")
-            self.normalize_hand(pose, "RIGHT_HAND_LANDMARKS")
+            (left_hand_component, right_hand_component), plane, line = hands_components(pose.header)
+            self.normalize_hand(pose, left_hand_component, plane, line)
+            self.normalize_hand(pose, right_hand_component, plane, line)
 
         if self.optical_flow:
             self.add_optical_flow(pose)

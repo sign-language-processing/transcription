@@ -1,19 +1,24 @@
 import unittest
 from typing import List
 
+import numpy as np
 import torch
 
-from pose_to_segments.src.core.data import (
+from pose_to_segments.src.data import (
     PoseSegmentsDataset,
     PoseSegmentsDatum,
     Segment,
 )
 
-from ..._shared.pose_utils import fake_pose
+from _shared.pose_utils import fake_pose
 
 
-def single_datum(num_frames, segments: List[List[Segment]]) -> PoseSegmentsDatum:
-    return {"id": "test_id", "pose": fake_pose(num_frames=num_frames), "segments": segments}
+def single_datum(segments: List[List[Segment]], **pose_kwargs) -> PoseSegmentsDatum:
+    return {
+        "id": "test_id",
+        "pose": fake_pose(**pose_kwargs),
+        "segments": segments
+    }
 
 
 class DataTestCase(unittest.TestCase):
@@ -51,6 +56,31 @@ class DataTestCase(unittest.TestCase):
             rest_bio = bio[1:]
             self.assertTrue(torch.all(torch.eq(torch.full_like(rest_bio, fill_value=2), rest_bio)))
 
+    def test_pose_with_optical_flow(self):
+        datum = single_datum(num_frames=5, segments=[], dims=3)
+        dataset = PoseSegmentsDataset([datum], optical_flow=True)
+
+        pose = dataset[0]["pose"]
+        self.assertEqual(pose["data"].shape, (5, 137, 4))
+
+    def test_pose_with_hand_normalization(self):
+        datum = single_datum(num_frames=5, segments=[], dims=3)
+        self.assertEqual(datum["pose"].body.data.shape, (5, 1, 137, 3))
+
+        original_pose = datum["pose"].body.data.copy()
+        self.assertTrue(np.isfinite(original_pose).all())
+        dataset = PoseSegmentsDataset([datum], hand_normalization=True)
+        pose = dataset[0]["pose"]
+        self.assertTrue(np.isfinite(pose["obj"].body.data).all())
+        self.assertEqual(pose["data"].shape, (5, 137 + 21 + 21, 3))
+
+    def test_pose_with_hand_normalization_and_optical_flow(self):
+        datum = single_datum(num_frames=5, segments=[], dims=3)
+        self.assertEqual(datum["pose"].body.data.shape, (5, 1, 137, 3))
+
+        dataset = PoseSegmentsDataset([datum], hand_normalization=True, optical_flow=True)
+        pose = dataset[0]["pose"]
+        self.assertEqual(pose["data"].shape, (5, 137 + 21 + 21, 4))
 
 if __name__ == '__main__':
     unittest.main()
