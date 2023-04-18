@@ -62,6 +62,7 @@ class DataTestCase(unittest.TestCase):
 
         pose = dataset[0]["pose"]
         self.assertEqual(pose["data"].shape, (5, 137, 4))
+        self.assertEqual(pose["data"].dtype, torch.float32)
 
     def test_pose_with_hand_normalization(self):
         datum = single_datum(num_frames=5, segments=[], dims=3)
@@ -73,6 +74,7 @@ class DataTestCase(unittest.TestCase):
         pose = dataset[0]["pose"]
         self.assertTrue(np.isfinite(pose["obj"].body.data).all())
         self.assertEqual(pose["data"].shape, (5, 137 + 21 + 21, 3))
+        self.assertEqual(pose["data"].dtype, torch.float32)
 
     def test_pose_with_hand_normalization_and_optical_flow(self):
         datum = single_datum(num_frames=5, segments=[], dims=3)

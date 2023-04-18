@@ -11,6 +11,7 @@ from pose_format.utils.normalization_3d import PoseNormalizer
 from pose_format.utils.optical_flow import OpticalFlowCalculator
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 from _shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
 
@@ -116,7 +117,7 @@ class PoseSegmentsDataset(Dataset):
         normalized_hand = normalizer(hand_pose.body.data)
 
         # Add normalized hand to pose
-        pose.body.data = ma.concatenate([pose.body.data, normalized_hand], axis=2)
+        pose.body.data = ma.concatenate([pose.body.data, normalized_hand], axis=2).astype(np.float32)
         pose.body.confidence = np.concatenate([pose.body.confidence, hand_pose.body.confidence], axis=2)
 
     def add_optical_flow(self, pose):
@@ -127,7 +128,7 @@ class PoseSegmentsDataset(Dataset):
         flow = np.concatenate([np.zeros((1, *flow.shape[1:]), dtype=flow.dtype), flow], axis=0)
 
         # Add flow data to X, Y, Z
-        pose.body.data = np.concatenate([pose.body.data, flow], axis=-1)
+        pose.body.data = np.concatenate([pose.body.data, flow], axis=-1).astype(np.float32)
 
     def process_datum(self, datum: PoseSegmentsDatum):
         pose = datum["pose"]
@@ -163,8 +164,9 @@ class PoseSegmentsDataset(Dataset):
         return self.cached_data[index]
 
     def inverse_classes_ratio(self, kind: str) -> List[float]:
+        print(f"Calculating inverse classes ratio for {kind}...")
         counter = Counter()
-        for item in iter(self):
+        for item in tqdm(iter(self)):
             counter += Counter(item["bio"][kind].numpy().tolist())
         sum_counter = sum(counter.values())
         return [sum_counter / counter[i] for c, i in BIO.items()]
