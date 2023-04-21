@@ -60,5 +60,5 @@ testpaths = [
 
 [project.scripts]
 video_to_pose = "video_to_pose.bin:main"
-pose_to_segments = "pose_to_segments.src.bin.bin:main"
+pose_to_segments = "pose_to_segments.bin:main"
 pose_to_video = "pose_to_video.bin:main"
