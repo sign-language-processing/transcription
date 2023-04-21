@@ -180,11 +180,11 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
 
     for person in ["a", "b"]:
         if len(poses[person].body.data) > 0:
-            sentences = [s for s in sentences if s["participant"].lower() == person and len(s["glosses"]) > 0]
+            participant_sentences = [s for s in sentences if s["participant"].lower() == person and len(s["glosses"]) > 0]
             segments = [[{
                 "start_time": gloss["start"] / 1000,
                 "end_time": gloss["end"] / 1000
-            } for gloss in s["glosses"]] for s in sentences]
+            } for gloss in s["glosses"]] for s in participant_sentences]
 
             yield {"id": f"{datum['id']}_{person}", "pose": poses[person], "segments": segments}
 
