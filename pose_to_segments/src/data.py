@@ -42,13 +42,13 @@ class PoseSegmentsDatum(TypedDict):
 BIO = {"O": 0, "B": 1, "I": 2}
 
 
-def build_bio(timestamps: torch.Tensor, segments: List[Segment]):
+def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment]):
     bio = torch.zeros(len(timestamps), dtype=torch.long)
 
     timestamp_i = 0
     for segment in segments:
         if segment["start_time"] >= timestamps[-1]:
-            print("Segment", segment, "starts after the end of the pose", timestamps[-1])
+            print(f"Video {identifier} segment {segment} starts after the end of the pose {timestamps[-1]}")
             continue
 
         while timestamps[timestamp_i] < segment["start_time"]:
@@ -103,7 +103,7 @@ class PoseSegmentsDataset(Dataset):
         } for segments in datum["segments"]]
 
         segments = {"sign": sign_segments, "sentence": sentence_segments}
-        bio = {kind: build_bio(timestamps, s) for kind, s in segments.items()}
+        bio = {kind: build_bio(datum["id"], timestamps, s) for kind, s in segments.items()}
         return segments, bio
 
     def normalize_hand(self, pose, component_name: str, plane: Tuple[str, str, str], line: Tuple[str, str]):
@@ -166,7 +166,7 @@ class PoseSegmentsDataset(Dataset):
     def inverse_classes_ratio(self, kind: str) -> List[float]:
         print(f"Calculating inverse classes ratio for {kind}...")
         counter = Counter()
-        for item in tqdm(iter(self)):
+        for item in tqdm(iter(self), total=len(self)):
             counter += Counter(item["bio"][kind].numpy().tolist())
         sum_counter = sum(counter.values())
         return [sum_counter / counter[i] for c, i in BIO.items()]
@@ -180,13 +180,25 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
 
     for person in ["a", "b"]:
         if len(poses[person].body.data) > 0:
-            participant_sentences = [s for s in sentences if s["participant"].lower() == person and len(s["glosses"]) > 0]
+            participant_sentences = [s for s in sentences if
+                                     s["participant"].lower() == person and len(s["glosses"]) > 0]
             segments = [[{
                 "start_time": gloss["start"] / 1000,
                 "end_time": gloss["end"] / 1000
             } for gloss in s["glosses"]] for s in participant_sentences]
 
             yield {"id": f"{datum['id']}_{person}", "pose": poses[person], "segments": segments}
+
+
+def filter_dataset(datum) -> bool:
+    cmdi_path = datum["paths"]["cmdi"].numpy().decode('utf-8')
+    with open(cmdi_path, "r") as f:
+        cmdi_text = f.read()
+        if "<cmdp:Task>Joke</cmdp:Task>" in cmdi_text:
+            # print("Skipping", datum["id"], "because jokes are not annotated")
+            return False
+
+    return True
 
 
 def get_dataset(name="dgs_corpus",
@@ -197,7 +209,11 @@ def get_dataset(name="dgs_corpus",
                 data_dir=None,
                 hand_normalization=False,
                 optical_flow=False):
-    data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split, components=components, data_dir=data_dir)
+    data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split,
+                            components=components,
+                            data_dir=data_dir,
+                            filter_func=filter_dataset)
+    print(f"Dataset({split}) size: {len(data)}")
 
     data = list(chain.from_iterable([process_datum(d) for d in data]))
 

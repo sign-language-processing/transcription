@@ -25,7 +25,8 @@ def get_tfds_dataset(name,
                      split="train",
                      components: List[str] = None,
                      data_dir=None,
-                     version="1.0.0"):
+                     version="1.0.0",
+                     filter_func=None):
     dataset_module = importlib.import_module("sign_language_datasets.datasets." + name + "." + name)
 
     config_kwargs = dict(
@@ -48,7 +49,8 @@ def get_tfds_dataset(name,
         pose_header = PoseHeader.read(BufferReader(buffer.read()))
 
     normalization_info = pose_normalization_info(pose_header)
-    return [process_datum(datum, pose_header, normalization_info, components) for datum in tqdm(tfds_dataset)]
+    return [process_datum(datum, pose_header, normalization_info, components) for datum in tqdm(tfds_dataset)
+            if filter_func is None or filter_func(datum)]
 
 
 def process_datum(datum,
