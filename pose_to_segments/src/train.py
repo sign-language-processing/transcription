@@ -23,10 +23,15 @@ if __name__ == '__main__':
                      fps=args.fps,
                      components=args.pose_components,
                      hand_normalization=args.hand_normalization,
-                     optical_flow=args.optical_flow)
+                     optical_flow=args.optical_flow,
+                     data_dir=args.data_dir)
 
-    train_dataset = get_dataset(split="train", **data_args)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+    if args.data_dev:
+            train_dataset = get_dataset(split="validation", **data_args)
+            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
+    else:
+        train_dataset = get_dataset(split="train", **data_args)
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
     validation_dataset = get_dataset(split="validation", **data_args)
     validation_loader = DataLoader(validation_dataset,
@@ -60,12 +65,14 @@ if __name__ == '__main__':
         os.makedirs("models", exist_ok=True)
 
         callbacks.append(
-            ModelCheckpoint(dirpath=f"models/{LOGGER.experiment.id}",
-                            filename="model",
+            ModelCheckpoint(dirpath=f"models/{LOGGER.experiment.name}",
+                            filename='{epoch:02d}-{validation_loss:.2f}',
                             verbose=True,
                             save_top_k=1,
+                            save_last=True,
                             monitor='validation_loss',
-                            every_n_train_steps=32,
+                            # every_n_train_steps=32,
+                            every_n_epochs=1,
                             mode='min'))
 
     trainer = pl.Trainer(max_epochs=100,
@@ -73,7 +80,8 @@ if __name__ == '__main__':
                          callbacks=callbacks,
                          log_every_n_steps=10,
                          accelerator='gpu',
-                         val_check_interval=32,
+                        #  val_check_interval=32,
+                         check_val_every_n_epoch=1,
                          devices=args.gpus)
 
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)

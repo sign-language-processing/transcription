@@ -1,3 +1,4 @@
+import math
 from typing import List
 
 import numpy as np
@@ -5,6 +6,9 @@ import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from torch import nn
+
+from .utils.probs_to_segments import probs_to_segments
+from .utils.metrics import frame_accuracy, segment_percentage, segment_IoU
 
 
 class PoseTaggingModel(pl.LightningModule):
@@ -67,26 +71,60 @@ class PoseTaggingModel(pl.LightningModule):
     def validation_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="validation")
 
+    def evaluate(self, level, _gold, _probs, _segments_gold, _mask):
+        metrics = {
+            'loss': [],
+            'frame_accuracy': [],
+            'segment_percentage': [],
+            'segment_IoU': [],
+        }
+
+        for gold, probs, segments_gold, mask in zip(_gold, _probs, _segments_gold, _mask):
+            if level == 'sign':
+                losses = self.sign_loss_function(probs, gold)
+            elif level == 'sentence':
+                losses = self.sentence_loss_function(probs, gold)
+            metrics['loss'].append((losses * mask).mean())
+
+            # assign masked postions the O tag
+            probs_masked = probs.detach().clone()
+            probs_masked[(mask == 0).nonzero(as_tuple=True)[0]] = torch.log(torch.tensor([1, 0, 0]).cuda())
+
+            metrics['frame_accuracy'].append(frame_accuracy(probs_masked, gold))
+
+            segments = probs_to_segments(probs_masked.cpu())
+            # convert segments from second to frame
+            fps = 25
+            segments_gold = [{
+                'start': math.floor(s['start_time'] * fps), 
+                'end': math.floor(s['end_time'] * fps),
+            } for s in segments_gold]
+
+            metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
+            metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
+
+        for key, value in metrics.items():
+            metrics[key] = sum(value) / len(value)
+
+        return metrics
+
     def step(self, batch, *unused_args, name: str):
         pose_data = batch["pose"]["data"]
         batch_size = len(pose_data)
 
         log_probs = self.forward(pose_data)
+        mask = batch["mask"]
 
-        loss_mask = batch["mask"].reshape(-1)
+        sign_metrics = self.evaluate('sign', batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask)
+        sentence_metrics = self.evaluate('sentence', batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask)
 
-        sign_losses = self.sign_loss_function(log_probs["sign"].reshape(-1, 3), batch["bio"]["sign"].reshape(-1))
-        sign_loss = (sign_losses * loss_mask).mean()
-
-        sentence_losses = self.sentence_loss_function(log_probs["sentence"].reshape(-1, 3),
-                                                      batch["bio"]["sentence"].reshape(-1))
-        sentence_loss = (sentence_losses * loss_mask).mean()
-
-        loss = sign_loss + sentence_loss
-
-        self.log(f"{name}_sign_loss", sign_loss, batch_size=batch_size)
-        self.log(f"{name}_sentence_loss", sentence_loss, batch_size=batch_size)
+        loss = sign_metrics['loss'] + sentence_metrics['loss']
         self.log(f"{name}_loss", loss, batch_size=batch_size)
+
+        for level, metrics in [('sign', sign_metrics), ('sentence', sentence_metrics)]:
+            for key, value in metrics.items():
+                self.log(f"{name}_{level}_{key}", value, batch_size=batch_size)
+        
         return loss
 
     def configure_optimizers(self):
