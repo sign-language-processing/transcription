@@ -3,7 +3,7 @@ import numpy as np
 BIO = {"O": 0, "B": 1, "I": 2}
 
 
-def probs_to_segments(probs, b_threshold=67., o_threshold=45.):
+def probs_to_segments(probs, b_threshold=50., o_threshold=50.):
     probs = np.round(np.exp(probs.numpy().squeeze()) * 100)
 
     segments = []
