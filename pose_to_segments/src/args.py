@@ -17,6 +17,8 @@ parser.add_argument('--learning_rate', type=float, default=5e-4, help='optimizer
 
 # Data Arguments
 parser.add_argument('--dataset', choices=['dgs_corpus'], default='dgs_corpus', help='which dataset to use?')
+parser.add_argument('--data_dir', help='which dir to store the dataset?')
+parser.add_argument('--data_dev', type=bool, default=False, help='whether to use dev set as training data for fast debugging?')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
 parser.add_argument(
