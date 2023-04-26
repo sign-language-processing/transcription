@@ -71,7 +71,7 @@ class PoseTaggingModel(pl.LightningModule):
     def validation_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="validation")
 
-    def evaluate(self, level, _gold, _probs, _segments_gold, _mask):
+    def evaluate(self, level, fps, _gold, _probs, _segments_gold, _mask):
         metrics = {
             'loss': [],
             'frame_accuracy': [],
@@ -94,7 +94,6 @@ class PoseTaggingModel(pl.LightningModule):
 
             segments = probs_to_segments(probs_masked.cpu())
             # convert segments from second to frame
-            fps = 25
             segments_gold = [{
                 'start': math.floor(s['start_time'] * fps), 
                 'end': math.floor(s['end_time'] * fps),
@@ -114,9 +113,10 @@ class PoseTaggingModel(pl.LightningModule):
 
         log_probs = self.forward(pose_data)
         mask = batch["mask"]
+        fps = batch["pose"]["obj"][0].body.fps
 
-        sign_metrics = self.evaluate('sign', batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask)
-        sentence_metrics = self.evaluate('sentence', batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask)
+        sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask)
+        sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask)
 
         loss = sign_metrics['loss'] + sentence_metrics['loss']
         self.log(f"{name}_loss", loss, batch_size=batch_size)
