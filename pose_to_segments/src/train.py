@@ -27,8 +27,8 @@ if __name__ == '__main__':
                      data_dir=args.data_dir)
 
     if args.data_dev:
-            train_dataset = get_dataset(split="validation", **data_args)
-            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
+        train_dataset = get_dataset(split="validation", **data_args)
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
     else:
         train_dataset = get_dataset(split="train", **data_args)
         train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
