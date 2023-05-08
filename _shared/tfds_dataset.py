@@ -49,7 +49,8 @@ def get_tfds_dataset(name,
         pose_header = PoseHeader.read(BufferReader(buffer.read()))
 
     normalization_info = pose_normalization_info(pose_header)
-    return [process_datum(datum, pose_header, normalization_info, components) for datum in tqdm(tfds_dataset)
+    return [process_datum(datum, pose_header, normalization_info, components) 
+            for datum in tqdm(tfds_dataset, desc="Loading dataset")
             if filter_func is None or filter_func(datum)]
 
 

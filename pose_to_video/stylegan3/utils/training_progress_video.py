@@ -20,7 +20,7 @@ print(f"Writing video to {video_name}")
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 video_writer = cv2.VideoWriter(video_name, fourcc, 1.0, (768, 768))
 
-for subdirectory in subdirectories:
+for subdirectory in subdirectories[-2:]:
     # Loop through all the PNG files in the last subdirectory that start with "fakes"
     fake_files = [file for file in os.listdir(os.path.join(directory_path, subdirectory))
                   if file.startswith("fakes") and file.endswith(".png")]

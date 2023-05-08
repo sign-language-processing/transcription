@@ -100,6 +100,11 @@ text_to_pose --notation=signwriting --text=$(cat sign.txt) --pose=sign.pose
 Finally, we'll animate the pose sequence into a video:
 
 ```bash
-pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4
+# Using Pix2Pix
+pose_to_video --model=pix2pix --pose=sign.pose --video=sign.mp4 --upscale=true
+# OR Using StyleGAN3
+pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale=true
+# OR Using Mixamo
+pose_to_video --model=mixamo --pose=sign.pose --video=sign.mp4
 ```
 </details>
