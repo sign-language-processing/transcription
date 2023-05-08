@@ -53,7 +53,7 @@ def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment]
         while timestamps[timestamp_i] < segment["start_time"]:
             timestamp_i += 1
         segment_start_i = timestamp_i
-        while timestamp_i < len(timestamps) and timestamps[timestamp_i] < segment["end_time"]:
+        while timestamp_i < (len(timestamps) - 1) and timestamps[timestamp_i] < segment["end_time"]:
             timestamp_i += 1
         segment_end_i = timestamp_i
 
@@ -163,6 +163,10 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
 
 
 def filter_dataset(tf_datum) -> bool:
+    # see https://docs.google.com/spreadsheets/d/1GCZ74uPPbCd7Kva88gjyPgKI5WqA4CPBdM9MDnBKCNo/edit#gid=0
+    if tf_datum["id"].numpy().decode('utf-8') in ["1289910", "1245887","1289868","1246064", "1584617"]:
+        return False
+
     cmdi_path = tf_datum["paths"]["cmdi"].numpy().decode('utf-8')
     with open(cmdi_path, "r") as f:
         cmdi_text = f.read()
@@ -171,6 +175,33 @@ def filter_dataset(tf_datum) -> bool:
             return False
 
     return True
+
+
+def dataset_statistics(data):
+    pose_lens = []
+    sentence_nums = []
+    sign_nums = []
+    for i, d in enumerate(data):
+        sentence_num = len(d['segments'])
+        if sentence_num > 0:
+            sentence_nums.append(sentence_num)
+        else:
+            print(f'id={d["id"]}: zero segments')
+
+        sign_num = len([item for sublist in d['segments'] for item in sublist])
+        if sign_num > 0:
+            sign_nums.append(sign_num)
+
+        if sentence_num > 0:
+            pose_len = len(d['pose'].body.data) / 25
+            if pose_len > d['segments'][0][0]['start_time']:
+                pose_lens.append(pose_len)
+            else:
+                print(f'index={i}: pose does not have enough length')
+
+    print(f'mean pose length: {sum(pose_lens) / len(pose_lens)}')
+    print(f'mean sentence number: {sum(sentence_nums) / len(sentence_nums)}')
+    print(f'mean sign number: {sum(sign_nums) / len(sign_nums)}')
 
 
 def get_dataset(name="dgs_corpus",
@@ -188,5 +219,6 @@ def get_dataset(name="dgs_corpus",
     print(f"Dataset({split}) size: {len(data)}")
     data = list(chain.from_iterable([process_datum(d) for d in tqdm(data, desc="Processing dataset")]))
     print(f"Dataset({split}) videos: {len(data)}")
-
+    dataset_statistics(data)
+    
     return PoseSegmentsDataset(data, hand_normalization=hand_normalization, optical_flow=optical_flow)
