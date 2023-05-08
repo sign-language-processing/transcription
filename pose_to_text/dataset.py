@@ -8,8 +8,8 @@ from joeynmt.datasets import BaseDataset
 from joeynmt.vocabulary import Vocabulary
 
 from pose_to_text.batch import SignBatch
-from text_to_pose.data import TextPoseDataset
-from text_to_pose.data import get_dataset as get_single_dataset
+from text_to_pose.diffusion.src.data import TextPoseDataset
+from text_to_pose.diffusion.src.data import get_dataset as get_single_dataset
 
 from .._shared.collator import collate_tensors
 from .._shared.tokenizers import SignLanguageTokenizer

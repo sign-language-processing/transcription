@@ -14,25 +14,10 @@ def load_video_frames(cap: cv2.VideoCapture):
     cap.release()
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--format',
-                        choices=['mediapipe'],
-                        default='mediapipe',
-                        type=str,
-                        help='type of pose estimation to use')
-    parser.add_argument('-i', required=True, type=str, help='path to input video file')
-    parser.add_argument('-o', required=True, type=str, help='path to output pose file')
-
-    return parser.parse_args()
-
-
-def main():
-    args = get_args()
-
+def pose_video(input_path: str, output_path: str, format: str):
     # Load video frames
     print('Loading video ...')
-    cap = cv2.VideoCapture(args.i)
+    cap = cv2.VideoCapture(input_path)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -40,7 +25,7 @@ def main():
 
     # Perform pose estimation
     print('Estimating pose ...')
-    if args.format == 'mediapipe':
+    if format == 'mediapipe':
         pose = load_holistic(frames,
                              fps=fps,
                              width=width,
@@ -52,5 +37,20 @@ def main():
 
     # Write
     print('Saving to disk ...')
-    with open(args.o, "wb") as f:
+    with open(output_path, "wb") as f:
         pose.write(f)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--format',
+                        choices=['mediapipe'],
+                        default='mediapipe',
+                        type=str,
+                        help='type of pose estimation to use')
+    parser.add_argument('-i', required=True, type=str, help='path to input video file')
+    parser.add_argument('-o', required=True, type=str, help='path to output pose file')
+
+    args = parser.parse_args()
+
+    pose_video(args.i, args.o, args.format)

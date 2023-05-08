@@ -1,0 +1,86 @@
+<script>
+    window.globalThis = window;
+</script>
+
+
+<!-- Model viewer scripts -->
+<script type="module" src="model-viewer.min.js"></script>
+<script src="three.min.js"></script>
+
+<!-- Use it like any other HTML element -->
+<model-viewer style="width:1024px; height: 1024px"
+              skybox-image="skybox.png"
+              camera-controls
+              camera-orbit="0deg 90deg auto"
+              camera-target="0m 2.8m 0m"
+              field-of-view="90deg"
+              interaction-prompt="none"
+              loading="eager"
+              preload
+              ar camera-controls></model-viewer>
+
+<script>
+    const modelViewer = document.querySelector("model-viewer")
+    let canvas = null;
+    let scene = null;
+
+    window.init = function () {
+        console.log('init')
+        return new Promise(resolve => {
+            modelViewer.addEventListener('load', () => {
+                // Always render highest quality
+                const ModelViewerElement = customElements.get('model-viewer');
+                ModelViewerElement.minimumRenderScale = 1;
+                modelViewer.play();
+                scene = getScene();
+                resolve();
+            });
+            modelViewer.src = "character.glb"
+        })
+    }
+
+    let trackIndex = 0;
+
+    window.animate = async function (rotations) { // Shape: {node: [4] ...}
+        const name = 'u' + trackIndex++;
+        const tracks = [];
+
+        for (const [node, rotation] of Object.entries(rotations)) {
+            const key = node.replace(':', '') + ".quaternion";
+            tracks.push(new THREE.QuaternionKeyframeTrack(key, [0], rotation));
+        }
+
+        const newAnimation = new THREE.AnimationClip(name, 0, tracks);
+        scene.animationsByName.set(name, newAnimation);
+        scene.playAnimation(name);
+        if (modelViewer.paused) {
+            modelViewer.play();
+        }
+
+        return new Promise(resolve => requestAnimationFrame(resolve));
+    }
+
+    window.snapshot = function () {
+        if (canvas === null) {
+            canvas = modelViewer.shadowRoot.querySelector('canvas.show')
+        }
+        return canvas.toDataURL('image/jpeg');
+    }
+
+    let animateAndSnapshotQueuePromise = Promise.resolve();
+    window.animateAndSnapshot = async function (rotations) {
+        animateAndSnapshotQueuePromise = animateAndSnapshotQueuePromise.then(async () => {
+            await animate(rotations);
+            return snapshot();
+        })
+        return await animateAndSnapshotQueuePromise
+    }
+
+    function getScene() {
+        const symbol = Object.getOwnPropertySymbols(modelViewer)
+            .find(symbol => String(symbol) === 'Symbol(scene)');
+        return modelViewer[symbol];
+    }
+
+    init()
+</script>

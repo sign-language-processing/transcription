@@ -4,7 +4,7 @@ from pathlib import Path
 # pylint: disable=unused-import
 import sign_language_datasets.datasets
 import tensorflow_datasets as tfds
-from sign_language_datasets.datasets import SignDatasetConfig
+from sign_language_datasets.datasets.config import SignDatasetConfig
 from tqdm import tqdm
 
 signbank = tfds.load(name='sign_bank', builder_kwargs=dict(config=SignDatasetConfig(name="annotations")))

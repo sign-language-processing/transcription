@@ -3,9 +3,6 @@ import argparse
 import os
 
 import cv2
-import numpy as np
-from diffusion.one_shot import pose_to_video
-from PIL import Image
 from pose_format.pose import Pose
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -13,10 +10,11 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', required=True, type=str, help='path to input pose file')
-    parser.add_argument('-o', required=True, type=str, help='path to output video file')
-    parser.add_argument('--image', required=True, type=str, help='path to input image style')
-    parser.add_argument('--image-pose', required=True, type=str, help='path to input image style pose file')
+    parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
+    parser.add_argument('--video', required=True, type=str, help='path to output video file')
+    parser.add_argument('--model', required=True, type=str, choices=['pix2pix', 'mixamo', 'stylegan3'],
+                        help='system to use')
+    parser.add_argument('--upscale', type=bool, help='should the output be upscaled to 768x768')
 
     return parser.parse_args()
 
@@ -24,31 +22,28 @@ def get_args():
 def main():
     args = get_args()
 
-    print('Loading image ...')
-    image = Image.open(args.image)
-    print('Loading image pose ...')
-    with open(args.image_pose, 'rb') as f:
-        image_pose = Pose.read(f.read())
-
     print('Loading input pose ...')
-    with open(args.i, 'rb') as f:
+    with open(args.pose, 'rb') as f:
         pose = Pose.read(f.read())
 
     print('Generating video ...')
+
     video = None
-    for frame in pose_to_video(image, image_pose, pose):
+    pose_to_video = __import__('pose_to_video.' + args.model).pose_to_video
+    frames: iter = pose_to_video(pose)
+
+    if args.upscale:
+        from pose_to_video.upscaler import upscale
+        frames = upscale(frames)
+
+    for frame in frames:
         if video is None:
+            print('Saving to disk ...')
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-            video = cv2.VideoWriter(args.o, fourcc, pose.body.fps, frame.size)
+            video = cv2.VideoWriter(args.video, fourcc, pose.body.fps, frame.size)
 
-        video.write(cv2.cvtColor(np.array(frame), cv2.COLOR_RGB2BGR))
-        frame.save("test.png")
+        video.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     video.release()
-
-    # Write
-    print('Saving to disk ...')
-    with open(args.o, "wb") as f:
-        pose.write(f)
 
 
 if __name__ == '__main__':

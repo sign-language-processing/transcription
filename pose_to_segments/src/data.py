@@ -4,15 +4,14 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, TypedDict
 
 import numpy as np
 import torch
-from numpy import ma
-from pose_format import Pose, PoseHeader
+from pose_format import Pose
 from pose_format.numpy.representation.distance import DistanceRepresentation
-from pose_format.utils.normalization_3d import PoseNormalizer
 from pose_format.utils.optical_flow import OpticalFlowCalculator
 from sign_language_datasets.datasets.dgs_corpus.dgs_utils import get_elan_sentences
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+from _shared.pose_utils import normalize_hands_3d
 from _shared.tfds_dataset import ProcessedPoseDatum, get_tfds_dataset
 
 
@@ -64,18 +63,7 @@ def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment]
     return bio
 
 
-def hands_components(pose_header: PoseHeader):
-    if pose_header.components[0].name == "POSE_LANDMARKS":
-        return ("LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"), \
-               ("WRIST", "PINKY_MCP", "INDEX_FINGER_MCP"), \
-               ("WRIST", "MIDDLE_FINGER_MCP")
 
-    if pose_header.components[0].name == "pose_keypoints_2d":
-        return ("hand_left_keypoints_2d", "hand_right_keypoints_2d"), \
-               ("BASE", "P_CMC", "I_CMC"), \
-               ("BASE", "M_CMC")
-
-    raise ValueError("Unknown pose header")
 
 
 class PoseSegmentsDataset(Dataset):
@@ -106,20 +94,6 @@ class PoseSegmentsDataset(Dataset):
         bio = {kind: build_bio(datum["id"], timestamps, s) for kind, s in segments.items()}
         return segments, bio
 
-    def normalize_hand(self, pose, component_name: str, plane: Tuple[str, str, str], line: Tuple[str, str]):
-        hand_pose = pose.get_components([component_name])
-        plane = hand_pose.header.normalization_info(p1=(component_name, plane[0]),
-                                                    p2=(component_name, plane[1]),
-                                                    p3=(component_name, plane[2]))
-        line = hand_pose.header.normalization_info(p1=(component_name, line[0]),
-                                                   p2=(component_name, line[1]))
-        normalizer = PoseNormalizer(plane=plane, line=line)
-        normalized_hand = normalizer(hand_pose.body.data)
-
-        # Add normalized hand to pose
-        pose.body.data = ma.concatenate([pose.body.data, normalized_hand], axis=2).astype(np.float32)
-        pose.body.confidence = np.concatenate([pose.body.confidence, hand_pose.body.confidence], axis=2)
-
     def add_optical_flow(self, pose):
         calculator = OpticalFlowCalculator(fps=pose.body.fps, distance=DistanceRepresentation())
         flow = calculator(pose.body.data)  # numpy: frames - 1, people, points
@@ -134,9 +108,7 @@ class PoseSegmentsDataset(Dataset):
         pose = datum["pose"]
 
         if self.hand_normalization:
-            (left_hand_component, right_hand_component), plane, line = hands_components(pose.header)
-            self.normalize_hand(pose, left_hand_component, plane, line)
-            self.normalize_hand(pose, right_hand_component, plane, line)
+            normalize_hands_3d(pose)
 
         if self.optical_flow:
             self.add_optical_flow(pose)
@@ -166,7 +138,7 @@ class PoseSegmentsDataset(Dataset):
     def inverse_classes_ratio(self, kind: str) -> List[float]:
         print(f"Calculating inverse classes ratio for {kind}...")
         counter = Counter()
-        for item in tqdm(iter(self), total=len(self)):
+        for item in tqdm(iter(self), total=len(self), desc="Calculating inverse classes ratio"):
             counter += Counter(item["bio"][kind].numpy().tolist())
         sum_counter = sum(counter.values())
         return [sum_counter / counter[i] for c, i in BIO.items()]
@@ -190,8 +162,8 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
             yield {"id": f"{datum['id']}_{person}", "pose": poses[person], "segments": segments}
 
 
-def filter_dataset(datum) -> bool:
-    cmdi_path = datum["paths"]["cmdi"].numpy().decode('utf-8')
+def filter_dataset(tf_datum) -> bool:
+    cmdi_path = tf_datum["paths"]["cmdi"].numpy().decode('utf-8')
     with open(cmdi_path, "r") as f:
         cmdi_text = f.read()
         if "<cmdp:Task>Joke</cmdp:Task>" in cmdi_text:
@@ -214,7 +186,7 @@ def get_dataset(name="dgs_corpus",
                             data_dir=data_dir,
                             filter_func=filter_dataset)
     print(f"Dataset({split}) size: {len(data)}")
-
-    data = list(chain.from_iterable([process_datum(d) for d in data]))
+    data = list(chain.from_iterable([process_datum(d) for d in tqdm(data, desc="Processing dataset")]))
+    print(f"Dataset({split}) videos: {len(data)}")
 
     return PoseSegmentsDataset(data, hand_normalization=hand_normalization, optical_flow=optical_flow)
