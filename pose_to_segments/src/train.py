@@ -26,31 +26,37 @@ if __name__ == '__main__':
                      optical_flow=args.optical_flow,
                      data_dir=args.data_dir)
 
-    if args.data_dev:
-        train_dataset = get_dataset(split="validation", **data_args)
-        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
-    else:
-        train_dataset = get_dataset(split="train", **data_args)
-        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+    if not args.test_only:                 
+        if args.data_dev:
+            train_dataset = get_dataset(split="validation", **data_args)
+            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
+        else:
+            train_dataset = get_dataset(split="train", **data_args)
+            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-    validation_dataset = get_dataset(split="validation", **data_args)
-    validation_loader = DataLoader(validation_dataset,
-                                   batch_size=args.batch_size,
-                                   shuffle=False,
-                                   collate_fn=zero_pad_collator)
+        validation_dataset = get_dataset(split="validation", **data_args)
+        validation_loader = DataLoader(validation_dataset,
+                                    batch_size=args.batch_size,
+                                    shuffle=False,
+                                    collate_fn=zero_pad_collator)
 
-    _, num_pose_joints, num_pose_dims = train_dataset[0]["pose"]["data"].shape
+    test_dataset = get_dataset(split="test", **data_args)
+    test_loader = DataLoader(test_dataset,
+                                batch_size=args.batch_size,
+                                shuffle=False,
+                                collate_fn=zero_pad_collator)
+
+    _, num_pose_joints, num_pose_dims = test_dataset[0]["pose"]["data"].shape
 
     # Model Arguments
-    sign_class_weights = train_dataset.inverse_classes_ratio("sign")
-    sentence_class_weights = train_dataset.inverse_classes_ratio("sentence")
-    model_args = dict(sign_class_weights=sign_class_weights,
-                      sentence_class_weights=sentence_class_weights,
-                      pose_dims=(num_pose_joints, num_pose_dims),
+    model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
                       learning_rate=args.learning_rate)
+    if not args.test_only:
+        model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign") 
+        model_args['sentence_class_weights'] = train_dataset.inverse_classes_ratio("sentence") 
 
     print("Model Arguments:", model_args)
 
@@ -66,7 +72,7 @@ if __name__ == '__main__':
 
         callbacks.append(
             ModelCheckpoint(dirpath=f"models/{LOGGER.experiment.name}",
-                            filename='{epoch:02d}-{validation_loss:.2f}',
+                            filename='best',
                             verbose=True,
                             save_top_k=1,
                             save_last=True,
@@ -76,12 +82,18 @@ if __name__ == '__main__':
                             mode='min'))
 
     trainer = pl.Trainer(max_epochs=100,
-                         logger=LOGGER,
-                         callbacks=callbacks,
-                         log_every_n_steps=10,
-                         accelerator='gpu',
+                        logger=LOGGER,
+                        callbacks=callbacks,
+                        log_every_n_steps=10,
+                        accelerator='gpu',
                         #  val_check_interval=32,
-                         check_val_every_n_epoch=1,
-                         devices=args.gpus)
+                        check_val_every_n_epoch=1,
+                        devices=args.gpus)
 
-    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
+    if args.test_only:
+        trainer.test(model, dataloaders=test_loader)
+    else:
+        trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
+
+        if args.test:
+            trainer.test(dataloaders=test_loader)

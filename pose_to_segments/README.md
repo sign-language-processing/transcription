@@ -70,3 +70,5 @@ export CUDA_VISIBLE_DEVICES=3
 python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
   --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --hand_normalization=true --optical_flow=true
 ```
+
+## Testing and Visualization
