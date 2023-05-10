@@ -14,8 +14,8 @@ from .utils.metrics import frame_accuracy, segment_percentage, segment_IoU
 class PoseTaggingModel(pl.LightningModule):
 
     def __init__(self,
-                 sign_class_weights: List[float],
-                 sentence_class_weights: List[float],
+                 sign_class_weights: List[float] = [1, 1, 1],
+                 sentence_class_weights: List[float] = [1, 1, 1],
                  pose_dims: (int, int) = (137, 2),
                  hidden_dim: int = 128,
                  encoder_depth=2,
@@ -70,6 +70,9 @@ class PoseTaggingModel(pl.LightningModule):
 
     def validation_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="validation")
+    
+    def test_step(self, batch, *unused_args):
+        return self.step(batch, *unused_args, name="test")
 
     def evaluate(self, level, fps, _gold, _probs, _segments_gold, _mask):
         metrics = {
@@ -124,7 +127,7 @@ class PoseTaggingModel(pl.LightningModule):
         for level, metrics in [('sign', sign_metrics), ('sentence', sentence_metrics)]:
             for key, value in metrics.items():
                 self.log(f"{name}_{level}_{key}", value, batch_size=batch_size)
-        
+
         return loss
 
     def configure_optimizers(self):

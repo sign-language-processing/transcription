@@ -35,8 +35,13 @@ parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden 
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
 parser.add_argument('--encoder_bidirectional', type=bool, default=True, help='should use a bidirectional encoder?')
 
+# Testing Arguments
+parser.add_argument('--test_only', type=bool, default=False, help='whether to test only instead of training?')
+parser.add_argument('--test', type=bool, default=True, help='whether to test after training finishes?')
+# parser.add_argument('--elan', type=bool, default=True, help='whether to output ELAN files when testing finishes?')
+
 # Prediction args
-parser.add_argument('--checkpoint', type=str, default=None, metavar='PATH', help="Checkpoint path for prediction")
+parser.add_argument('--checkpoint', type=str, default='./models/elated-feather-193/best.ckpt', metavar='PATH', help="Checkpoint path for prediction")
 parser.add_argument('--pred_output', type=str, default=None, metavar='PATH', help="Path for saving prediction files")
 parser.add_argument('--ffmpeg_path', type=str, default=None, metavar='PATH', help="Path for ffmpeg executable")
 
