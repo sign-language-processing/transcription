@@ -38,6 +38,7 @@ parser.add_argument('--encoder_bidirectional', type=bool, default=True, help='sh
 # Testing Arguments
 parser.add_argument('--test_only', type=bool, default=False, help='whether to test only instead of training?')
 parser.add_argument('--test', type=bool, default=True, help='whether to test after training finishes?')
+parser.add_argument('--save_jit', type=bool, default=False, help='whether to save model without code?')
 # parser.add_argument('--elan', type=bool, default=True, help='whether to output ELAN files when testing finishes?')
 
 # Prediction args

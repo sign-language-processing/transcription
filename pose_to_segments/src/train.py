@@ -1,5 +1,6 @@
 import os
 
+import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -97,3 +98,9 @@ if __name__ == '__main__':
 
         if args.test:
             trainer.test(dataloaders=test_loader)
+
+    if args.save_jit:
+        pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
+        traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
+        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", "model.pth")
+        torch.jit.save(traced_cell, model_path)
