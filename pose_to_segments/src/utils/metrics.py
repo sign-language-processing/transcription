@@ -2,6 +2,7 @@ from typing import List
 
 import torch
 import numpy as np
+from sklearn.metrics import f1_score
 
 
 def frame_accuracy(probs: torch.Tensor, gold: torch.Tensor) -> float:
@@ -10,6 +11,13 @@ def frame_accuracy(probs: torch.Tensor, gold: torch.Tensor) -> float:
     gold: [sequence_length]
     """
     return float(torch.sum(gold == probs.argmax(dim=1)) / gold.shape[0])
+
+def frame_f1(probs: torch.Tensor, gold: torch.Tensor) -> float:
+    """
+    probs: [sequence_length x number_of_classes(3)]
+    gold: [sequence_length]
+    """
+    return f1_score(gold.numpy(), probs.argmax(dim=1).numpy(), average='macro')
 
 def segment_percentage(segments: List[dict], segments_gold: List[dict]) -> float:
     """

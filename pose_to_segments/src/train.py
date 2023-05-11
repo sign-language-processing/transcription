@@ -37,13 +37,13 @@ if __name__ == '__main__':
 
         validation_dataset = get_dataset(split="validation", **data_args)
         validation_loader = DataLoader(validation_dataset,
-                                    batch_size=args.batch_size,
+                                    batch_size=args.batch_size_devtest,
                                     shuffle=False,
                                     collate_fn=zero_pad_collator)
 
     test_dataset = get_dataset(split="test", **data_args)
     test_loader = DataLoader(test_dataset,
-                                batch_size=args.batch_size,
+                                batch_size=args.batch_size_devtest,
                                 shuffle=False,
                                 collate_fn=zero_pad_collator)
 
@@ -78,16 +78,14 @@ if __name__ == '__main__':
                             save_top_k=1,
                             save_last=True,
                             monitor='validation_loss',
-                            # every_n_train_steps=32,
                             every_n_epochs=1,
                             mode='min'))
 
     trainer = pl.Trainer(max_epochs=100,
                         logger=LOGGER,
                         callbacks=callbacks,
-                        log_every_n_steps=10,
+                        log_every_n_steps=(1 if args.data_dev else 10),
                         accelerator='gpu',
-                        #  val_check_interval=32,
                         check_val_every_n_epoch=1,
                         devices=args.gpus)
 
@@ -97,9 +95,12 @@ if __name__ == '__main__':
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
 
         if args.test:
+            # automatically auto-loads the best weights from the previous run
+            # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
             trainer.test(dataloaders=test_loader)
 
     if args.save_jit:
+        # TODO: how to automatically load the best weights like above?
         pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
         model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", "model.pth")
