@@ -42,7 +42,7 @@ def main():
 
     print('Loading model ...')
     install_dir = os.path.dirname(os.path.abspath(__file__))
-    model = torch.jit.load(os.path.join(install_dir, "../../dist", "model.pth"))
+    model = torch.jit.load(os.path.join(install_dir, "dist", "model.pth"))
     model.eval()
 
     print('Estimating segments ...')
@@ -59,6 +59,10 @@ def main():
         "SIGN": sign_segments,
         "SENTENCE": sentence_segments,
     }
+
+    # from pprint import pprint
+    # pprint([(s['start'] / 60, s['end'] / 60) for s in sign_segments])
+    # pprint([(s['start'] / 60, s['end'] / 60) for s in sentence_segments])
 
     fps = pose.body.fps
 

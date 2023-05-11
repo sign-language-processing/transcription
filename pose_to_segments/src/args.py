@@ -12,8 +12,9 @@ parser.add_argument('--no_wandb', type=bool, default=False, help='ignore wandb?'
 # Training Arguments
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
-parser.add_argument('--batch_size', type=int, default=2, help='batch size')
-parser.add_argument('--learning_rate', type=float, default=5e-4, help='optimizer learning rate')
+parser.add_argument('--batch_size', type=int, default=16, help='batch size')
+parser.add_argument('--batch_size_devtest', type=int, default=20, help='batch size for dev and test (by default run all in one batch)') 
+parser.add_argument('--learning_rate', type=float, default=1e-5, help='optimizer learning rate')
 
 # Data Arguments
 parser.add_argument('--dataset', choices=['dgs_corpus'], default='dgs_corpus', help='which dataset to use?')
