@@ -2,7 +2,7 @@ import os
 
 import torch
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
@@ -54,7 +54,8 @@ if __name__ == '__main__':
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
-                      learning_rate=args.learning_rate)
+                      learning_rate=args.learning_rate,
+                      lr_scheduler=args.lr_scheduler)
     if not args.test_only:
         model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign") 
         model_args['sentence_class_weights'] = train_dataset.inverse_classes_ratio("sentence") 
@@ -66,7 +67,10 @@ if __name__ == '__main__':
     else:
         model = PoseTaggingModel(**model_args)
 
-    callbacks = [EarlyStopping(monitor='validation_loss', patience=100, verbose=True, mode='min')]
+    callbacks = [
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=50, verbose=True, mode='max'),
+        LearningRateMonitor(logging_interval='epoch'),
+    ]
 
     if LOGGER is not None:
         os.makedirs("models", exist_ok=True)
@@ -77,11 +81,11 @@ if __name__ == '__main__':
                             verbose=True,
                             save_top_k=1,
                             save_last=True,
-                            monitor='validation_loss',
+                            monitor='validation_frame_f1_avg',
                             every_n_epochs=1,
-                            mode='min'))
+                            mode='max'))
 
-    trainer = pl.Trainer(max_epochs=100,
+    trainer = pl.Trainer(max_epochs=args.epochs,
                         logger=LOGGER,
                         callbacks=callbacks,
                         log_every_n_steps=(1 if args.data_dev else 10),

@@ -60,10 +60,6 @@ def main():
         "SENTENCE": sentence_segments,
     }
 
-    # from pprint import pprint
-    # pprint([(s['start'] / 60, s['end'] / 60) for s in sign_segments])
-    # pprint([(s['start'] / 60, s['end'] / 60) for s in sentence_segments])
-
     fps = pose.body.fps
 
     eaf = pympi.Elan.Eaf(author="sign-langauge-processing/transcription")

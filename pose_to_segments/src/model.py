@@ -5,8 +5,10 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch import nn
 import wandb
+import matplotlib.pyplot as plt
 
 from .utils.probs_to_segments import probs_to_segments
 from .utils.metrics import frame_accuracy, frame_f1, segment_percentage, segment_IoU
@@ -21,10 +23,12 @@ class PoseTaggingModel(pl.LightningModule):
                  hidden_dim: int = 128,
                  encoder_depth=2,
                  encoder_bidirectional=True,
+                 lr_scheduler='ReduceLROnPlateau',
                  learning_rate=1e-3):
         super().__init__()
 
         self.learning_rate = learning_rate
+        self.lr_scheduler = lr_scheduler
 
         self.pose_dims = pose_dims
         pose_dim = int(np.prod(pose_dims))
@@ -75,7 +79,7 @@ class PoseTaggingModel(pl.LightningModule):
     def test_step(self, batch, *unused_args):
         return self.step(batch, *unused_args, name="test")
 
-    def evaluate(self, level, fps, _gold, _probs, _segments_gold, _mask, advanced_plot=False):
+    def evaluate(self, level, fps, _gold, _probs, _segments_gold, _mask, _id, advanced_plot=False):
         # marco-average the metrics over examples in a batch
         metrics = {
             'loss': [],
@@ -89,7 +93,7 @@ class PoseTaggingModel(pl.LightningModule):
             'probs': [],
         }
 
-        for gold, probs, segments_gold, mask in zip(_gold, _probs, _segments_gold, _mask):
+        for gold, probs, segments_gold, mask, idx in zip(_gold, _probs, _segments_gold, _mask, _id):
             # loss
             if level == 'sign':
                 losses = self.sign_loss_function(probs, gold)
@@ -124,8 +128,26 @@ class PoseTaggingModel(pl.LightningModule):
             metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
             metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
 
-        for key, value in metrics.items():
-            metrics[key] = sum(value) / len(value)
+            # advanced plot for testing
+            if advanced_plot:
+                title= f"{level} probs curve #{idx}"
+                probs = np.exp(probs.numpy().squeeze()) * 100
+                x = range(probs.shape[0])
+                y_threshold = [50.0] * probs.shape[0]
+                y_B_probs = probs[:, 1].squeeze()
+                y_I_probs = probs[:, 2].squeeze()
+                y_O_probs = probs[:, 0].squeeze()
+                plt.plot(x, y_B_probs, 'c', label = "B")
+                plt.plot(x, y_I_probs, 'g', label = "I")
+                plt.plot(x, y_O_probs, 'r', label = "O")
+                plt.plot(x, y_threshold, 'w--', label = "50")
+                for segment in segments_gold:
+                    span = range(segment['start'], segment['end'])
+                    plt.plot(span, [100] * len(span), 'g')
+                plt.xlabel("frames")
+                plt.ylabel("probability")
+                plt.legend()
+                wandb.log({title: plt})
 
         # advanced plot for testing
         if advanced_plot:
@@ -133,7 +155,6 @@ class PoseTaggingModel(pl.LightningModule):
             probs = torch.cat(data['probs'])
             labels = ['O', 'B', 'I']
 
-            # confusion matrix: https://wandb.ai/wandb/plots/reports/Confusion-Matrix-Usage-and-Examples--VmlldzozMDg1NTM
             title = f"{level} confusion matrix"
             wandb.log({title: wandb.plot.confusion_matrix(
                 title=title,
@@ -142,7 +163,6 @@ class PoseTaggingModel(pl.LightningModule):
                 class_names=labels
             )})
 
-            # precision-recall curve: https://wandb.ai/wandb/plots/reports/Plot-Precision-Recall-Curves-With-Weights-Biases--VmlldzoyNjk1ODY
             title = f"{level} precision-recall curve"
             wandb.log({title: wandb.plot.pr_curve(
                 title=title,
@@ -150,6 +170,9 @@ class PoseTaggingModel(pl.LightningModule):
                 y_probas=probs.numpy(), 
                 labels=labels
             )})
+
+        for key, value in metrics.items():
+            metrics[key] = sum(value) / len(value)
 
         return metrics
 
@@ -160,13 +183,16 @@ class PoseTaggingModel(pl.LightningModule):
         log_probs = self.forward(pose_data)
         mask = batch["mask"]
         fps = batch["pose"]["obj"][0].body.fps
-
+        
         advanced_plot = name == 'test'
-        sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, advanced_plot)
-        sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, advanced_plot)
+        sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, batch['id'], advanced_plot)
+        sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, batch['id'], advanced_plot)
 
         loss = sign_metrics['loss'] + sentence_metrics['loss']
         self.log(f"{name}_loss", loss, batch_size=batch_size)
+
+        f1_avg = (sign_metrics['frame_f1'] + sentence_metrics['frame_f1']) / 2
+        self.log(f"{name}_frame_f1_avg", f1_avg, batch_size=batch_size)
 
         for level, metrics in [('sign', sign_metrics), ('sentence', sentence_metrics)]:
             for key, value in metrics.items():
@@ -175,4 +201,15 @@ class PoseTaggingModel(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+        if self.lr_scheduler == 'ReduceLROnPlateau':
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": ReduceLROnPlateau(optimizer, mode='max', patience=10, factor=0.7),
+                    "monitor": "validation_frame_f1_avg",
+                },
+            }
+        else:
+            return optimizer
