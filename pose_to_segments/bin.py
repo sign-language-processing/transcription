@@ -42,7 +42,7 @@ def main():
 
     print('Loading model ...')
     install_dir = os.path.dirname(os.path.abspath(__file__))
-    model = torch.jit.load(os.path.join(install_dir, "../../dist", "model.pth"))
+    model = torch.jit.load(os.path.join(install_dir, "dist", "model.pth"))
     model.eval()
 
     print('Estimating segments ...')
