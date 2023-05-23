@@ -35,11 +35,11 @@ if __name__ == '__main__':
             train_dataset = get_dataset(split="train", **data_args)
             train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-        validation_dataset = get_dataset(split="validation", **data_args)
-        validation_loader = DataLoader(validation_dataset,
-                                    batch_size=args.batch_size_devtest,
-                                    shuffle=False,
-                                    collate_fn=zero_pad_collator)
+    validation_dataset = get_dataset(split="validation", **data_args)
+    validation_loader = DataLoader(validation_dataset,
+                                batch_size=args.batch_size_devtest,
+                                shuffle=False,
+                                collate_fn=zero_pad_collator)
 
     test_dataset = get_dataset(split="test", **data_args)
     test_loader = DataLoader(test_dataset,
@@ -94,6 +94,8 @@ if __name__ == '__main__':
                         devices=args.gpus)
 
     if args.test_only:
+        # also test on dev data for model selection
+        trainer.test(model, dataloaders=validation_loader)
         trainer.test(model, dataloaders=test_loader)
     else:
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
@@ -101,6 +103,7 @@ if __name__ == '__main__':
         if args.test:
             # automatically auto-loads the best weights from the previous run
             # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
+            trainer.test(dataloaders=validation_loader)
             trainer.test(dataloaders=test_loader)
 
     if args.save_jit:
