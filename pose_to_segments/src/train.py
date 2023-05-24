@@ -68,7 +68,7 @@ if __name__ == '__main__':
         model = PoseTaggingModel(**model_args)
 
     callbacks = [
-        EarlyStopping(monitor='validation_frame_f1_avg', patience=50, verbose=True, mode='max'),
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=20, verbose=True, mode='max'),
         LearningRateMonitor(logging_interval='epoch'),
     ]
 
