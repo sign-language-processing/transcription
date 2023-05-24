@@ -16,19 +16,23 @@ def flatten(l):
 wandb_base_dir = './wandb'
 
 model_ids = [
-    'E999'
+    'E999',
+    'E1'
 ]
 
 model_names = [
     'leafy-puddle-330',
+    'happy-glitter-333',
 ]
 
 wandb_paths = [
     'run-20230523_182443-v5tyhr0m',
+    'run-20230523_195509-f0dwi62s',
 ]
 
 notes = [
-    'overfitting dev data'
+    'overfitting dev data',
+    'baseline',
 ]
 
 metrics = [
