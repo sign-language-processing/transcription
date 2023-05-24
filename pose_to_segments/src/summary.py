@@ -62,10 +62,10 @@ for model_id, model_name, wandb_path, note in zip(model_ids, model_names, wandb_
 
     for key in metrics:
         test_key = f'test_{key}'
-        stats[test_key] = summary_json[test_key]
+        stats[test_key] = round(float(summary_json[test_key]), 2)
 
         dev_key = f'dev_{key}'
-        stats[dev_key] = find_value_from_line(log_lines, test_key)
+        stats[dev_key] = round(float(find_value_from_line(log_lines, test_key)), 2)
 
     stats['#parameters'] = find_value_from_line(log_lines, 'Trainable params')
     stats['training_time'] = str(datetime.timedelta(seconds=summary_json['_runtime'])).split('.')[0]
