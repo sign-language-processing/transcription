@@ -51,6 +51,7 @@ if __name__ == '__main__':
 
     # Model Arguments
     model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
+                      pose_projection_dim=args.pose_projection_dim,  
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
