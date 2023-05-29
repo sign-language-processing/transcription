@@ -17,22 +17,34 @@ wandb_base_dir = './wandb'
 
 model_ids = [
     'E999',
-    'E1'
+    'E1',
+    'E1.1',
+    'E1.2.1',
+    'E1.2.2',
 ]
 
 model_names = [
     'leafy-puddle-330',
     'happy-glitter-333',
+    'devout-lion-334',
+    'genial-lake-335',
+    'curious-breeze-336',
 ]
 
 wandb_paths = [
     'run-20230523_182443-v5tyhr0m',
     'run-20230523_195509-f0dwi62s',
+    'run-20230529_143853-5gjlr3o0',
+    'run-20230529_144816-wr2cpp5s',
+    'run-20230529_152301-ltzlcikg',
 ]
 
 notes = [
     'overfitting dev data',
     'baseline',
+    'baseline - encoder_bidirectional',
+    'baseline + hidden_dim=512',
+    'baseline + hidden_dim=1024',
 ]
 
 metrics = [

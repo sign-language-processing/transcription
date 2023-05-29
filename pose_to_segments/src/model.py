@@ -20,8 +20,9 @@ class PoseTaggingModel(pl.LightningModule):
                  sign_class_weights: List[float] = [1, 1, 1],
                  sentence_class_weights: List[float] = [1, 1, 1],
                  pose_dims: (int, int) = (137, 2),
-                 hidden_dim: int = 128,
-                 encoder_depth=2,
+                 pose_projection_dim: int = 256,
+                 hidden_dim: int = 256,
+                 encoder_depth=1,
                  encoder_bidirectional=True,
                  lr_scheduler='ReduceLROnPlateau',
                  learning_rate=1e-3):
@@ -33,7 +34,7 @@ class PoseTaggingModel(pl.LightningModule):
         self.pose_dims = pose_dims
         pose_dim = int(np.prod(pose_dims))
 
-        self.pose_projection = nn.Linear(pose_dim, hidden_dim)
+        self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
 
         if encoder_bidirectional:
             assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
@@ -42,7 +43,7 @@ class PoseTaggingModel(pl.LightningModule):
             lstm_hidden_dim = hidden_dim
 
         # Encoder
-        self.encoder = nn.LSTM(hidden_dim,
+        self.encoder = nn.LSTM(pose_projection_dim,
                                lstm_hidden_dim,
                                num_layers=encoder_depth,
                                batch_first=True,
@@ -157,7 +158,7 @@ class PoseTaggingModel(pl.LightningModule):
             title = f"{level} confusion matrix"
             wandb.log({title: wandb.plot.confusion_matrix(
                 title=title,
-                preds=probs.argmax(dim=1).tolist(), 
+                preds=probs.argmax(dim=1).tolist(),
                 y_true=gold.tolist(), 
                 class_names=labels
             )}, commit=False)
