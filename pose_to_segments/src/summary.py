@@ -31,6 +31,9 @@ model_names = [
     'jumping-dawn-349',
     'hopeful-salad-345',
     'valiant-breeze-338',
+    'glorious-haze-350',
+    'crisp-aardvark-352',
+    'radiant-lake-351',
 ]
 
 wandb_paths = [
@@ -48,25 +51,31 @@ wandb_paths = [
     'run-20230530_182049-jyksugzi',
     'run-20230530_184711-kblkjza5',
     'run-20230530_182049-juchz0ze',
+    'run-20230531_121603-hhoeamsg',
+    'run-20230531_121456-7vivkj9s',
     'run-20230529_174602-kiqx7gcf',
+    'run-20230531_121133-7r95fhtw',
 ]
 
 notes = [
     'overfitting dev data',
     'baseline',
-    'baseline - encoder_bidirectional',
-    'baseline + hidden_dim=128',
-    'baseline + hidden_dim=512',
-    'baseline + hidden_dim=1024',
-    'baseline + encoder_depth=2',
-    'baseline + encoder_depth=4',
-    # 'baseline + encoder_depth=8',
-    'baseline + hidden_dim=128 + encoder_depth=2',
-    'baseline + hidden_dim=128 + encoder_depth=4',
-    'baseline + hidden_dim=128 + encoder_depth=8',
-    'baseline + hidden_dim=64 + encoder_depth=4',
-    'baseline + hidden_dim=64 + encoder_depth=8',
-    'baseline + hand_normalization',
+    'E1 - encoder_bidirectional',
+    'E1 + hidden_dim=128',
+    'E1 + hidden_dim=512',
+    'E1 + hidden_dim=1024',
+    'E1 + encoder_depth=2',
+    'E1 + encoder_depth=4',
+    # 'E1 + encoder_depth=8',
+    'E1 + hidden_dim=128 + encoder_depth=2',
+    'E1 + hidden_dim=128 + encoder_depth=4',
+    'E1 + hidden_dim=128 + encoder_depth=8',
+    'E1 + hidden_dim=64 + encoder_depth=4',
+    'E1 + hidden_dim=64 + encoder_depth=8',
+    'E1 + optical_flow',
+    'E2 + encoder_depth=4',
+    'E1 + hand_normalization',
+    'E3 + encoder_depth=4',
 ]
 
 model_ids = [
@@ -85,6 +94,9 @@ model_ids = [
     'E1.5.1',
     'E1.5.2',
     'E2',
+    'E2.1',
+    'E3',
+    'E3.1',
 ]
 
 metrics = [
