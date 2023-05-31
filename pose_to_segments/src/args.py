@@ -27,7 +27,8 @@ parser.add_argument('--pose', choices=['holistic'], default='holistic', help='wh
 parser.add_argument(
     '--pose_components',
     type=list,
-    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
+    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],
+    # default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS", "FACE_LANDMARKS"],
     help='what pose components to use?')
 parser.add_argument('--hand_normalization', type=bool, default=False,
                     help='Should we perform 3D normalization on hands?')
