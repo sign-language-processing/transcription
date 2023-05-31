@@ -15,36 +15,76 @@ def flatten(l):
 
 wandb_base_dir = './wandb'
 
-model_ids = [
-    'E999',
-    'E1',
-    'E1.1',
-    'E1.2.1',
-    'E1.2.2',
-]
-
 model_names = [
     'leafy-puddle-330',
     'happy-glitter-333',
     'devout-lion-334',
+    'comfy-hill-339',
     'genial-lake-335',
     'curious-breeze-336',
+    'ruby-sound-340',
+    'devoted-sunset-341',
+    # 'whole-violet-348',
+    'skilled-mountain-343',
+    'glamorous-firebrand-344',
+    'robust-grass-345',
+    'jumping-dawn-349',
+    'hopeful-salad-345',
+    'valiant-breeze-338',
 ]
 
 wandb_paths = [
     'run-20230523_182443-v5tyhr0m',
     'run-20230523_195509-f0dwi62s',
     'run-20230529_143853-5gjlr3o0',
+    'run-20230529_174721-x6s6daap',
     'run-20230529_144816-wr2cpp5s',
     'run-20230529_152301-ltzlcikg',
+    'run-20230530_113741-an6olbqi',
+    'run-20230530_115859-cu5dy7cv',
+    # 'run-20230530_183648-yigf5209',
+    'run-20230530_151403-o6uoq083',
+    'run-20230530_152605-i42vybak',
+    'run-20230530_182049-jyksugzi',
+    'run-20230530_184711-kblkjza5',
+    'run-20230530_182049-juchz0ze',
+    'run-20230529_174602-kiqx7gcf',
 ]
 
 notes = [
     'overfitting dev data',
     'baseline',
     'baseline - encoder_bidirectional',
+    'baseline + hidden_dim=128',
     'baseline + hidden_dim=512',
     'baseline + hidden_dim=1024',
+    'baseline + encoder_depth=2',
+    'baseline + encoder_depth=4',
+    # 'baseline + encoder_depth=8',
+    'baseline + hidden_dim=128 + encoder_depth=2',
+    'baseline + hidden_dim=128 + encoder_depth=4',
+    'baseline + hidden_dim=128 + encoder_depth=8',
+    'baseline + hidden_dim=64 + encoder_depth=4',
+    'baseline + hidden_dim=64 + encoder_depth=8',
+    'baseline + hand_normalization',
+]
+
+model_ids = [
+    'E999',
+    'E1',
+    'E1.1',
+    'E1.2.1',
+    'E1.2.2',
+    'E1.2.3',
+    'E1.3.1',
+    'E1.3.2',
+    'E1.3.3',
+    'E1.4.1',
+    'E1.4.2',
+    'E1.4.3',
+    'E1.5.1',
+    'E1.5.2',
+    'E2',
 ]
 
 metrics = [
