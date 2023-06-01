@@ -34,6 +34,8 @@ model_names = [
     'glorious-haze-350',
     'crisp-aardvark-352',
     'radiant-lake-351',
+    'astral-aardvark-353',
+    'feasible-snow-354',
 ]
 
 wandb_paths = [
@@ -55,6 +57,8 @@ wandb_paths = [
     'run-20230531_121456-7vivkj9s',
     'run-20230529_174602-kiqx7gcf',
     'run-20230531_121133-7r95fhtw',
+    'run-20230531_182856-65jdjo9z',
+    'run-20230531_184900-0kh9kdbs',
 ]
 
 notes = [
@@ -76,6 +80,8 @@ notes = [
     'E2 + encoder_depth=4',
     'E1 + hand_normalization',
     'E3 + encoder_depth=4',
+    'E2.1 + E3.1',
+    'E4 + encoder_depth=8',
 ]
 
 model_ids = [
@@ -97,6 +103,8 @@ model_ids = [
     'E2.1',
     'E3',
     'E3.1',
+    'E4',
+    'E4.1',
 ]
 
 metrics = [
