@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import itertools
 import os
 import time
 
@@ -88,24 +89,36 @@ def train_step(input_image, target, step):
 def train(checkpoint, dataset):
     example_input, example_target = next(dataset)
 
-    for step, (input_image, target_image) in enumerate(dataset):
+    timers = {}
+    start_time = time.time()
+
+    for step in itertools.count(start=0):  # Infinite loop
         if step % 1000 == 0:
             if step != 0:
-                print(f'Time taken for 1000 steps: {time.time() - start} sec\n')
+                print(f'Time taken for 1000 steps: {time.time() - start_time} sec\n', timers)
+            timers = {"dataset": 0, "train_step": 0, "generate_images": 0}
 
-            start = time.time()
+            start_time = time.time()
 
+            generate_images_start_time = time.time()
             generate_images(generator, example_input, example_target, int(step))
+            timers["generate_images"] += time.time() - generate_images_start_time
             print(f"Step: {step // 1000}k")
 
+        dataset_start_time = time.time()
+        input_image, target_image = next(dataset)
+        timers["dataset"] += time.time() - dataset_start_time
+
+        train_step_start_time = time.time()
         train_step(input_image, target_image, step)
+        timers["train_step"] += time.time() - train_step_start_time
 
         # Training step
         if (step + 1) % 10 == 0:
             print('.', end='', flush=True)
 
         # Save (checkpoint) the model every 5k steps
-        if (step + 1) % 1000 == 0:
+        if (step + 1) % 5000 == 0:
             checkpoint.save(file_prefix=os.path.join(checkpoint_dir, "ckpt"))
             generator.save("/training/model.h5")
 

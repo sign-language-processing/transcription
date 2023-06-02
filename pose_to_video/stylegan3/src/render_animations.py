@@ -50,6 +50,7 @@ def generate_missing_videos(network_pkl: str, animations_directory: str):
     for npy_file in tqdm(missing_mp4_files):
         mp4_file = npy_file.replace('.npy', '.mp4')
         ws_sequence = np.load(npy_file)
+        ws_sequence = ws_sequence.reshape((-1, 16, 512)) # make sure the shape is as expected
         generate_video_from_latent_codes(G, device, ws_sequence, mp4_file)
 
 

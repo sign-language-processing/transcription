@@ -1,9 +1,13 @@
+import itertools
+import multiprocessing
+import os
 import random
 import zipfile
 
 import numpy as np
 import tensorflow as tf
 from PIL import Image
+from tqdm import tqdm
 
 
 def get_dataset(frames_zip_path: str, poses_zip_path: str, num_frames: int):
@@ -37,4 +41,12 @@ def get_dataset(frames_zip_path: str, poses_zip_path: str, num_frames: int):
         poses = np.expand_dims(np.stack(poses_data, axis=0), axis=0) / 127.5 - 1
 
         yield tf.convert_to_tensor(poses), tf.convert_to_tensor(frames)
+
+# Benchmarking
+if __name__ == "__main__":
+    # 20 seconds, 500
+    iterator_dataset = get_dataset(frames_zip_path="frames256.zip", poses_zip_path="mediapipe256.zip", num_frames=8)
+    for _ in tqdm(itertools.islice(iterator_dataset, 0, 500)):
+        pass
+
 
