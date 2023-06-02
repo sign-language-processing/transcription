@@ -30,7 +30,7 @@ the current directory without root permissions.
 ```.bash
 docker run --gpus=all -it --rm --user $(id -u):$(id -g) --ipc=host \
     -v `pwd`:/scratch --workdir /scratch -e HOME=/scratch \
-    stylegan3 \
+    -w /workspace/stylegan3 stylegan3 \
     /bin/bash
 ```
 
@@ -64,8 +64,6 @@ Follow the instructions in the "Data" section of the [pose_to_video/README.md](.
 Then, to prepare the data, run:
 
 ```.bash
-cd /workspace/stylegan3
-
 # Original 1024x1024 resolution.
 python dataset_tool.py \
     --source=/scratch/frames1024.zip \
@@ -89,16 +87,14 @@ python dataset_tool.py \
 You can train new networks using `train.py`. For example:
 
 ```.bash
-cd /workspace/stylegan3
-
-# Fine-tune StyleGAN3-R using 4 GPUs, starting from the pre-trained FFHQ-U pickle.
+# Train StyleGAN3-R using 4 GPUs
 python train.py --outdir=/scratch/training-runs --cfg=stylegan3-r --data=/scratch/datasets/sign-language-256x256.zip \
     --gpus=4 --batch=32 --gamma=8 --snap=5 --aug=noaug --cbase=16384 \
     --resume=https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-ffhqu-256x256.pkl
 
 python train.py --outdir=/scratch/training-runs --cfg=stylegan3-r --data=/scratch/datasets/sign-language-256x256.zip \
     --gpus=4 --batch=32 --gamma=8 --snap=5 --aug=noaug --cbase=16384 \
-    --resume=/scratch/training-runs/00020-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-010240.pkl
+    --resume=/scratch/training-runs/00037-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-005740.pkl
 ```
 
 Note that the result quality and training time depend heavily on the exact set of options. The most important
@@ -114,6 +110,17 @@ by `--snap`). For each exported pickle, it evaluates FID (controlled by `--metri
 in `metric-fid50k_full.jsonl`. It also records various statistics in `training_stats.jsonl`, as well as `*.tfevents` if
 TensorBoard is installed.
 
+## Generate grid of videos
+
+```.bash
+python gen_video.py --output=/scratch/training-runs/lerp2.mp4 --trunc=1 --seeds=0-31 --grid=4x2 \
+    --network=/scratch/training-runs/00037-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-005740.pkl
+```
+
+Output of unconstrained generation:
+
+<video src="figures/gen_example.mp4" width="100%" controls></video>
+
 ## Generate videos
 
 ```.bash
@@ -121,13 +128,12 @@ cd /workspace/stylegan3
 
 # Generate latent codes
 python /scratch/src/generate_latent_codes.py --animations-directory=/scratch/animations \
-    --network=/scratch/training-runs/00020-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-010240.pkl
+    --network=/scratch/training-runs/00037-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-005740.pkl
 
 # Generate animations
 python /scratch/src/render_animations.py --animations-directory=/scratch/animations \
-    --network=/scratch/training-runs/00020-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-010240.pkl
-
+    --network=/scratch/training-runs/00037-stylegan3-r-sign-language-256x256-gpus4-batch32-gamma8/network-snapshot-005740.pkl
+   
 # Extract poses, from the main directory, run:
 python -m video_to_pose.directory --directory=pose_to_video/stylegan3/animations
 ```
-

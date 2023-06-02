@@ -26,4 +26,8 @@ To train an animation controller, run
 # For MIXAMO
 chmod +x train_mixamo.sh
 ./train_mixamo.sh
+
+# For StyleGAN3
+chmod +x train_stylegan3.sh
+./train_stylegan3.sh
 ```

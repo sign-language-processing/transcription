@@ -1,10 +1,11 @@
-# Automatic Transcription of Sign Languages Using SignWriting
+# SignCLIP: Contrastive Pre-training for Phonetic Sign Language Understanding
 
 ## Introduction
 
 Sign languages are rich and diverse forms of communication, yet their transcription and documentation face challenges
 due to the lack of standardized writing systems. 
 SignWriting, a unique notation system, seeks to universally represent sign languages in written form, as 2D pictographs. 
+Similarly, HamNoSys, is a phonetic transcription system that writes signs as a sequence of symbols.
 This research proposal aims to develop an automatic transcription system for sign
 languages using SignWriting notation. The system will take a video of a single sign in sign language as input and
 generate SignWriting as output.
@@ -16,6 +17,7 @@ generate SignWriting as output.
 Valerie Sutton introduced SignWriting in 1974 as a visual script designed to represent sign languages. This script
 captures the movements, facial expressions, and body positions unique to each sign. SignWriting has found applications
 in education, research, and daily communication within the deaf community.
+Similarly, HamNoSys, is a phonetic transcription system that writes signs as a sequence of symbols.
 
 ## Sign Language Datasets
 
@@ -24,6 +26,14 @@ in education, research, and daily communication within the deaf community.
 2. SignSuisse: A Swiss Sign Language Lexicon that covers all three Swiss sign languages: Swiss-German Sign Language (
    DSGS), Langue des Signes Française (LSF), and Lingua Italiana dei Segni (LIS). Approximately 5,000 LSF videos include
    SignWriting transcriptions in SignBank.
+3. DictaSign Lexicon: A dictionary of 1000+ concepts with a sign language equivalent in four languages: 
+   British Sign Language (BSL), German Sign Language (DGS), Greek Sign Language (GSL) and French Sign Language (LSF).
+   Each concept is represented by a video of a sign, and a HamNoSys transcription.
+4. MeineDGS Types: A lexicon of \fix{@@} signs in DGS, with HamNoSys transcriptions.
+5. ChicagoFSWild: An American Sign Language (ASL) fingerspelling dataset, with synthetic SignWriting transcriptions.
+
+## 
+
 
 ## Methodology
 
@@ -64,11 +74,6 @@ Outputs will be tokenized to separate shape, orientation, and position, e.g., "M
    without considering the prediction history. This approach may improve robustness and memory efficiency, as there is
    no need to review the prediction history. During training, all images will be produced, while only the final image
    will be generated during testing.
-
-### Quality Metrics
-
-SignCLIPScore: We use SignCLIP to measure the similarity between the input pose sequence and output SignWriting.
-(Just like CLIPScore for images (https://arxiv.org/pdf/2104.08718.pdf))
 
 ## Conclusion
 

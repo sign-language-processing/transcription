@@ -13,6 +13,9 @@ from tqdm import tqdm
 from pose_to_video.animation_control.src.data import AnimationDataset, load_pose_directory, mae
 from pose_to_video.animation_control.src.model import build_model
 
+import wandb
+from wandb.keras import WandbMetricsLogger
+
 
 def run_script(script: str, directory: str):
     abs_directory = os.path.abspath(directory)
@@ -127,7 +130,9 @@ def get_callbacks(experiment_directory: str,
                                 pose_estimation_script=pose_estimation_script,
                                 nodes_json_path=dataset.nodes_path)
 
-    return [mc, es, vc, tc]
+    wb = WandbMetricsLogger(log_freq=50)
+
+    return [mc, es, vc, tc, wb]
 
 
 def main(init_directory: str,
@@ -171,7 +176,10 @@ if __name__ == "__main__":
     parser.add_argument("--test_directory", type=str, required=True)
     parser.add_argument("--animation_script", type=str, required=True)
     parser.add_argument("--pose_estimation_script", type=str, required=True)
+    parser.add_argument('--wandb-project', type=str, default='animation-controller', help='Name of wandb project')
     args = parser.parse_args()
+
+    wandb.init(project=args.wandb_project)
 
     main(init_directory=args.init_directory,
          validation_directory=args.validation_directory,

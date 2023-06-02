@@ -1,9 +1,6 @@
 import tensorflow as tf
 
 ENCODER_LAYERS = 4
-HIDDEN_DIMENSION = 512
-
-OUTPUT_DIMENSION = 52 * 4
 
 
 def get_model(output_dimension: int, hidden_dimension=512, stateful=False):
@@ -35,7 +32,7 @@ def build_model(input_dimension: int, output_dimension: int):
     model.compile(
         loss=loss,
         optimizer=tf.keras.optimizers.Adam(),
-        metrics=[]
+        metrics=['mae', 'mse']
     )
     model.summary()
 
@@ -43,4 +40,4 @@ def build_model(input_dimension: int, output_dimension: int):
 
 
 if __name__ == "__main__":
-    build_model(input_dimension=48*3, output_dimension=52*4)
+    build_model(input_dimension=48 * 3, output_dimension=52 * 4)
