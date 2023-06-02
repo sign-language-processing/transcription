@@ -36,6 +36,8 @@ model_names = [
     'radiant-lake-351',
     'astral-aardvark-353',
     'feasible-snow-354',
+    'confused-jazz-362',
+    'fragrant-paper-361',
 ]
 
 wandb_paths = [
@@ -59,6 +61,8 @@ wandb_paths = [
     'run-20230531_121133-7r95fhtw',
     'run-20230531_182856-65jdjo9z',
     'run-20230531_184900-0kh9kdbs',
+    'run-20230602_023034-7cywpobn',
+    'run-20230601_225546-u2g7ik08',
 ]
 
 notes = [
@@ -77,11 +81,13 @@ notes = [
     'E1 + hidden_dim=64 + encoder_depth=4',
     'E1 + hidden_dim=64 + encoder_depth=8',
     'E1 + optical_flow',
-    'E2 + encoder_depth=4',
+    'E1.3.2 + optical_flow',
     'E1 + hand_normalization',
-    'E3 + encoder_depth=4',
+    'E1.3.2 + hand_normalization',
     'E2.1 + E3.1',
     'E4 + encoder_depth=8',
+    'E1.3.2 + reduced_face',
+    'E1.3.2 + full_face',
 ]
 
 model_ids = [
@@ -105,6 +111,8 @@ model_ids = [
     'E3.1',
     'E4',
     'E4.1',
+    'E5',
+    'E5.1',
 ]
 
 metrics = [

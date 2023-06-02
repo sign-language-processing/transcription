@@ -26,19 +26,20 @@ parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
 parser.add_argument(
     '--pose_components',
-    type=list,
+    nargs='+',
     default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],
-    # default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS", "FACE_LANDMARKS"],
     help='what pose components to use?')
+parser.add_argument('--pose_reduce_face', type=bool, default=False, help='Should we reduce the face keypoints?')
+
 parser.add_argument('--hand_normalization', type=bool, default=False,
                     help='Should we perform 3D normalization on hands?')
 parser.add_argument('--optical_flow', type=bool, default=False, help='Should we use optical flow?')
 
 # Model Arguments
-parser.add_argument('--pose_projection_dim', type=int, default=256, help='encoder hidden dimension')
+parser.add_argument('--pose_projection_dim', type=int, default=256, help='pose projection dimension')
 parser.add_argument('--hidden_dim', type=int, default=256, help='encoder hidden dimension')
-parser.add_argument('--encoder_depth', type=int, default=1, help='number of layers for the encoder')
-parser.add_argument('--encoder_bidirectional', type=bool, default=False, help='should use a bidirectional encoder?')
+parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
+parser.add_argument('--encoder_bidirectional', type=bool, default=True, help='should use a bidirectional encoder?')
 
 # Testing Arguments
 parser.add_argument('--test_only', type=bool, default=False, help='whether to test only instead of training?')
