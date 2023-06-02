@@ -41,7 +41,7 @@ class PoseSegmentsDatum(TypedDict):
 BIO = {"O": 0, "B": 1, "I": 2}
 
 
-def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment]):
+def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment], b_tag="B"):
     bio = torch.zeros(len(timestamps), dtype=torch.long)
 
     timestamp_i = 0
@@ -57,23 +57,22 @@ def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment]
             timestamp_i += 1
         segment_end_i = timestamp_i
 
-        bio[segment_start_i] = BIO["B"]
+        bio[segment_start_i] = BIO[b_tag]
         bio[segment_start_i + 1:segment_end_i] = BIO["I"]
 
     return bio
 
 
-
-
-
 class PoseSegmentsDataset(Dataset):
-
-    def __init__(self, data: List[PoseSegmentsDatum], hand_normalization=False, optical_flow=False):
+    def __init__(self, data: List[PoseSegmentsDatum], hand_normalization=False,
+                 optical_flow=False, only_optical_flow=False, classes="bio"):
         self.data = data
         self.cached_data: List[Any] = [None] * len(data)
 
         self.hand_normalization = hand_normalization
         self.optical_flow = optical_flow
+        self.only_optical_flow = only_optical_flow
+        self.classes = classes
 
     def __len__(self):
         return len(self.data)
@@ -91,7 +90,8 @@ class PoseSegmentsDataset(Dataset):
         } for segments in datum["segments"]]
 
         segments = {"sign": sign_segments, "sentence": sentence_segments}
-        bio = {kind: build_bio(datum["id"], timestamps, s) for kind, s in segments.items()}
+        b_tag = "B" if self.classes == "bio" else "I"
+        bio = {kind: build_bio(datum["id"], timestamps, s, b_tag=b_tag) for kind, s in segments.items()}
         return segments, bio
 
     def add_optical_flow(self, pose):
@@ -101,8 +101,12 @@ class PoseSegmentsDataset(Dataset):
         # add one fake frame in numpy
         flow = np.concatenate([np.zeros((1, *flow.shape[1:]), dtype=flow.dtype), flow], axis=0)
 
-        # Add flow data to X, Y, Z
-        pose.body.data = np.concatenate([pose.body.data, flow], axis=-1).astype(np.float32)
+        if self.only_optical_flow:
+            # Override pose with flow
+            pose.body.data = np.asarray(flow, dtype=np.float32)
+        else:
+            # Add flow data to X, Y, Z
+            pose.body.data = np.concatenate([pose.body.data, flow], axis=-1).astype(np.float32)
 
     def process_datum(self, datum: PoseSegmentsDatum):
         pose = datum["pose"]
@@ -211,7 +215,9 @@ def get_dataset(name="dgs_corpus",
                 components: List[str] = None,
                 data_dir=None,
                 hand_normalization=False,
-                optical_flow=False):
+                optical_flow=False,
+                only_optical_flow=False,
+                classes="bio"):
     data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split,
                             components=components,
                             data_dir=data_dir,
@@ -221,4 +227,8 @@ def get_dataset(name="dgs_corpus",
     print(f"Dataset({split}) videos: {len(data)}")
     dataset_statistics(data)
     
-    return PoseSegmentsDataset(data, hand_normalization=hand_normalization, optical_flow=optical_flow)
+    return PoseSegmentsDataset(data,
+                               hand_normalization=hand_normalization,
+                               optical_flow=optical_flow,
+                               only_optical_flow=only_optical_flow,
+                               classes=classes)

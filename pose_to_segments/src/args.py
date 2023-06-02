@@ -23,23 +23,25 @@ parser.add_argument('--dataset', choices=['dgs_corpus'], default='dgs_corpus', h
 parser.add_argument('--data_dir', help='which dir to store the dataset?')
 parser.add_argument('--data_dev', type=bool, default=False, help='whether to use dev set as training data for fast debugging?')
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
-parser.add_argument('--pose', choices=['holistic'], default='holistic', help='which pose estimation')
+parser.add_argument('--pose', choices=['holistic', 'openpose'], default='holistic', help='which pose estimation')
 parser.add_argument(
-    '--pose_components',
-    type=list,
+    '--pose_components', nargs='+', type=str,
     default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
     help='what pose components to use?')
 parser.add_argument('--hand_normalization', type=bool, default=False,
                     help='Should we perform 3D normalization on hands?')
 parser.add_argument('--optical_flow', type=bool, default=False, help='Should we use optical flow?')
+parser.add_argument('--only_optical_flow', type=bool, default=False, help='Should we use only optical flow?')
+parser.add_argument('--classes', choices=['bio', 'io'], default="bio", help='Should we use BIO tagging or IO tagging?')
 
 # Model Arguments
 parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
 parser.add_argument('--encoder_bidirectional', type=bool, default=True, help='should use a bidirectional encoder?')
+parser.add_argument('--weighted_loss', type=bool, default=True, help='should use a class weighted loss?')
 
 # Testing Arguments
-parser.add_argument('--test_only', type=bool, default=False, help='whether to test only instead of training?')
+parser.add_argument('--train', type=bool, default=True, help='whether to train')
 parser.add_argument('--test', type=bool, default=True, help='whether to test after training finishes?')
 parser.add_argument('--save_jit', type=bool, default=False, help='whether to save model without code?')
 

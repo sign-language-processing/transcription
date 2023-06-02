@@ -45,12 +45,21 @@ Watch [this video](https://youtu.be/pCKRWSNIaNQ?t=191) to see how it's done.
 
 ### E0: Moryossef et al. (2020)
 This is an attempt to reproduce the methodology of Moryossef et al. (2020) on the DGS corpus.
-Since they used a different document split, our results are not directly comparable.
-(This also adds weighted loss for the B/I/O tags)
+Since they used a different document split, and do not filter out wrong data, our results are not directly comparable.
+
 ```bash
 CUDA_VISIBLE_DEVICES=3
+
+# Original setup
+python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=openpose --fps=50  \
+  --pose_components pose_keypoints_2d face_keypoints_2d hand_left_keypoints_2d hand_right_keypoints_2d \
+  --hidden_dim=64 --encoder_depth=1 --encoder_bidirectional=false --weighted_loss=false --classes=io \
+  --optical_flow=true --only_optical_flow=true
+  
+# Modified setup: Holistic, 25 fps
 python -m pose_to_segments.src.train --seed=42 --dataset=dgs_corpus --pose=holistic --fps=25  \
-  --hidden_dim=256 --encoder_depth=1 --encoder_bidirectional=false
+  --hidden_dim=64 --encoder_depth=1 --encoder_bidirectional=false --weighted_loss=false --classes=io \
+  --optical_flow=true --only_optical_flow=true
 ```
 
 ### E1: Bidirectional Tagger

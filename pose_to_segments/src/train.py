@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Any, Tuple, Optional
 
 import torch
 import pytorch_lightning as pl
@@ -10,8 +11,73 @@ from torch.utils.data import DataLoader
 from _shared.collator import zero_pad_collator
 
 from .args import args
-from .data import get_dataset
+from .data import get_dataset, PoseSegmentsDataset
 from .model import PoseTaggingModel
+
+
+def get_train_dataset(data_args: Dict[str, Any]) -> Tuple[Optional[PoseSegmentsDataset], Optional[DataLoader]]:
+    if not args.train:
+        return None, None
+
+    split = "validation" if args.data_dev else "train"
+    shuffle = False if args.data_dev else True
+    dataset = get_dataset(split=split, **data_args)
+    loader = DataLoader(dataset,
+                        batch_size=args.batch_size,
+                        shuffle=shuffle,
+                        collate_fn=zero_pad_collator)
+
+    return dataset, loader
+
+
+def get_validation_dataset(data_args: Dict[str, Any]) -> Tuple[Optional[PoseSegmentsDataset], Optional[DataLoader]]:
+    if not args.train:
+        return None, None
+
+    dataset = get_dataset(split="validation", **data_args)
+    loader = DataLoader(dataset,
+                        batch_size=args.batch_size_devtest,
+                        shuffle=False,
+                        collate_fn=zero_pad_collator)
+
+    return dataset, loader
+
+
+def get_test_dataset(data_args: Dict[str, Any]) -> Tuple[Optional[PoseSegmentsDataset], Optional[DataLoader]]:
+    if not args.test:
+        return None, None
+
+    dataset = get_dataset(split="test", **data_args)
+    loader = DataLoader(dataset,
+                        batch_size=args.batch_size_devtest,
+                        shuffle=False,
+                        collate_fn=zero_pad_collator)
+
+    return dataset, loader
+
+
+def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDataset = None):
+    any_dataset = train_dataset if train_dataset is not None else test_dataset
+    _, num_pose_joints, num_pose_dims = any_dataset[0]["pose"]["data"].shape
+
+    model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
+                      hidden_dim=args.hidden_dim,
+                      encoder_depth=args.encoder_depth,
+                      encoder_bidirectional=args.encoder_bidirectional,
+                      learning_rate=args.learning_rate,
+                      lr_scheduler=args.lr_scheduler)
+
+    if args.weighted_loss and train_dataset is not None:
+        model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign")
+        model_args['sentence_class_weights'] = train_dataset.inverse_classes_ratio("sentence")
+
+    print("Model Arguments:", model_args)
+
+    if args.checkpoint is not None:
+        return PoseTaggingModel.load_from_checkpoint(args.checkpoint, **model_args)
+
+    return PoseTaggingModel(**model_args)
+
 
 if __name__ == '__main__':
     LOGGER = None
@@ -25,47 +91,15 @@ if __name__ == '__main__':
                      components=args.pose_components,
                      hand_normalization=args.hand_normalization,
                      optical_flow=args.optical_flow,
-                     data_dir=args.data_dir)
+                     only_optical_flow=args.only_optical_flow,
+                     data_dir=args.data_dir,
+                     classes=args.classes)
 
-    if not args.test_only:                 
-        if args.data_dev:
-            train_dataset = get_dataset(split="validation", **data_args)
-            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=zero_pad_collator)
-        else:
-            train_dataset = get_dataset(split="train", **data_args)
-            train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
+    train_dataset, train_loader = get_train_dataset(data_args)
+    validation_dataset, validation_loader = get_validation_dataset(data_args)
+    test_dataset, test_loader = get_test_dataset(data_args)
 
-        validation_dataset = get_dataset(split="validation", **data_args)
-        validation_loader = DataLoader(validation_dataset,
-                                    batch_size=args.batch_size_devtest,
-                                    shuffle=False,
-                                    collate_fn=zero_pad_collator)
-
-    test_dataset = get_dataset(split="test", **data_args)
-    test_loader = DataLoader(test_dataset,
-                                batch_size=args.batch_size_devtest,
-                                shuffle=False,
-                                collate_fn=zero_pad_collator)
-
-    _, num_pose_joints, num_pose_dims = test_dataset[0]["pose"]["data"].shape
-
-    # Model Arguments
-    model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
-                      hidden_dim=args.hidden_dim,
-                      encoder_depth=args.encoder_depth,
-                      encoder_bidirectional=args.encoder_bidirectional,
-                      learning_rate=args.learning_rate,
-                      lr_scheduler=args.lr_scheduler)
-    if not args.test_only:
-        model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign") 
-        model_args['sentence_class_weights'] = train_dataset.inverse_classes_ratio("sentence") 
-
-    print("Model Arguments:", model_args)
-
-    if args.checkpoint is not None:
-        model = PoseTaggingModel.load_from_checkpoint(args.checkpoint, **model_args)
-    else:
-        model = PoseTaggingModel(**model_args)
+    model = init_model(train_dataset, test_dataset)
 
     callbacks = [
         EarlyStopping(monitor='validation_frame_f1_avg', patience=50, verbose=True, mode='max'),
@@ -86,26 +120,24 @@ if __name__ == '__main__':
                             mode='max'))
 
     trainer = pl.Trainer(max_epochs=args.epochs,
-                        logger=LOGGER,
-                        callbacks=callbacks,
-                        log_every_n_steps=(1 if args.data_dev else 10),
-                        accelerator='gpu',
-                        check_val_every_n_epoch=1,
-                        devices=args.gpus)
+                         logger=LOGGER,
+                         callbacks=callbacks,
+                         log_every_n_steps=(1 if args.data_dev else 10),
+                         accelerator='gpu',
+                         check_val_every_n_epoch=1,
+                         devices=args.gpus)
 
-    if args.test_only:
-        trainer.test(model, dataloaders=test_loader)
-    else:
+    if args.train:
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
 
-        if args.test:
-            # automatically auto-loads the best weights from the previous run
-            # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
-            trainer.test(dataloaders=test_loader)
+    if args.test:
+        # automatically auto-loads the best weights from the previous run
+        # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
+        trainer.test(dataloaders=test_loader)
 
     if args.save_jit:
         # TODO: how to automatically load the best weights like above?
-        pose_data = torch.randn((1, 100, num_pose_joints, num_pose_dims))
+        pose_data = torch.randn((1, 100, *model.pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
         model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", "model.pth")
         torch.jit.save(traced_cell, model_path)
