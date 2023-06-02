@@ -23,6 +23,7 @@ if __name__ == '__main__':
     data_args = dict(poses=args.pose,
                      fps=args.fps,
                      components=args.pose_components,
+                     reduce_face=args.pose_reduce_face,
                      hand_normalization=args.hand_normalization,
                      optical_flow=args.optical_flow,
                      data_dir=args.data_dir)
