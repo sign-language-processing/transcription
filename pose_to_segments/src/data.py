@@ -214,6 +214,7 @@ def get_dataset(name="dgs_corpus",
                 fps=25,
                 split="train",
                 components: List[str] = None,
+                reduce_face=False,
                 data_dir=None,
                 hand_normalization=False,
                 optical_flow=False,
@@ -221,6 +222,7 @@ def get_dataset(name="dgs_corpus",
                 classes="bio"):
     data = get_tfds_dataset(name=name, poses=poses, fps=fps, split=split,
                             components=components,
+                            reduce_face=reduce_face,
                             data_dir=data_dir,
                             filter_func=filter_dataset)
     print(f"Dataset({split}) size: {len(data)}")
