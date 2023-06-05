@@ -20,6 +20,16 @@ def pose_hide_legs(pose: Pose):
         ]
         pose.body.data[:, :, points, :] = 0
         pose.body.confidence[:, :, points] = 0
+    elif pose.header.components[0].name == "pose_keypoints_2d":
+        point_names = ["Hip", "Knee", "Ankle", "BigToe", "SmallToe", "Heel"]
+        # pylint: disable=protected-access
+        points = [
+            pose.header._get_point_index("pose_keypoints_2d", side + n)
+            for n in point_names
+            for side in ["L", "R"]
+        ]
+        pose.body.data[:, :, points, :] = 0
+        pose.body.confidence[:, :, points] = 0
     else:
         raise ValueError("Unknown pose header schema for hiding legs")
 

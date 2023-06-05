@@ -13,7 +13,7 @@ dependencies = [
     "opencv-python",
     "pose_format",
     "torch",
-    "tqdm",
+    "tqdm"
 ]
 
 [project.optional-dependencies]
@@ -25,6 +25,7 @@ dev = [
     "wandb",
     "pytorch_lightning",
     "mediapipe",
+    "scikit-learn",
     "pytest",
     "pylint"
 ]

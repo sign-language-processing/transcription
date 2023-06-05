@@ -3,8 +3,28 @@ import numpy as np
 BIO = {"O": 0, "B": 1, "I": 2}
 
 
-def probs_to_segments(probs, b_threshold=50., o_threshold=50.):
-    probs = np.round(np.exp(probs.numpy().squeeze()) * 100)
+def io_probs_to_segments(probs):
+    segments = []
+    i = 0
+    while i < len(probs):
+        if probs[i, BIO["I"]] > 50:
+            end = len(probs) - 1
+            for j in range(i + 1, len(probs)):
+                if probs[j, BIO["I"]] < 50:
+                    end = j - 1
+                    break
+            segments.append({"start": i, "end": end})
+            i = end + 1
+        else:
+            i += 1
+
+    return segments
+
+
+def probs_to_segments(logits, b_threshold=50., o_threshold=50.):
+    probs = np.round(np.exp(logits.numpy().squeeze()) * 100)
+    if np.alltrue(probs[:, BIO["B"]] < b_threshold):
+        return io_probs_to_segments(probs)
 
     segments = []
 
