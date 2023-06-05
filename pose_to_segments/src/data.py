@@ -3,6 +3,7 @@ from itertools import chain
 from typing import Any, Dict, Iterable, List, Optional, Tuple, TypedDict
 
 import numpy as np
+import numpy.ma as ma
 import torch
 from pose_format import Pose
 from pose_format.numpy.representation.distance import DistanceRepresentation
@@ -103,7 +104,7 @@ class PoseSegmentsDataset(Dataset):
 
         if self.only_optical_flow:
             # Override pose with flow
-            pose.body.data = np.asarray(flow, dtype=np.float32)
+            pose.body.data = ma.array(flow, dtype=np.float32)
         else:
             # Add flow data to X, Y, Z
             pose.body.data = np.concatenate([pose.body.data, flow], axis=-1).astype(np.float32)
