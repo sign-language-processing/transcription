@@ -35,9 +35,11 @@ parser.add_argument('--data_dev', type=boolean_string, default=False,
 parser.add_argument('--fps', type=int, default=25, help='fps to load')
 parser.add_argument('--pose', choices=['holistic', 'openpose'], default='holistic', help='which pose estimation')
 parser.add_argument(
-    '--pose_components', nargs='+', type=str,
-    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],  # , "FACE_LANDMARKS"
+    '--pose_components',
+    nargs='+',
+    default=["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"],
     help='what pose components to use?')
+parser.add_argument('--pose_reduce_face', type=bool, default=False, help='Should we reduce the face keypoints?')
 parser.add_argument('--hand_normalization', type=boolean_string, default=False,
                     help='Should we perform 3D normalization on hands?')
 parser.add_argument('--optical_flow', type=boolean_string, default=False, help='Should we use optical flow?')
@@ -45,7 +47,8 @@ parser.add_argument('--only_optical_flow', type=boolean_string, default=False, h
 parser.add_argument('--classes', choices=['bio', 'io'], default="bio", help='Should we use BIO tagging or IO tagging?')
 
 # Model Arguments
-parser.add_argument('--hidden_dim', type=int, default=128, help='encoder hidden dimension')
+parser.add_argument('--pose_projection_dim', type=int, default=256, help='pose projection dimension')
+parser.add_argument('--hidden_dim', type=int, default=256, help='encoder hidden dimension')
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
 parser.add_argument('--encoder_bidirectional', type=boolean_string, default=True,
                     help='should use a bidirectional encoder?')

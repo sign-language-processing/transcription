@@ -31,7 +31,7 @@ def get_train_dataset(data_args: Dict[str, Any]) -> Tuple[Optional[PoseSegmentsD
 
 
 def get_validation_dataset(data_args: Dict[str, Any]) -> Tuple[Optional[PoseSegmentsDataset], Optional[DataLoader]]:
-    if not args.train:
+    if not args.train and not args.test:
         return None, None
 
     dataset = get_dataset(split="validation", **data_args)
@@ -61,6 +61,7 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
     _, num_pose_joints, num_pose_dims = any_dataset[0]["pose"]["data"].shape
 
     model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
+                      pose_projection_dim=args.pose_projection_dim,  
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
@@ -89,12 +90,13 @@ if __name__ == '__main__':
     data_args = dict(poses=args.pose,
                      fps=args.fps,
                      components=args.pose_components,
+                     reduce_face=args.pose_reduce_face,
                      hand_normalization=args.hand_normalization,
                      optical_flow=args.optical_flow,
                      only_optical_flow=args.only_optical_flow,
-                     data_dir=args.data_dir,
-                     classes=args.classes)
-
+                     classes=args.classes,
+                     data_dir=args.data_dir)
+    
     train_dataset, train_loader = get_train_dataset(data_args)
     validation_dataset, validation_loader = get_validation_dataset(data_args)
     test_dataset, test_loader = get_test_dataset(data_args)
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     model = init_model(train_dataset, test_dataset)
 
     callbacks = [
-        EarlyStopping(monitor='validation_frame_f1_avg', patience=50, verbose=True, mode='max'),
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=20, verbose=True, mode='max'),
         LearningRateMonitor(logging_interval='epoch'),
     ]
 
@@ -133,6 +135,7 @@ if __name__ == '__main__':
     if args.test:
         # automatically auto-loads the best weights from the previous run
         # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
+        trainer.test(dataloaders=validation_loader)
         trainer.test(dataloaders=test_loader)
 
     if args.save_jit:

@@ -20,8 +20,9 @@ class PoseTaggingModel(pl.LightningModule):
                  sign_class_weights: List[float] = [1, 1, 1],
                  sentence_class_weights: List[float] = [1, 1, 1],
                  pose_dims: (int, int) = (137, 2),
-                 hidden_dim: int = 128,
-                 encoder_depth=2,
+                 pose_projection_dim: int = 256,
+                 hidden_dim: int = 256,
+                 encoder_depth=1,
                  encoder_bidirectional=True,
                  lr_scheduler='ReduceLROnPlateau',
                  learning_rate=1e-3):
@@ -33,7 +34,7 @@ class PoseTaggingModel(pl.LightningModule):
         self.pose_dims = pose_dims
         pose_dim = int(np.prod(pose_dims))
 
-        self.pose_projection = nn.Linear(pose_dim, hidden_dim)
+        self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
 
         if encoder_bidirectional:
             assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
@@ -42,7 +43,7 @@ class PoseTaggingModel(pl.LightningModule):
             lstm_hidden_dim = hidden_dim
 
         # Encoder
-        self.encoder = nn.LSTM(hidden_dim,
+        self.encoder = nn.LSTM(pose_projection_dim,
                                lstm_hidden_dim,
                                num_layers=encoder_depth,
                                batch_first=True,
@@ -128,7 +129,6 @@ class PoseTaggingModel(pl.LightningModule):
             metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
             metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
 
-            # advanced plot for testing
             if advanced_plot:
                 title= f"{level} probs curve #{idx}"
                 probs = np.exp(probs.numpy().squeeze()) * 100
@@ -137,19 +137,19 @@ class PoseTaggingModel(pl.LightningModule):
                 y_B_probs = probs[:, 1].squeeze()
                 y_I_probs = probs[:, 2].squeeze()
                 y_O_probs = probs[:, 0].squeeze()
-                plt.plot(x, y_B_probs, 'c', label = "B")
-                plt.plot(x, y_I_probs, 'g', label = "I")
-                plt.plot(x, y_O_probs, 'r', label = "O")
-                plt.plot(x, y_threshold, 'w--', label = "50")
+                B = plt.plot(x, y_B_probs, 'c', label = "B")
+                I = plt.plot(x, y_I_probs, 'g', label = "I")
+                O = plt.plot(x, y_O_probs, 'r', label = "O")
+                T = plt.plot(x, y_threshold, 'w--', label = "50")
                 for segment in segments_gold:
                     span = range(segment['start'], segment['end'])
                     plt.plot(span, [100] * len(span), 'g')
+                plt.legend() # produce annoying warnings, do not know why
                 plt.xlabel("frames")
                 plt.ylabel("probability")
-                plt.legend()
-                wandb.log({title: plt})
+                wandb.log({title: plt}, commit=False)
+                plt.clf()
 
-        # advanced plot for testing
         if advanced_plot:
             gold = torch.cat(data['gold'])
             probs = torch.cat(data['probs'])
@@ -158,18 +158,18 @@ class PoseTaggingModel(pl.LightningModule):
             title = f"{level} confusion matrix"
             wandb.log({title: wandb.plot.confusion_matrix(
                 title=title,
-                preds=probs.argmax(dim=1).tolist(), 
+                preds=probs.argmax(dim=1).tolist(),
                 y_true=gold.tolist(), 
                 class_names=labels
-            )})
+            )}, commit=False)
 
-            title = f"{level} precision-recall curve"
+            title = f"{level} precision-recall curve" 
             wandb.log({title: wandb.plot.pr_curve(
                 title=title,
                 y_true=gold.numpy(),
                 y_probas=probs.numpy(), 
                 labels=labels
-            )})
+            )}, commit=False)
 
         for key, value in metrics.items():
             metrics[key] = sum(value) / len(value)
@@ -184,7 +184,7 @@ class PoseTaggingModel(pl.LightningModule):
         mask = batch["mask"]
         fps = batch["pose"]["obj"][0].body.fps
         
-        advanced_plot = name == 'test'
+        advanced_plot = name == 'validation' and (self.current_epoch + 1) % 10 == 0
         sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, batch['id'], advanced_plot)
         sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, batch['id'], advanced_plot)
 
