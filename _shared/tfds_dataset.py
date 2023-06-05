@@ -9,9 +9,13 @@ from pose_format.utils.reader import BufferReader
 from sign_language_datasets.datasets.config import SignDatasetConfig
 from sign_language_datasets.datasets.dgs_corpus import DgsCorpusConfig
 from tqdm import tqdm
+import mediapipe as mp
 
 from .pose_utils import pose_hide_legs, pose_normalization_info
 
+
+mp_holistic = mp.solutions.holistic
+FACEMESH_CONTOURS_POINTS = [str(p) for p in sorted(set([p for p_tup in list(mp_holistic.FACEMESH_CONTOURS) for p in p_tup]))]
 
 class ProcessedPoseDatum(TypedDict):
     id: str
@@ -24,6 +28,7 @@ def get_tfds_dataset(name,
                      fps=25,
                      split="train",
                      components: List[str] = None,
+                     reduce_face=False,
                      data_dir=None,
                      version="1.0.0",
                      filter_func=None):
@@ -49,7 +54,7 @@ def get_tfds_dataset(name,
         pose_header = PoseHeader.read(BufferReader(buffer.read()))
 
     normalization_info = pose_normalization_info(pose_header)
-    return [process_datum(datum, pose_header, normalization_info, components) 
+    return [process_datum(datum, pose_header, normalization_info, components, reduce_face) 
             for datum in tqdm(tfds_dataset, desc="Loading dataset")
             if filter_func is None or filter_func(datum)]
 
@@ -57,7 +62,8 @@ def get_tfds_dataset(name,
 def process_datum(datum,
                   pose_header: PoseHeader,
                   normalization_info,
-                  components: List[str] = None) -> ProcessedPoseDatum:
+                  components: List[str] = None,
+                  reduce_face=False) -> ProcessedPoseDatum:
     tf_poses = {"": datum["pose"]} if "pose" in datum else datum["poses"]
     poses = {}
     for key, tf_pose in tf_poses.items():
@@ -66,7 +72,9 @@ def process_datum(datum,
         pose = Pose(pose_header, pose_body)
 
         # Get subset of components if needed
-        if components and len(components) != len(pose_header.components):
+        if reduce_face:
+            pose = pose.get_components(components, {"FACE_LANDMARKS": FACEMESH_CONTOURS_POINTS})
+        elif components and len(components) != len(pose_header.components):
             pose = pose.get_components(components)
 
         pose = pose.normalize(normalization_info)

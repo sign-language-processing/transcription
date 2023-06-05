@@ -23,6 +23,7 @@ if __name__ == '__main__':
     data_args = dict(poses=args.pose,
                      fps=args.fps,
                      components=args.pose_components,
+                     reduce_face=args.pose_reduce_face,
                      hand_normalization=args.hand_normalization,
                      optical_flow=args.optical_flow,
                      data_dir=args.data_dir)
@@ -35,11 +36,11 @@ if __name__ == '__main__':
             train_dataset = get_dataset(split="train", **data_args)
             train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=zero_pad_collator)
 
-        validation_dataset = get_dataset(split="validation", **data_args)
-        validation_loader = DataLoader(validation_dataset,
-                                    batch_size=args.batch_size_devtest,
-                                    shuffle=False,
-                                    collate_fn=zero_pad_collator)
+    validation_dataset = get_dataset(split="validation", **data_args)
+    validation_loader = DataLoader(validation_dataset,
+                                batch_size=args.batch_size_devtest,
+                                shuffle=False,
+                                collate_fn=zero_pad_collator)
 
     test_dataset = get_dataset(split="test", **data_args)
     test_loader = DataLoader(test_dataset,
@@ -51,6 +52,7 @@ if __name__ == '__main__':
 
     # Model Arguments
     model_args = dict(pose_dims=(num_pose_joints, num_pose_dims),
+                      pose_projection_dim=args.pose_projection_dim,  
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
@@ -68,7 +70,7 @@ if __name__ == '__main__':
         model = PoseTaggingModel(**model_args)
 
     callbacks = [
-        EarlyStopping(monitor='validation_frame_f1_avg', patience=50, verbose=True, mode='max'),
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=20, verbose=True, mode='max'),
         LearningRateMonitor(logging_interval='epoch'),
     ]
 
@@ -94,6 +96,8 @@ if __name__ == '__main__':
                         devices=args.gpus)
 
     if args.test_only:
+        # also test on dev data for model selection
+        trainer.test(model, dataloaders=validation_loader)
         trainer.test(model, dataloaders=test_loader)
     else:
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
@@ -101,6 +105,7 @@ if __name__ == '__main__':
         if args.test:
             # automatically auto-loads the best weights from the previous run
             # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
+            trainer.test(dataloaders=validation_loader)
             trainer.test(dataloaders=test_loader)
 
     if args.save_jit:
