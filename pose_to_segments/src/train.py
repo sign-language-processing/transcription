@@ -133,10 +133,15 @@ if __name__ == '__main__':
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=validation_loader)
 
     if args.test:
-        # automatically auto-loads the best weights from the previous run
-        # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
-        trainer.test(dataloaders=validation_loader)
-        trainer.test(dataloaders=test_loader)
+        if args.train:
+            # automatically auto-loads the best weights from the previous run
+            # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
+            trainer.test(dataloaders=validation_loader)
+            trainer.test(dataloaders=test_loader)
+        else:
+            trainer.test(model, dataloaders=validation_loader)
+            trainer.test(model, dataloaders=test_loader)
+
 
     if args.save_jit:
         # TODO: how to automatically load the best weights like above?
