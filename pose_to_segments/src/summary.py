@@ -16,7 +16,9 @@ def flatten(l):
 wandb_base_dir = './wandb'
 
 model_names = [
-    'leafy-puddle-330',
+    'misunderstood-violet-363',
+    'toasty-durian-364',
+    # 'leafy-puddle-330',
     'happy-glitter-333',
     'devout-lion-334',
     'comfy-hill-339',
@@ -41,7 +43,9 @@ model_names = [
 ]
 
 wandb_paths = [
-    'run-20230523_182443-v5tyhr0m',
+    'run-20230605_201050-omo0i2ia',
+    'run-20230605_201227-dy11c7xy',
+    # 'run-20230523_182443-v5tyhr0m',
     'run-20230523_195509-f0dwi62s',
     'run-20230529_143853-5gjlr3o0',
     'run-20230529_174721-x6s6daap',
@@ -66,8 +70,10 @@ wandb_paths = [
 ]
 
 notes = [
-    'overfitting dev data',
-    'baseline',
+    'Moryossef et al. (2020)',
+    'E0 + Holistic 25fps',
+    # 'overfitting dev data',
+    'E1 baseline',
     'E1 - encoder_bidirectional',
     'E1 + hidden_dim=128',
     'E1 + hidden_dim=512',
@@ -91,7 +97,9 @@ notes = [
 ]
 
 model_ids = [
-    'E999',
+    'E0',
+    'E0.1',
+    # 'E999',
     'E1',
     'E1.1',
     'E1.2.1',
