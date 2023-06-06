@@ -39,7 +39,7 @@ def probs_to_segments(logits, b_threshold=50., o_threshold=50., restart_on_b=Tru
         else:
             if did_pass_start:
                 if (restart_on_b and b > b_threshold) or o > o_threshold:
-                    segment["end"] = i
+                    segment["end"] = i - 1
 
                     # reset
                     segments.append(segment)

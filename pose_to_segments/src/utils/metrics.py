@@ -28,11 +28,11 @@ def segment_percentage(segments: List[dict], segments_gold: List[dict]) -> float
 def segment_IoU(segments: List[dict], segments_gold: List[dict], max_len=1000000) -> float:
     segments_v = np.zeros(max_len)
     for segment in segments:
-        segments_v[segment['start']:segment['end']] = 1
+        segments_v[segment['start']:(segment['end'] + 1)] = 1
 
     segments_gold_v = np.zeros(max_len)
     for segment in segments_gold:
-        segments_gold_v[segment['start']:segment['end']] = 1
+        segments_gold_v[segment['start']:(segment['end'] + 1)] = 1
 
     intersection = np.logical_and(segments_v, segments_gold_v)
     union = np.logical_or(segments_v, segments_gold_v)
