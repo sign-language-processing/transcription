@@ -121,6 +121,7 @@ class PoseTaggingModel(pl.LightningModule):
 
             # segment IoU and percentage
             segments = probs_to_segments(probs)
+            # segments = probs_to_segments(probs, restart_on_b=(level == 'sign'))
             # convert segments from second to frame
             segments_gold = [{
                 'start': math.floor(s['start_time'] * fps), 
