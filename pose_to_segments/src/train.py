@@ -83,7 +83,7 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
 if __name__ == '__main__':
     LOGGER = None
     if not args.no_wandb:
-        LOGGER = WandbLogger(project="pose-to-segments", log_model=False, offline=False)
+        LOGGER = WandbLogger(project="pose-to-segments", log_model=False, offline=False, name=args.run_name, save_dir=args.wandb_dir)
         if LOGGER.experiment.sweep_id is None:
             LOGGER.log_hyperparams(args)
 
