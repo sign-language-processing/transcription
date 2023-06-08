@@ -105,6 +105,6 @@ order += flatten([(f'dev_{metric}', f'test_{metric}') for metric in metrics])
 order += ['#parameters', 'training_time_avg']
 df = df[order]
 
-df = df.sort_values(by=['id'])
+# df = df.sort_values(by=['id'])
 
 df.to_csv(csv_path, index=False)
