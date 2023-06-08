@@ -26,8 +26,12 @@ models = [
     ('E0', 'Moryossef et al. (2020)'),
     ('E1', 'baseline'),
     ('E2', 'E1 + face'),
+    ('E3', 'E1 + optical_flow'),
+    ('E4', 'E3 + hand_norm'),
     ('E1s', 'E1 + encoder_depth=4'),
     ('E2s', 'E2 + encoder_depth=4'),
+    ('E3s', 'E3 + encoder_depth=4'),
+    ('E4s', 'E4 + encoder_depth=4'),
 ]
 
 metrics = [
