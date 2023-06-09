@@ -16,7 +16,11 @@ def boolean_string(s):
 root_dir = path.dirname(path.realpath(__file__))
 parser = ArgumentParser()
 
+# wandb
 parser.add_argument('--no_wandb', type=boolean_string, default=False, help='ignore wandb?')
+parser.add_argument('--run_name', type=str, default=None, help='name of wandb run')
+parser.add_argument('--wandb_dir', type=str, default='.', help='where to store wandb data')
+
 # Training Arguments
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
