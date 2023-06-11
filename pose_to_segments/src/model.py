@@ -24,16 +24,18 @@ class PoseTaggingModel(pl.LightningModule):
                  hidden_dim: int = 256,
                  encoder_depth=1,
                  encoder_bidirectional=True,
+                 encoder_autoregressive=False,
+                 tagset_size=3,
                  lr_scheduler='ReduceLROnPlateau',
                  learning_rate=1e-3):
         super().__init__()
 
         self.learning_rate = learning_rate
         self.lr_scheduler = lr_scheduler
+        self.encoder_autoregressive = encoder_autoregressive
+        self.tagset_size = tagset_size
 
-        self.pose_dims = pose_dims
         pose_dim = int(np.prod(pose_dims))
-
         self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
 
         if encoder_bidirectional:
@@ -43,19 +45,34 @@ class PoseTaggingModel(pl.LightningModule):
             lstm_hidden_dim = hidden_dim
 
         # Encoder
-        self.encoder = nn.LSTM(pose_projection_dim,
-                               lstm_hidden_dim,
-                               num_layers=encoder_depth,
-                               batch_first=True,
-                               bidirectional=encoder_bidirectional)
+        lstm_input_dim = (pose_projection_dim + tagset_size * 2) if encoder_autoregressive else pose_projection_dim
 
-        # tag sequence for sign bio
-        self.sign_bio_head = nn.Linear(hidden_dim, 3)
+        if encoder_autoregressive and encoder_bidirectional:
+            self.encoder_forward = nn.LSTM(lstm_input_dim,
+                                        lstm_hidden_dim,
+                                        num_layers=encoder_depth,
+                                        batch_first=True,
+                                        bidirectional=encoder_bidirectional)
+            self.encoder_backward= nn.LSTM(lstm_input_dim,
+                                        lstm_hidden_dim,
+                                        num_layers=encoder_depth,
+                                        batch_first=True,
+                                        bidirectional=encoder_bidirectional)
+            self.sign_bio_head_forward = nn.Linear(hidden_dim, tagset_size)
+            self.sign_bio_head_backward = nn.Linear(hidden_dim, tagset_size)
+            self.sentence_bio_head_forward = nn.Linear(hidden_dim, tagset_size)
+            self.sentence_bio_head_backward = nn.Linear(hidden_dim, tagset_size)
+        else:
+            self.encoder = nn.LSTM(lstm_input_dim,
+                                lstm_hidden_dim,
+                                num_layers=encoder_depth,
+                                batch_first=True,
+                                bidirectional=encoder_bidirectional)
+            self.sign_bio_head = nn.Linear(hidden_dim, tagset_size)
+            self.sentence_bio_head = nn.Linear(hidden_dim, tagset_size)
+
         sign_loss_weight = torch.tensor(sign_class_weights, dtype=torch.float)
         self.sign_loss_function = nn.NLLLoss(reduction='none', weight=sign_loss_weight)
-
-        # tag sequence for sentence bio
-        self.sentence_bio_head = nn.Linear(hidden_dim, 3)
         sentence_loss_weight = torch.tensor(sentence_class_weights, dtype=torch.float)
         self.sentence_loss_function = nn.NLLLoss(reduction='none', weight=sentence_loss_weight)
 
@@ -64,10 +81,61 @@ class PoseTaggingModel(pl.LightningModule):
         flat_pose_data = pose_data.reshape(batch_size, seq_length, -1)
 
         pose_projection = self.pose_projection(flat_pose_data)
-        pose_encoding, _ = self.encoder(pose_projection)
 
-        sign_bio_logits = self.sign_bio_head(pose_encoding)
-        sentence_bio_logits = self.sentence_bio_head(pose_encoding)
+        if self.encoder_autoregressive:
+            # adapted from https://github.com/J22Melody/sed_great_ape/blob/main/model.py
+            if self.encoder_bidirectional:
+                batch_size = pose_projection.size()[0]
+                sent_len = pose_projection.size()[1]
+
+                sign_bio_logits_forward = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sign_bio_logit_forward = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                sentence_bio_logits_forward = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sentence_bio_logit_forward = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                hidden_forward = None
+
+                sign_bio_logits_backward = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sign_bio_logit_backward = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                sentence_bio_logits_backward = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sentence_bio_logit_backward = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                hidden_backward = None
+                
+                for i in range(sent_len):
+                    output_forward, hidden_forward = self.lstm_forward(torch.cat([pose_projection[:, i], sign_bio_logit_forward, sentence_bio_logit_forward], 1), hidden_forward)
+                    sign_bio_logit_forward = self.sign_bio_head_forward(output_forward)
+                    sentence_bio_logit_forward = self.sentence_bio_head_forward(output_forward)
+                    sign_bio_logits_forward[:, i] = sign_bio_logit_forward
+                    sentence_bio_logits_forward[:, i] = sentence_bio_logit_forward
+
+                    back_i = sent_len - 1 - i
+                    output_backward, hidden_backward = self.lstm_backward(torch.cat([pose_projection[:, back_i], sign_bio_logit_backward, sentence_bio_logit_backward], 1), hidden_backward)
+                    sign_bio_logit_backward = self.sign_bio_head_backward(output_backward)
+                    sentence_bio_logit_backward = self.sentence_bio_head_backward(output_backward)
+                    sign_bio_logits_backward[:, back_i] = sign_bio_logit_backward
+                    sentence_bio_logits_backward[:, back_i] = sentence_bio_logit_backward
+
+                sign_bio_logits = torch.add(sign_bio_logits_forward, sign_bio_logits_backward)
+                sentence_bio_logits = torch.add(sentence_bio_logits_forward, sentence_bio_logits_backward)
+            else:
+                batch_size = pose_projection.size()[0]
+                sent_len = pose_projection.size()[1]
+                
+                sign_bio_logits = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sentence_bio_logits = torch.zeros(batch_size, sent_len, self.tagset_size, device=self.device)
+                sign_bio_logit = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                sentence_bio_logit = torch.zeros(batch_size, self.tagset_size, device=self.device)
+                hidden = None
+
+                for i in range(sent_len):
+                    output, hidden = self.encoder(torch.cat([pose_projection[:, i], sign_bio_logit, sentence_bio_logit], 1), hidden)
+                    sign_bio_logit = self.sign_bio_head(output)
+                    sentence_bio_logit = self.sentence_bio_head(output)
+                    sign_bio_logits[:, i] = sign_bio_logit
+                    sentence_bio_logits[:, i] = sentence_bio_logit
+        else:
+            pose_encoding, _ = self.encoder(pose_projection)
+            sign_bio_logits = self.sign_bio_head(pose_encoding)
+            sentence_bio_logits = self.sentence_bio_head(pose_encoding)
 
         return {"sign": F.log_softmax(sign_bio_logits, dim=-1), "sentence": F.log_softmax(sentence_bio_logits, dim=-1)}
 

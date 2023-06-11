@@ -65,6 +65,7 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
+                      encoder_autoregressive=args.encoder_autoregressive,
                       learning_rate=args.learning_rate,
                       lr_scheduler=args.lr_scheduler)
 
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     model = init_model(train_dataset, test_dataset)
 
     callbacks = [
-        EarlyStopping(monitor='validation_frame_f1_avg', patience=20, verbose=True, mode='max'),
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=args.patience, verbose=True, mode='max'),
         LearningRateMonitor(logging_interval='epoch'),
     ]
 
