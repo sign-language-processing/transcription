@@ -1,4 +1,10 @@
 .idea/
 __pycache__
 .pytest_cache
+sign_transcription.egg-info/
+build/
+models/
+lightning_logs/
+wandb/
 pose_to_segments/PRIVATE.md
+slurm-**.out
