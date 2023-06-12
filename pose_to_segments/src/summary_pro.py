@@ -32,6 +32,8 @@ models = [
     ('E2s', 'E2 + encoder_depth=4'),
     ('E3s', 'E3 + encoder_depth=4'),
     ('E4s', 'E4 + encoder_depth=4'),
+    ('E4a', 'E4s + autoregressive'),
+    # ('E4ba', 'E4s + bidi-autoregressive'),
 ]
 
 metrics = [
