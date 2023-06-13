@@ -9,8 +9,12 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 
-def find_value_from_line(lines, pattern):
-    return [line.replace(pattern, '').replace(' ', '') for line in lines if (pattern in line)][0]
+def find_value_from_line(lines, pattern, strict_start=False):
+    return [
+        line.replace(pattern, '').replace(' ', '') 
+        for line in lines 
+        if (not strict_start and (pattern in line.strip())) or (strict_start and line.strip().startswith(pattern))
+    ][0]
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -78,13 +82,17 @@ for model_id, note in models:
         summary_json = json.load(open(os.path.join(wandb_dir, './files/wandb-summary.json')))
         log_lines = open(os.path.join(wandb_dir, './files/output.log'), "r").read().splitlines()
 
-        # print(wandb_dir)
         for key in metrics:
             test_key = f'test_{key}'
             stats[test_key] += [float(summary_json[test_key])]
 
             dev_key = f'dev_{key}'
-            stats[dev_key] += [float(find_value_from_line(log_lines, test_key))]
+            dev_key_raw = f'validation_{key}'
+            try:
+                stats[dev_key] += [float(find_value_from_line(log_lines, dev_key_raw, strict_start=True))]
+            except IndexError:
+                # HACK: previously run validation procedure as test
+                stats[dev_key] += [float(find_value_from_line(log_lines, test_key))]
 
         stats['#parameters'] += [find_value_from_line(log_lines, 'Trainable params')]
         stats['training_time_avg'] += [summary_json['_runtime']]
