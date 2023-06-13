@@ -61,6 +61,10 @@ parser.add_argument('--encoder_autoregressive', type=boolean_string, default=Fal
                     help='should use a autoregressive encoder?')
 parser.add_argument('--weighted_loss', type=boolean_string, default=True, help='should use a class weighted loss?')
 
+# Decoding Algorithm
+parser.add_argument('--b_threshold', type=int, default=50, help='b_threshold')
+parser.add_argument('--o_threshold', type=int, default=50, help='o_threshold')
+
 # Testing Arguments
 parser.add_argument('--train', type=boolean_string, default=True, help='whether to train')
 parser.add_argument('--test', type=boolean_string, default=True, help='whether to test after training finishes?')

@@ -30,6 +30,6 @@ for seed in $seeds; do
 # E4a
 # sbatch $job python -m pose_to_segments.src.train --dataset=dgs_corpus --pose=holistic --fps=25 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=false --encoder_autoregressive=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments --seed=$seed --run_name=E4a-$seed --optical_flow=true --hand_normalization=true --epochs=50 --patience=10
 # E4ba
-sbatch $job python -m pose_to_segments.src.train --dataset=dgs_corpus --pose=holistic --fps=25 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --encoder_autoregressive=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments --seed=$seed --run_name=E4ba-$seed --optical_flow=true --hand_normalization=true --epochs=50 --patience=10
+# sbatch $job python -m pose_to_segments.src.train --dataset=dgs_corpus --pose=holistic --fps=25 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --encoder_autoregressive=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments --seed=$seed --run_name=E4ba-$seed --optical_flow=true --hand_normalization=true --epochs=50 --patience=10
 
 done

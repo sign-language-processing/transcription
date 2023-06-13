@@ -67,7 +67,9 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
                       encoder_bidirectional=args.encoder_bidirectional,
                       encoder_autoregressive=args.encoder_autoregressive,
                       learning_rate=args.learning_rate,
-                      lr_scheduler=args.lr_scheduler)
+                      lr_scheduler=args.lr_scheduler,
+                      b_threshold=args.b_threshold,
+                      o_threshold=args.o_threshold)
 
     if args.weighted_loss and train_dataset is not None:
         model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign")
@@ -137,10 +139,10 @@ if __name__ == '__main__':
         if args.train:
             # automatically auto-loads the best weights from the previous run
             # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
-            trainer.test(dataloaders=validation_loader)
+            trainer.validate(dataloaders=validation_loader)
             trainer.test(dataloaders=test_loader)
         else:
-            trainer.test(model, dataloaders=validation_loader)
+            trainer.validate(model, dataloaders=validation_loader)
             trainer.test(model, dataloaders=test_loader)
 
 
