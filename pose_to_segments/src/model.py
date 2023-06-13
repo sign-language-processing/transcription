@@ -27,7 +27,9 @@ class PoseTaggingModel(pl.LightningModule):
                  encoder_autoregressive=False,
                  tagset_size=3,
                  lr_scheduler='ReduceLROnPlateau',
-                 learning_rate=1e-3):
+                 learning_rate=1e-3,
+                 b_threshold=50,
+                 o_threshold=50):
         super().__init__()
 
         self.learning_rate = learning_rate
@@ -35,6 +37,8 @@ class PoseTaggingModel(pl.LightningModule):
         self.encoder_bidirectional = encoder_bidirectional
         self.encoder_autoregressive = encoder_autoregressive
         self.tagset_size = tagset_size
+        self.b_threshold = b_threshold
+        self.o_threshold = o_threshold
 
         pose_dim = int(np.prod(pose_dims))
         self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
@@ -157,6 +161,8 @@ class PoseTaggingModel(pl.LightningModule):
         data = {
             'gold': [],
             'probs': [],
+            'segments': [],
+            'segments_gold': [],
         }
 
         for gold, probs, segments_gold, mask, idx in zip(_gold, _probs, _segments_gold, _mask, _id):
@@ -185,17 +191,20 @@ class PoseTaggingModel(pl.LightningModule):
             metrics['frame_f1'].append(frame_f1(probs, gold))
 
             # segment IoU and percentage
-            segments = probs_to_segments(probs)
-            # segments = probs_to_segments(probs, restart_on_b=(level == 'sign'))
+            segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold)
             # convert segments from second to frame
             segments_gold = [{
                 'start': math.floor(s['start_time'] * fps), 
                 'end': math.floor(s['end_time'] * fps),
             } for s in segments_gold]
+            data['segments'] = data['segments'] + segments
+            data['segments_gold'] = data['segments_gold'] + segments_gold
+
             metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
             metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
 
             if advanced_plot:
+                # probs plot
                 title= f"{level} probs curve #{idx}"
                 probs = np.exp(probs.numpy().squeeze()) * 100
                 x = range(probs.shape[0])
@@ -203,10 +212,11 @@ class PoseTaggingModel(pl.LightningModule):
                 y_B_probs = probs[:, 1].squeeze()
                 y_I_probs = probs[:, 2].squeeze()
                 y_O_probs = probs[:, 0].squeeze()
-                B = plt.plot(x, y_B_probs, 'c', label = "B")
-                I = plt.plot(x, y_I_probs, 'g', label = "I")
-                O = plt.plot(x, y_O_probs, 'r', label = "O")
-                T = plt.plot(x, y_threshold, 'w--', label = "50")
+                plt.plot(x, y_B_probs, 'c', label = "B")
+                plt.plot(x, y_I_probs, 'g', label = "I")
+                plt.plot(x, y_O_probs, 'r', label = "O")
+                plt.plot(x, [self.b_threshold] * probs.shape[0], 'w--', label = "b_threshold")
+                plt.plot(x, [self.o_threshold] * probs.shape[0], 'w--', label = "o_threshold")
                 for segment in segments_gold:
                     span = range(segment['start'], segment['end'])
                     plt.plot(span, [100] * len(span), 'g')
@@ -217,6 +227,7 @@ class PoseTaggingModel(pl.LightningModule):
                 plt.clf()
 
         if advanced_plot:
+            # confusion matrix and precision-recall curve
             gold = torch.cat(data['gold'])
             probs = torch.cat(data['probs'])
             labels = ['O', 'B', 'I']
@@ -237,6 +248,19 @@ class PoseTaggingModel(pl.LightningModule):
                 labels=labels
             )}, commit=False)
 
+            # segment length distribution
+            segments_length = [(segment['end'] - segment['start']) / fps for segment in data['segments']]
+            segments_gold_length = [(segment['end'] - segment['start']) / fps for segment in data['segments_gold']]
+            title = f"{level} segment length distribution" 
+            bins = 100
+            plt.hist(segments_length, bins=bins, alpha=0.5, label="predicted segments")
+            plt.hist(segments_gold_length, bins=bins, alpha=0.5, label="gold segments")
+            plt.legend()
+            plt.xlabel("length in seconds")
+            plt.ylabel("number of segments")
+            wandb.log({title: wandb.Image(plt)}, commit=False)
+            plt.clf()
+
         for key, value in metrics.items():
             metrics[key] = sum(value) / len(value)
 
@@ -250,7 +274,7 @@ class PoseTaggingModel(pl.LightningModule):
         mask = batch["mask"]
         fps = batch["pose"]["obj"][0].body.fps
         
-        advanced_plot = name == 'validation' and (self.current_epoch + 1) % 10 == 0
+        advanced_plot = name == 'validation' and (self.current_epoch == 0 or self.current_epoch % 10 == 9)
         sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, batch['id'], advanced_plot)
         sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, batch['id'], advanced_plot)
 
