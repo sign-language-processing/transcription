@@ -253,11 +253,14 @@ class PoseTaggingModel(pl.LightningModule):
             segments_gold_length = [(segment['end'] - segment['start']) / fps for segment in data['segments_gold']]
             title = f"{level} segment length distribution" 
             bins = 100
-            plt.hist(segments_length, bins=bins, alpha=0.5, label="predicted segments")
-            plt.hist(segments_gold_length, bins=bins, alpha=0.5, label="gold segments")
+            alpha = 0.5
+            max_value = 1000 if level == 'sign' else 100
+            plt.hist(segments_length, bins=bins, alpha=alpha, label="predicted segments")
+            plt.hist(segments_gold_length, bins=bins, alpha=alpha, label="gold segments")
             plt.legend()
             plt.xlabel("length in seconds")
             plt.ylabel("number of segments")
+            plt.ylim(0, max_value)
             wandb.log({title: wandb.Image(plt)}, commit=False)
             plt.clf()
 
