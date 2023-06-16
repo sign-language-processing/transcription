@@ -26,7 +26,9 @@ wandb_base_dir = '/data/zifjia/pose_to_segments/wandb'
 current_dir = os.path.dirname(os.path.realpath(__file__))
 csv_path = os.path.join(current_dir, 'summary_decoding.csv')
 
-models = []
+models = [
+    ('E4s-likeliest', 'tune decoding'),
+]
 
 b_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 o_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]

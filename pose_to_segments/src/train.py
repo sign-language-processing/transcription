@@ -69,7 +69,8 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
                       learning_rate=args.learning_rate,
                       lr_scheduler=args.lr_scheduler,
                       b_threshold=args.b_threshold,
-                      o_threshold=args.o_threshold)
+                      o_threshold=args.o_threshold,
+                      threshold_likeliest=args.threshold_likeliest)
 
     if args.weighted_loss and train_dataset is not None:
         model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign")
