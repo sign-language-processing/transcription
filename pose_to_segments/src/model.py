@@ -29,7 +29,8 @@ class PoseTaggingModel(pl.LightningModule):
                  lr_scheduler='ReduceLROnPlateau',
                  learning_rate=1e-3,
                  b_threshold=50,
-                 o_threshold=50):
+                 o_threshold=50,
+                 threshold_likeliest=False):
         super().__init__()
 
         self.learning_rate = learning_rate
@@ -39,6 +40,7 @@ class PoseTaggingModel(pl.LightningModule):
         self.tagset_size = tagset_size
         self.b_threshold = b_threshold
         self.o_threshold = o_threshold
+        self.threshold_likeliest = threshold_likeliest
 
         pose_dim = int(np.prod(pose_dims))
         self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
@@ -191,7 +193,7 @@ class PoseTaggingModel(pl.LightningModule):
             metrics['frame_f1'].append(frame_f1(probs, gold))
 
             # segment IoU and percentage
-            segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold)
+            segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold, threshold_likeliest=self.threshold_likeliest)
             # convert segments from second to frame
             segments_gold = [{
                 'start': math.floor(s['start_time'] * fps), 

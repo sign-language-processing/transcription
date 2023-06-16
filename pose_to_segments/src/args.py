@@ -64,6 +64,7 @@ parser.add_argument('--weighted_loss', type=boolean_string, default=True, help='
 # Decoding Algorithm
 parser.add_argument('--b_threshold', type=int, default=50, help='b_threshold')
 parser.add_argument('--o_threshold', type=int, default=50, help='o_threshold')
+parser.add_argument('--threshold_likeliest', type=boolean_string, default=False, help='should use the likeliest class for decoding?')
 
 # Testing Arguments
 parser.add_argument('--train', type=boolean_string, default=True, help='whether to train')

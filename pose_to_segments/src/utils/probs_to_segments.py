@@ -21,7 +21,7 @@ def io_probs_to_segments(probs):
     return segments
 
 
-def probs_to_segments(logits, b_threshold=50., o_threshold=50., restart_on_b=True):
+def probs_to_segments(logits, b_threshold=50., o_threshold=50., threshold_likeliest=False, restart_on_b=True):
     probs = np.round(np.exp(logits.numpy().squeeze()) * 100)
     if np.alltrue(probs[:, BIO["B"]] < b_threshold):
         return io_probs_to_segments(probs)
@@ -30,20 +30,26 @@ def probs_to_segments(logits, b_threshold=50., o_threshold=50., restart_on_b=Tru
 
     segment = {"start": None, "end": None}
     did_pass_start = False
-    for i in range(len(probs)):
-        b = float(probs[i, BIO["B"]])
-        o = float(probs[i, BIO["O"]])
+    for idx in range(len(probs)):
+        b = float(probs[idx, BIO["B"]])
+        i = float(probs[idx, BIO["I"]])
+        o = float(probs[idx, BIO["O"]])
+
+        if threshold_likeliest:
+            b_threshold = max(i, o)
+            o_threshold = max(b, i)
+
         if segment["start"] is None:
             if b > b_threshold:
-                segment["start"] = i
+                segment["start"] = idx
         else:
             if did_pass_start:
                 if (restart_on_b and b > b_threshold) or o > o_threshold:
-                    segment["end"] = i - 1
+                    segment["end"] = idx - 1
 
                     # reset
                     segments.append(segment)
-                    segment = {"start": None if o > o_threshold else i, "end": None}
+                    segment = {"start": None if o > o_threshold else idx, "end": None}
                     did_pass_start = False
             else:
                 if b < b_threshold:
