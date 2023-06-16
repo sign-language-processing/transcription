@@ -27,17 +27,17 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 csv_path = os.path.join(current_dir, 'summary_pro.csv')
 
 models = [
-    ('E0', 'Moryossef et al. (2020)'),
-    ('E1', 'baseline'),
-    ('E2', 'E1 + face'),
-    ('E3', 'E1 + optical_flow'),
-    ('E4', 'E3 + hand_norm'),
-    ('E1s', 'E1 + encoder_depth=4'),
-    ('E2s', 'E2 + encoder_depth=4'),
-    ('E3s', 'E3 + encoder_depth=4'),
-    ('E4s', 'E4 + encoder_depth=4'),
-    ('E4a', 'E4s + autoregressive'),
-    ('E4ba', 'E4s + bidi-autoregressive'),
+    ('E0', '\citet{detection:moryossef2020real}'),
+    ('E1', 'Baseline'),
+    ('E2', 'E1 + Face'),
+    ('E3', 'E1 + Optical Flow'),
+    ('E4', 'E3 + Hand Norm'),
+    ('E1s', 'E1 + Depth=4'),
+    ('E2s', 'E2 + Depth=4'),
+    ('E3s', 'E3 + Depth=4'),
+    ('E4s', 'E4 + Depth=4'),
+    # ('E4a', 'E4s + autoregressive'), # uni-directional
+    ('E4ba', 'E4s + Autoregressive'), # bi-directional
 ]
 
 metrics = [
@@ -99,7 +99,7 @@ for model_id, note in models:
 
     for key, value in stats.items():
         if key not in ['id', 'note', '#parameters', 'training_time_avg']:
-            stats[key] = f'{round(mean(value), 2)}±{round(stdev(value), 2)}'
+            stats[key] = f'{"{:.2f}".format(mean(value))}±{"{:.2f}".format(stdev(value))}'
     stats['training_time_avg'] = str(datetime.timedelta(seconds=mean(stats['training_time_avg']))).split('.')[0]
     if len(set(stats['#parameters'])) == 1:
         stats['#parameters'] = stats['#parameters'][0]
