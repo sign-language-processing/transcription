@@ -45,7 +45,8 @@ class PoseTaggingModel(pl.LightningModule):
         pose_dim = int(np.prod(pose_dims))
         self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
 
-        if encoder_bidirectional:
+        # if encoder_bidirectional:
+        if encoder_bidirectional and not encoder_autoregressive:
             assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
             lstm_hidden_dim = hidden_dim // 2
         else:

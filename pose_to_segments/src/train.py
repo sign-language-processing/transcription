@@ -151,5 +151,5 @@ if __name__ == '__main__':
         # TODO: how to automatically load the best weights like above?
         pose_data = torch.randn((1, 100, *model.pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
-        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", "model.pth")
+        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", f"model_{args.run_name}.pth")
         torch.jit.save(traced_cell, model_path)
