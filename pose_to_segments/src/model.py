@@ -42,8 +42,8 @@ class PoseTaggingModel(pl.LightningModule):
         self.o_threshold = o_threshold
         self.threshold_likeliest = threshold_likeliest
 
-        pose_dim = int(np.prod(pose_dims))
-        self.pose_projection = nn.Linear(pose_dim, pose_projection_dim)
+        self.pose_dims = pose_dims
+        self.pose_projection = nn.Linear(int(np.prod(pose_dims)), pose_projection_dim)
 
         # if encoder_bidirectional:
         if encoder_bidirectional and not encoder_autoregressive:
