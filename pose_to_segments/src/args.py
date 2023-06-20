@@ -25,6 +25,7 @@ parser.add_argument('--wandb_dir', type=str, default='.', help='where to store w
 parser.add_argument('--seed', type=int, default=42, help='random seed')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
 parser.add_argument('--epochs', type=int, default=100, help='how many epochs')
+parser.add_argument('--patience', type=int, default=20, help='how many epochs as the patience for early stopping')
 parser.add_argument('--batch_size', type=int, default=8, help='batch size')
 parser.add_argument('--batch_size_devtest', type=int, default=20,
                     help='batch size for dev and test (by default run all in one batch)')
@@ -56,7 +57,14 @@ parser.add_argument('--hidden_dim', type=int, default=256, help='encoder hidden 
 parser.add_argument('--encoder_depth', type=int, default=4, help='number of layers for the encoder')
 parser.add_argument('--encoder_bidirectional', type=boolean_string, default=True,
                     help='should use a bidirectional encoder?')
+parser.add_argument('--encoder_autoregressive', type=boolean_string, default=False,
+                    help='should use a autoregressive encoder?')
 parser.add_argument('--weighted_loss', type=boolean_string, default=True, help='should use a class weighted loss?')
+
+# Decoding Algorithm
+parser.add_argument('--b_threshold', type=int, default=50, help='b_threshold')
+parser.add_argument('--o_threshold', type=int, default=50, help='o_threshold')
+parser.add_argument('--threshold_likeliest', type=boolean_string, default=False, help='should use the likeliest class for decoding?')
 
 # Testing Arguments
 parser.add_argument('--train', type=boolean_string, default=True, help='whether to train')
