@@ -65,8 +65,12 @@ def init_model(train_dataset: PoseSegmentsDataset, test_dataset: PoseSegmentsDat
                       hidden_dim=args.hidden_dim,
                       encoder_depth=args.encoder_depth,
                       encoder_bidirectional=args.encoder_bidirectional,
+                      encoder_autoregressive=args.encoder_autoregressive,
                       learning_rate=args.learning_rate,
-                      lr_scheduler=args.lr_scheduler)
+                      lr_scheduler=args.lr_scheduler,
+                      b_threshold=args.b_threshold,
+                      o_threshold=args.o_threshold,
+                      threshold_likeliest=args.threshold_likeliest)
 
     if args.weighted_loss and train_dataset is not None:
         model_args['sign_class_weights'] = train_dataset.inverse_classes_ratio("sign")
@@ -104,7 +108,7 @@ if __name__ == '__main__':
     model = init_model(train_dataset, test_dataset)
 
     callbacks = [
-        EarlyStopping(monitor='validation_frame_f1_avg', patience=20, verbose=True, mode='max'),
+        EarlyStopping(monitor='validation_frame_f1_avg', patience=args.patience, verbose=True, mode='max'),
         LearningRateMonitor(logging_interval='epoch'),
     ]
 
@@ -136,10 +140,10 @@ if __name__ == '__main__':
         if args.train:
             # automatically auto-loads the best weights from the previous run
             # see: https://lightning.ai/docs/pytorch/stable/common/lightning_module.html#testing
-            trainer.test(dataloaders=validation_loader)
+            trainer.validate(dataloaders=validation_loader)
             trainer.test(dataloaders=test_loader)
         else:
-            trainer.test(model, dataloaders=validation_loader)
+            trainer.validate(model, dataloaders=validation_loader)
             trainer.test(model, dataloaders=test_loader)
 
 
@@ -147,5 +151,5 @@ if __name__ == '__main__':
         # TODO: how to automatically load the best weights like above?
         pose_data = torch.randn((1, 100, *model.pose_dims))
         traced_cell = torch.jit.trace(model, tuple([pose_data]), strict=False)
-        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", "model.pth")
+        model_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../dist", f"model_{args.run_name}.pth")
         torch.jit.save(traced_cell, model_path)
