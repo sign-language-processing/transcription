@@ -22,12 +22,13 @@ def flatten(l):
 parser = ArgumentParser()
 args = parser.parse_args()
 
+model_name = 'E1s'
 wandb_base_dir = '/data/zifjia/pose_to_segments/wandb'
 current_dir = os.path.dirname(os.path.realpath(__file__))
-csv_path = os.path.join(current_dir, 'summary_decoding.csv')
+csv_path = os.path.join(current_dir, f'summary_decoding_{model_name}.csv')
 
 models = [
-    ('E4s-likeliest', 'tune decoding'),
+    (f'{model_name}-likeliest', 'tune decoding'),
 ]
 
 b_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]
@@ -35,7 +36,7 @@ o_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]
 
 for b_threshold in b_thresholds:
     for o_threshold in o_thresholds:
-        models.append((f'E4s-b{b_threshold}-o{o_threshold}', 'tune decoding'))
+        models.append((f'{model_name}-b{b_threshold}-o{o_threshold}', 'tune decoding'))
 
 metrics = [
     'frame_f1_avg',
@@ -72,7 +73,8 @@ for model_id, note in models:
         if len(wandb_dirs) == 1:
             wandb_dir = wandb_dirs[0]
         else:
-            raise 'len of wandb_dirs does not equal 1'
+            print(model_id_with_seed)
+            raise Exception('len of wandb_dirs does not equal 1')
 
         summary_json = json.load(open(os.path.join(wandb_dir, './files/wandb-summary.json')))
         log_lines = open(os.path.join(wandb_dir, './files/output.log'), "r").read().splitlines()
