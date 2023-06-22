@@ -23,6 +23,7 @@ parser.add_argument('--wandb_dir', type=str, default='.', help='where to store w
 
 # Training Arguments
 parser.add_argument('--seed', type=int, default=42, help='random seed')
+parser.add_argument('--device', type=str, default='gpu', help='device to use, cpu or gpu')
 parser.add_argument('--gpus', type=int, default=1, help='how many gpus')
 parser.add_argument('--epochs', type=int, default=100, help='how many epochs')
 parser.add_argument('--patience', type=int, default=20, help='how many epochs as the patience for early stopping')
