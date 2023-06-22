@@ -11,7 +11,7 @@ import wandb
 import matplotlib.pyplot as plt
 
 from .utils.probs_to_segments import probs_to_segments
-from .utils.metrics import frame_accuracy, frame_f1, segment_percentage, segment_IoU
+from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU
 
 
 class PoseTaggingModel(pl.LightningModule):
@@ -158,6 +158,10 @@ class PoseTaggingModel(pl.LightningModule):
             'loss': [],
             'frame_accuracy': [],
             'frame_f1': [],
+            'frame_f1_O': [],
+            'frame_precision_O': [],
+            'frame_recall_O': [],
+            'frame_roc_auc_O': [],
             'segment_percentage': [],
             'segment_IoU': [],
         }
@@ -191,7 +195,14 @@ class PoseTaggingModel(pl.LightningModule):
 
             # accuracy and f1
             metrics['frame_accuracy'].append(frame_accuracy(probs, gold))
-            metrics['frame_f1'].append(frame_f1(probs, gold))
+            metrics['frame_f1'].append(frame_f1(probs, gold, average='macro'))
+
+            # specific metrics on the O tag to compare to Bull et al.
+            if torch.count_nonzero(gold) > 0:
+                metrics['frame_f1_O'].append(frame_f1(probs, gold, average=None)[0])
+                metrics['frame_precision_O'].append(frame_precision(probs, gold, average=None)[0])
+                metrics['frame_recall_O'].append(frame_recall(probs, gold, average=None)[0])
+                metrics['frame_roc_auc_O'].append(frame_roc_auc(probs, gold, average=None, multi_class='ovr', labels=[0, 1, 2])[0])
 
             # segment IoU and percentage
             segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold, threshold_likeliest=self.threshold_likeliest)
@@ -280,7 +291,7 @@ class PoseTaggingModel(pl.LightningModule):
         mask = batch["mask"]
         fps = batch["pose"]["obj"][0].body.fps
         
-        advanced_plot = name == 'validation' and (self.current_epoch == 0 or self.current_epoch % 10 == 9)
+        advanced_plot = (wandb.run is not None) and (name == 'validation') and (self.current_epoch == 0 or self.current_epoch % 10 == 9)
         sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, batch['id'], advanced_plot)
         sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, batch['id'], advanced_plot)
 

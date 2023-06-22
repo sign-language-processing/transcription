@@ -2,7 +2,7 @@ from typing import List
 
 import torch
 import numpy as np
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score
 
 
 def frame_accuracy(probs: torch.Tensor, gold: torch.Tensor) -> float:
@@ -12,12 +12,33 @@ def frame_accuracy(probs: torch.Tensor, gold: torch.Tensor) -> float:
     """
     return float(torch.sum(gold == probs.argmax(dim=1)) / gold.shape[0])
 
-def frame_f1(probs: torch.Tensor, gold: torch.Tensor) -> float:
+def frame_f1(probs: torch.Tensor, gold: torch.Tensor, **kwargs) -> float:
     """
     probs: [sequence_length x number_of_classes(3)]
     gold: [sequence_length]
     """
-    return f1_score(gold.numpy(), probs.argmax(dim=1).numpy(), average='macro')
+    return f1_score(gold.numpy(), probs.argmax(dim=1).numpy(), **kwargs)
+
+def frame_precision(probs: torch.Tensor, gold: torch.Tensor, **kwargs) -> float:
+    """
+    probs: [sequence_length x number_of_classes(3)]
+    gold: [sequence_length]
+    """
+    return precision_score(gold.numpy(), probs.argmax(dim=1).numpy(), **kwargs)
+
+def frame_recall(probs: torch.Tensor, gold: torch.Tensor, **kwargs) -> float:
+    """
+    probs: [sequence_length x number_of_classes(3)]
+    gold: [sequence_length]
+    """
+    return recall_score(gold.numpy(), probs.argmax(dim=1).numpy(), **kwargs)
+
+def frame_roc_auc(probs: torch.Tensor, gold: torch.Tensor, **kwargs) -> float:
+    """
+    probs: [sequence_length x number_of_classes(3)]
+    gold: [sequence_length]
+    """
+    return roc_auc_score(gold.numpy(), np.exp(probs.numpy()), **kwargs)
 
 def segment_percentage(segments: List[dict], segments_gold: List[dict]) -> float:
     """
