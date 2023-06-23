@@ -45,7 +45,7 @@ def segment_percentage(segments: List[dict], segments_gold: List[dict]) -> float
     segments: [{'start': 1, 'end': 2}, ...]
     """
     if len(segments_gold) == 0:
-        return 1 if len(segments) == 0 else 0
+        return 1 if len(segments) == 0 else len(segments)
 
     return len(segments) / len(segments_gold)
 
