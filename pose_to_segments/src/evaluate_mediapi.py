@@ -132,17 +132,17 @@ def main(model_path: str, mediapi_path: str, pose_path: str = None, optical_flow
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--model-path", type=str, required=True)
-    # parser.add_argument("--mediapi-path", type=str, required=True)
-    # parser.add_argument("--pose-path", type=str)
-    parser.add_argument("--model-path", type=str,
-                        default='/home/nlp/amit/sign-language/transcription/pose_to_segments/dist/model_E4s-1.pth')
-    parser.add_argument("--mediapi-path", type=str,
-                        default='/home/nlp/amit/WWW/tmp/mediapi-skel.zip')
-    parser.add_argument("--pose-path", type=str,
-                        default='/home/nlp/amit/WWW/tmp/mediapipe.zip/mediapipe_zips.zip')
-    parser.add_argument("--optical-flow", action="store_true", default=True)
-    parser.add_argument("--hand-normalization", action="store_true", default=True)
+    parser.add_argument("--model-path", type=str, required=True)
+    parser.add_argument("--mediapi-path", type=str, required=True)
+    parser.add_argument("--pose-path", type=str)
+    # parser.add_argument("--model-path", type=str,
+    #                     default='/home/nlp/amit/sign-language/transcription/pose_to_segments/dist/model_E4s-1.pth')
+    # parser.add_argument("--mediapi-path", type=str,
+    #                     default='/home/nlp/amit/WWW/tmp/mediapi-skel.zip')
+    # parser.add_argument("--pose-path", type=str,
+    #                     default='/home/nlp/amit/WWW/tmp/mediapipe.zip/mediapipe_zips.zip')
+    parser.add_argument("--optical-flow", action="store_true")
+    parser.add_argument("--hand-normalization", action="store_true")
 
     args = parser.parse_args()
 
