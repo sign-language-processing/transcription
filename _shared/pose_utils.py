@@ -63,12 +63,12 @@ def pose_normalization_info(pose_header: PoseHeader):
 
 
 def hands_components(pose_header: PoseHeader):
-    if pose_header.components[0].name == "POSE_LANDMARKS":
+    if pose_header.components[0].name in ["POSE_LANDMARKS", "LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"]:
         return ("LEFT_HAND_LANDMARKS", "RIGHT_HAND_LANDMARKS"), \
                ("WRIST", "PINKY_MCP", "INDEX_FINGER_MCP"), \
                ("WRIST", "MIDDLE_FINGER_MCP")
 
-    if pose_header.components[0].name == "pose_keypoints_2d":
+    if pose_header.components[0].name in ["pose_keypoints_2d", "hand_left_keypoints_2d", "hand_right_keypoints_2d"]:
         return ("hand_left_keypoints_2d", "hand_right_keypoints_2d"), \
                ("BASE", "P_CMC", "I_CMC"), \
                ("BASE", "M_CMC")
@@ -91,10 +91,12 @@ def normalize_component_3d(pose, component_name: str, plane: Tuple[str, str, str
     pose.body.confidence = np.concatenate([pose.body.confidence, hand_pose.body.confidence], axis=2)
 
 
-def normalize_hands_3d(pose: Pose):
+def normalize_hands_3d(pose: Pose, left_hand=True, right_hand=True):
     (left_hand_component, right_hand_component), plane, line = hands_components(pose.header)
-    normalize_component_3d(pose, left_hand_component, plane, line)
-    normalize_component_3d(pose, right_hand_component, plane, line)
+    if left_hand:
+        normalize_component_3d(pose, left_hand_component, plane, line)
+    if right_hand:
+        normalize_component_3d(pose, right_hand_component, plane, line)
 
 
 def fake_pose(num_frames: int, fps=25, dims=2, components=OpenPose_Components):
