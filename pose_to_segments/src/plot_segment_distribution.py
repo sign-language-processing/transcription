@@ -27,7 +27,7 @@ plt.subplots_adjust(bottom=0.1, top=0.98)
 plt.legend(loc="upper right", fontsize=18)
 plt.tick_params(axis='both', which='major', labelsize=18)
 plt.xlabel("Length in seconds", fontsize=18)
-plt.ylabel("Probability Density", fontsize=18)
+plt.ylabel("Probability density", fontsize=18)
 plt.ylim(0, max_value)
 
 # plt.show()

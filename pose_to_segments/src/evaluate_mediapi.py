@@ -3,6 +3,7 @@ import csv
 import io
 import zipfile
 from functools import lru_cache
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TypedDict
 
 import numpy as np
 from pose_format import PoseHeader, Pose
@@ -11,7 +12,9 @@ from pose_format.pose_header import PoseHeaderDimensions
 from tqdm import tqdm
 
 from pose_to_segments.bin import load_model, process_pose, predict
+from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU
 import webvtt
+import torch
 
 
 def read_pose_tsv_file(pose_tsv: bytes, num_keypoints: int = 33):
@@ -108,7 +111,6 @@ def read_mediapi_set(mediapi_path: str, pose_path: str = None, split='test'):
         print("mediapipe files", mediapipe_zip.namelist())
         number_name = {name_number(name): name for name in mediapipe_zip.namelist() if '/00001/' not in name}
         for datum in tqdm(test_data, desc="Loading mediapipe poses"):
-            datum['video'] = 1
             with zipfile.ZipFile(mediapipe_zip.open(number_name[int(datum['video'])]), 'r') as nested_zip:
                 fps = float(datum['fps'].replace(',', '.'))
                 datum['pose'] = load_pose_from_zip(nested_zip, fps=fps)
@@ -116,18 +118,128 @@ def read_mediapi_set(mediapi_path: str, pose_path: str = None, split='test'):
     return test_data
 
 
+class Segment(TypedDict):
+    start_time: float
+    end_time: float
+
+
+class SegmentsDict(TypedDict):
+    sign: List[Segment]
+    sentence: List[Segment]
+
+
+class BIODict(TypedDict):
+    sign: torch.LongTensor
+    sentence: torch.LongTensor
+
+
+class PoseSegmentsDatum(TypedDict):
+    id: str
+    segments: List[List[Segment]]
+    pose: Pose
+    bio: Optional[BIODict]
+    segments: Optional[SegmentsDict]
+
+
+BIO = {"O": 0, "B": 1, "I": 2}
+
+
+def build_bio(identifier: str, timestamps: torch.Tensor, segments: List[Segment], b_tag="B"):
+    bio = torch.zeros(len(timestamps), dtype=torch.long)
+
+    timestamp_i = 0
+    for segment in segments:
+        if segment["start_time"] >= timestamps[-1]:
+            print(f"Video {identifier} segment {segment} starts after the end of the pose {timestamps[-1]}")
+            continue
+
+        while timestamps[timestamp_i] < segment["start_time"]:
+            timestamp_i += 1
+        segment_start_i = timestamp_i
+        while timestamp_i < (len(timestamps) - 1) and timestamps[timestamp_i] < segment["end_time"]:
+            timestamp_i += 1
+        segment_end_i = timestamp_i
+
+        bio[segment_start_i] = BIO[b_tag]
+        bio[segment_start_i + 1:segment_end_i] = BIO["I"]
+
+    return bio
+
+def build_classes_vectors(datum) -> Tuple[SegmentsDict, BIODict]:
+    pose = datum["pose"]
+    pose_length = len(pose.body.data)
+    timestamps = torch.div(torch.arange(0, pose_length), pose.body.fps)
+
+    sentence_segments = [sentence_segment for sentence_segment in datum["segments"]]
+
+    segments = {"sentence": sentence_segments}
+    b_tag = "B"
+    bio = {kind: build_bio('test', timestamps, s, b_tag=b_tag) for kind, s in segments.items()}
+    return segments, bio
+
+def convert_time(vtt_time):
+    hhmmss, fraction = vtt_time.split('.')
+    h, m, s = hhmmss.split(':')
+    hhmmss = int(h) * 3600 + int(m) * 60 + int(s)
+    return hhmmss + float(int(fraction) / 1000)
+
 def main(model_path: str, mediapi_path: str, pose_path: str = None, optical_flow=False, hand_normalization=False):
     test_set = read_mediapi_set(mediapi_path, pose_path, 'test')
     model = load_model(model_path)
 
-    for datum in tqdm(test_set):
+    metrics = {
+        'frame_f1': [],
+        'frame_f1_O': [],
+        'frame_precision_O': [],
+        'frame_recall_O': [],
+        'frame_roc_auc_O': [],
+    }
+
+    for i, datum in enumerate(tqdm(test_set)):
+        # if datum['pose'].body.data.shape[0] <= 1500:
+        #     continue
+
+        print('---------------')
+        print(datum['subtitles'])
+        datum["segments"] = [{"start_time": convert_time(c.start), "end_time": convert_time(c.end)} for c in datum["subtitles"]]
+        print(datum["segments"])
+        segments, bio = build_classes_vectors(datum)
+        gold = bio['sentence']
+
         pose = process_pose(datum['pose'], optical_flow=optical_flow, hand_normalization=hand_normalization)
         probs = predict(model, pose)
 
-        # TODO: now you have the probabilities for each class.
-        #  We can do whatever you want with them.
-        print("sign", probs["sign"])
-        print("sentence", probs["sentence"])
+        probs = probs["sentence"].squeeze()
+        # print(probs.shape)
+
+        # detach for evaluation
+        gold = gold.detach().cpu()
+        probs = probs.detach().cpu()
+
+        print(probs.argmax(dim=1))
+        print(gold)
+
+        # accuracy and f1
+        metrics['frame_f1'].append(frame_f1(probs, gold, average='macro'))
+
+        # specific metrics on the O tag to compare to Bull et al.
+        if torch.count_nonzero(gold) > 0:
+            metrics['frame_f1_O'].append(frame_f1(probs, gold, average=None)[0])
+            metrics['frame_precision_O'].append(frame_precision(probs, gold, average=None)[0])
+            metrics['frame_recall_O'].append(frame_recall(probs, gold, average=None)[0])
+            metrics['frame_roc_auc_O'].append(frame_roc_auc(probs, gold, average=None, multi_class='ovr', labels=[0, 1, 2])[0])
+
+        print(metrics)
+
+        # if i == 1:
+            # exit()
+
+    print(len(metrics['frame_f1']))
+
+    for key, value in metrics.items():
+        metrics[key] = sum(value) / len(value)
+
+    print(metrics)
 
 
 if __name__ == "__main__":
