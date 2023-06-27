@@ -11,7 +11,7 @@ import wandb
 import matplotlib.pyplot as plt
 
 from .utils.probs_to_segments import probs_to_segments
-from .utils.metrics import frame_accuracy, frame_f1, segment_percentage, segment_IoU
+from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU
 
 
 class PoseTaggingModel(pl.LightningModule):
@@ -45,7 +45,6 @@ class PoseTaggingModel(pl.LightningModule):
         self.pose_dims = pose_dims
         self.pose_projection = nn.Linear(int(np.prod(pose_dims)), pose_projection_dim)
 
-        # if encoder_bidirectional:
         if encoder_bidirectional and not encoder_autoregressive:
             assert hidden_dim / 2 == hidden_dim // 2, "Hidden dimensions must be even, not odd"
             lstm_hidden_dim = hidden_dim // 2
@@ -158,6 +157,10 @@ class PoseTaggingModel(pl.LightningModule):
             'loss': [],
             'frame_accuracy': [],
             'frame_f1': [],
+            # 'frame_f1_O': [],
+            # 'frame_precision_O': [],
+            # 'frame_recall_O': [],
+            # 'frame_roc_auc_O': [],
             'segment_percentage': [],
             'segment_IoU': [],
         }
@@ -191,7 +194,14 @@ class PoseTaggingModel(pl.LightningModule):
 
             # accuracy and f1
             metrics['frame_accuracy'].append(frame_accuracy(probs, gold))
-            metrics['frame_f1'].append(frame_f1(probs, gold))
+            metrics['frame_f1'].append(frame_f1(probs, gold, average='macro'))
+
+            # specific metrics on the O tag to compare to Bull et al.
+            # if torch.count_nonzero(gold) > 0:
+            #     metrics['frame_f1_O'].append(frame_f1(probs, gold, average=None)[0])
+            #     metrics['frame_precision_O'].append(frame_precision(probs, gold, average=None)[0])
+            #     metrics['frame_recall_O'].append(frame_recall(probs, gold, average=None)[0])
+            #     metrics['frame_roc_auc_O'].append(frame_roc_auc(probs, gold, average=None, multi_class='ovr', labels=[0, 1, 2])[0])
 
             # segment IoU and percentage
             segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold, threshold_likeliest=self.threshold_likeliest)
@@ -254,6 +264,12 @@ class PoseTaggingModel(pl.LightningModule):
             # segment length distribution
             segments_length = [(segment['end'] - segment['start']) / fps for segment in data['segments']]
             segments_gold_length = [(segment['end'] - segment['start']) / fps for segment in data['segments_gold']]
+
+            # produce segment lengths for plotting
+            # if level == 'sentence':
+            #     print(segments_length)
+            #     print(segments_gold_length)
+
             title = f"{level} segment length distribution" 
             bins = 100
             alpha = 0.5
@@ -266,6 +282,11 @@ class PoseTaggingModel(pl.LightningModule):
             plt.ylim(0, max_value)
             wandb.log({title: wandb.Image(plt)}, commit=False)
             plt.clf()
+
+        # break down for sig-test
+        # print(f'\nprint {level} metrics before averaging:')
+        # print(metrics)
+        # print('\n')
 
         for key, value in metrics.items():
             metrics[key] = sum(value) / len(value)
@@ -280,7 +301,7 @@ class PoseTaggingModel(pl.LightningModule):
         mask = batch["mask"]
         fps = batch["pose"]["obj"][0].body.fps
         
-        advanced_plot = name == 'validation' and (self.current_epoch == 0 or self.current_epoch % 10 == 9)
+        advanced_plot = (wandb.run is not None) and (name == 'validation') and (self.current_epoch == 0 or self.current_epoch % 10 == 9)
         sign_metrics = self.evaluate('sign', fps, batch["bio"]["sign"], log_probs["sign"], batch["segments"]["sign"], mask, batch['id'], advanced_plot)
         sentence_metrics = self.evaluate('sentence', fps, batch["bio"]["sentence"], log_probs["sentence"], batch["segments"]["sentence"], mask, batch['id'], advanced_plot)
 

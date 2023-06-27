@@ -129,7 +129,7 @@ if __name__ == '__main__':
                          logger=LOGGER,
                          callbacks=callbacks,
                          log_every_n_steps=(1 if args.data_dev else 10),
-                         accelerator='gpu',
+                         accelerator=args.device,
                          check_val_every_n_epoch=1,
                          devices=args.gpus)
 
