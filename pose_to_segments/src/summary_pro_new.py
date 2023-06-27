@@ -22,21 +22,23 @@ def flatten(l):
 parser = ArgumentParser()
 args = parser.parse_args()
 
-model_name = 'E4s'
 wandb_base_dir = '/data/zifjia/pose_to_segments_2/wandb'
 current_dir = os.path.dirname(os.path.realpath(__file__))
-csv_path = os.path.join(current_dir, f'summary_decoding_{model_name}.csv')
+csv_path = os.path.join(current_dir, 'summary_pro_new.csv')
 
 models = [
-    (f'{model_name}-likeliest', 'tune decoding'),
+    ('E0', '\citet{detection:moryossef2020real}'),
+    ('E1', 'Baseline'),
+    ('E2', 'E1 + Face'),
+    ('E3', 'E1 + Optical Flow'),
+    ('E4', 'E3 + Hand Norm'),
+    ('E1s', 'E1 + Depth=4'),
+    ('E2s', 'E2 + Depth=4'),
+    ('E3s', 'E3 + Depth=4'),
+    ('E4s', 'E4 + Depth=4'),
+    # ('E4a', 'E4s + autoregressive'), # uni-directional
+    ('E4ba', 'E4s + Autoregressive'), # bi-directional
 ]
-
-b_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]
-o_thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90]
-
-for b_threshold in b_thresholds:
-    for o_threshold in o_thresholds:
-        models.append((f'{model_name}-b{b_threshold}-o{o_threshold}', 'tune decoding'))
 
 metrics = [
     'frame_f1_avg',
@@ -57,6 +59,8 @@ for model_id, note in models:
     stats = {
         'id': model_id,
         'note': note,
+        '#parameters': [],
+        'training_time_avg': [],
     }
     for key in metrics:
          stats[f'test_{key}'] = []
@@ -74,7 +78,8 @@ for model_id, note in models:
             wandb_dir = wandb_dirs[0]
         else:
             print(model_id_with_seed)
-            raise Exception('len of wandb_dirs does not equal 1')
+            print(wandb_dirs)
+            raise 'len of wandb_dirs does not equal 1'
 
         summary_json = json.load(open(os.path.join(wandb_dir, './files/wandb-summary.json')))
         log_lines = open(os.path.join(wandb_dir, './files/output.log'), "r").read().splitlines()
@@ -93,7 +98,7 @@ for model_id, note in models:
 
     for key, value in stats.items():
         if key not in ['id', 'note', '#parameters', 'training_time_avg']:
-            stats[key] = f'{round(mean(value), 2)}±{round(stdev(value), 2)}'
+            stats[key] = f'{"{:.2f}".format(mean(value))}±{"{:.2f}".format(stdev(value))}'
 
     # print(stats)    
     # print('==========================')
@@ -105,8 +110,13 @@ df = pd.DataFrame.from_dict(stats_all, orient='index')
 
 order = ['id', 'note']
 order += flatten([(f'dev_{metric}', f'test_{metric}') for metric in metrics])
+# order += ['#parameters', 'training_time_avg']
 df = df[order]
 
 # df = df.sort_values(by=['id'])
+
+df_old = pd.read_csv(os.path.join(current_dir, 'summary_pro.csv'))
+df['#parameters'] = df_old['#parameters'].values
+df['training_time_avg'] = df_old['training_time_avg'].values
 
 df.to_csv(csv_path, index=False)
