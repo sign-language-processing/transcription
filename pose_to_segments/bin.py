@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pympi
 import torch
-import srt
 from pose_format import Pose
 
 from _shared.pose_utils import pose_hide_legs, pose_normalization_info, normalize_hands_3d
@@ -63,7 +62,7 @@ def get_args():
     parser.add_argument('-i', required=True, type=str, help='path to input pose file')
     parser.add_argument('-o', required=True, type=str, help='path to output elan file')
     parser.add_argument('--video', default=None, required=False, type=str, help='path to video file')
-    parser.add_argument('--subtitle', default=None, required=False, type=str, help='path to subtitle file')
+    parser.add_argument('--subtitles', default=None, required=False, type=str, help='path to subtitle file')
     parser.add_argument('--model', default='model_E1s-1.pth', required=False, type=str, help='path to model file')
 
     return parser.parse_args()
@@ -73,10 +72,11 @@ def main():
 
     print('Loading pose ...')
     with open(args.i, "rb") as f:
+        pose = Pose.read(f.read())
         if 'E4' in args.model:
-            pose = process_pose(Pose.read(f.read()), optical_flow=True, hand_normalization=True)
+            pose = process_pose(pose, optical_flow=True, hand_normalization=True)
         else:
-            pose = process_pose(Pose.read(f.read()))
+            pose = process_pose(pose)
         
     print('Loading model ...')
     install_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,7 +86,7 @@ def main():
     probs = predict(model, pose)
 
     sign_segments = probs_to_segments(probs["sign"], 60, 50)
-    sentence_segments = probs_to_segments(probs["sentence"], 85, 80)
+    sentence_segments = probs_to_segments(probs["sentence"], 90, 90)
 
     print('Building ELAN file ...')
     tiers = {
@@ -109,9 +109,10 @@ def main():
         for segment in segments:
             eaf.add_annotation(tier_id, int(segment["start"] / fps * 1000), int(segment["end"] / fps * 1000))
 
-    if args.subtitle:
+    if args.subtitles:
+        import srt
         eaf.add_tier("SUBTITLE")
-        with open(args.subtitle, "r") as infile:
+        with open(args.subtitles, "r") as infile:
             for subtitle in srt.parse(infile):
                 start = subtitle.start.total_seconds()
                 end = subtitle.end.total_seconds()
