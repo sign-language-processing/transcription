@@ -62,26 +62,31 @@ def get_args():
     parser.add_argument('-i', required=True, type=str, help='path to input pose file')
     parser.add_argument('-o', required=True, type=str, help='path to output elan file')
     parser.add_argument('--video', default=None, required=False, type=str, help='path to video file')
+    parser.add_argument('--subtitles', default=None, required=False, type=str, help='path to subtitle file')
+    parser.add_argument('--model', default='model_E1s-1.pth', required=False, type=str, help='path to model file')
 
     return parser.parse_args()
-
 
 def main():
     args = get_args()
 
     print('Loading pose ...')
     with open(args.i, "rb") as f:
-        pose = process_pose(Pose.read(f.read()))
-
+        pose = Pose.read(f.read())
+        if 'E4' in args.model:
+            pose = process_pose(pose, optical_flow=True, hand_normalization=True)
+        else:
+            pose = process_pose(pose)
+        
     print('Loading model ...')
     install_dir = os.path.dirname(os.path.abspath(__file__))
-    model = load_model(os.path.join(install_dir, "dist", "model_E1s-1.pth"))
+    model = load_model(os.path.join(install_dir, "dist", args.model))
 
     print('Estimating segments ...')
     probs = predict(model, pose)
 
-    sign_segments = probs_to_segments(probs["sign"])
-    sentence_segments = probs_to_segments(probs["sentence"], .8, .8)
+    sign_segments = probs_to_segments(probs["sign"], 60, 50)
+    sentence_segments = probs_to_segments(probs["sentence"], 90, 90)
 
     print('Building ELAN file ...')
     tiers = {
@@ -102,7 +107,19 @@ def main():
     for tier_id, segments in tiers.items():
         eaf.add_tier(tier_id)
         for segment in segments:
-            eaf.add_annotation(tier_id, segment["start"] * fps, segment["end"] * fps)
+            eaf.add_annotation(tier_id, int(segment["start"] / fps * 1000), int(segment["end"] / fps * 1000))
+
+    if args.subtitles:
+        import srt
+        eaf.add_tier("SUBTITLE")
+        with open(args.subtitles, "r") as infile:
+            for subtitle in srt.parse(infile):
+                start = subtitle.start.total_seconds()
+                end = subtitle.end.total_seconds()
+                eaf.add_annotation("SUBTITLE", int(start * 1000), int(end * 1000), subtitle.content)
 
     print('Saving to disk ...')
     eaf.to_file(args.o)
+
+if __name__ == '__main__':
+    main()
