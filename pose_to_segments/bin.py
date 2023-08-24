@@ -102,7 +102,7 @@ def main():
         if args.video.endswith(".mp4"):
             mimetype = "video/mp4"
         eaf.add_linked_file(args.video, mimetype=mimetype)
-    eaf.add_linked_file(args.i, mimetype="application/pose")
+    # eaf.add_linked_file(args.i, mimetype="application/pose")
 
     for tier_id, segments in tiers.items():
         eaf.add_tier(tier_id)
