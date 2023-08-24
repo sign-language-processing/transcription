@@ -14,7 +14,7 @@ able to encode arbitrary pose sequence lengths, and pre-trained on non-autoregre
 ## Installation
 
 ```bash
-pip install git+git://github.com/sign-language-processing/transcription.git
+pip install git+https://github.com/sign-language-processing/transcription
 ```
 
 ## Development Setup
