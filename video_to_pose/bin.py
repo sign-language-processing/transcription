@@ -31,7 +31,7 @@ def pose_video(input_path: str, output_path: str, format: str):
                              width=width,
                              height=height,
                              progress=True,
-                             additional_holistic_config={'model_complexity': 2})
+                             additional_holistic_config={'model_complexity': 1})
     else:
         raise NotImplementedError('Pose format not supported')
 

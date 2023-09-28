@@ -37,16 +37,24 @@ column_limit = 120
 [tool.setuptools]
 packages = [
     "_shared",
+
     "video_to_pose",
+
     "pose_to_video",
+
     "pose_to_segments",
+    "pose_to_segments.src",
+    "pose_to_segments.src.utils",
+
     "pose_to_text",
+
     "text_to_pose",
+
     "text_to_text",
 ]
 
 [tool.setuptools.package-data]
-pose_to_segments = ["*.pth"]
+pose_to_segments = ["dist/*.pth"]
 
 [tool.pytest.ini_options]
 addopts = "-v"

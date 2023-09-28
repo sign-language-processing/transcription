@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import importlib
 import os
 
 import cv2
@@ -12,7 +13,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--pose', required=True, type=str, help='path to input pose file')
     parser.add_argument('--video', required=True, type=str, help='path to output video file')
-    parser.add_argument('--model', required=True, type=str, choices=['pix2pix', 'mixamo', 'stylegan3'],
+    parser.add_argument('--model', required=True, type=str, choices=['pix_to_pix', 'mixamo', 'stylegan3'],
                         help='system to use')
     parser.add_argument('--upscale', type=bool, help='should the output be upscaled to 768x768')
 
@@ -29,7 +30,9 @@ def main():
     print('Generating video ...')
 
     video = None
-    pose_to_video = __import__('pose_to_video.' + args.model).pose_to_video
+    module = importlib.import_module(f"pose_to_video.{args.model}")
+    print('module', module)
+    pose_to_video = module.pose_to_video
     frames: iter = pose_to_video(pose)
 
     if args.upscale:
@@ -39,8 +42,13 @@ def main():
     for frame in frames:
         if video is None:
             print('Saving to disk ...')
+            h, w, _ = frame.shape
             fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-            video = cv2.VideoWriter(args.video, fourcc, pose.body.fps, frame.size)
+            video = cv2.VideoWriter(filename=args.video,
+                                    apiPreference=cv2.CAP_FFMPEG,
+                                    fourcc=fourcc,
+                                    fps=pose.body.fps,
+                                    frameSize=(h, w))
 
         video.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
     video.release()
@@ -48,3 +56,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # python bin.py --pose pix_to_pix/test.pose --video test.mp4 --model pix_to_pix
