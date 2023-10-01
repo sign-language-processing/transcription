@@ -211,7 +211,7 @@ for words_file in tqdm(words_dir.iterdir()):
     lang = reverse_iso[language]
     with open(words_file, "r", encoding="utf-8") as f:
         words = f.read().splitlines()
-    text = "\n".join([(f"<SW> <{lang}> {word}") for word in words])
+    text = "\n".join([(f"$SW$ ${lang}$ {word}") for word in words])
 
     with open(raw_dir.joinpath("spoken." + lang), "w", encoding="utf-8") as f:
         f.write(text)
