@@ -3,6 +3,7 @@ import datetime
 import itertools
 import os
 import time
+import shutil
 
 import tensorflow as tf
 from matplotlib import pyplot as plt
@@ -34,6 +35,8 @@ def load_checkpoint():
     latest_checkpoint = tf.train.latest_checkpoint(checkpoint_dir)
     checkpoint.restore(latest_checkpoint)
 
+    generator.save("/training/model.h5")
+
     return checkpoint
 
 
@@ -46,7 +49,7 @@ def generate_images(model, test_input, tar, step):
     display_list = [test_input[0], tar[0], prediction[0], (tar - prediction)[0]]
     title = ['Input Image', 'Ground Truth', 'Predicted Image', 'Difference']
 
-    plt.figure(figsize=(5 * len(title), 5 * num_rows))
+    plt.figure(figsize=(2.5 * len(title), 2.5 * num_rows))
     for i in range(num_rows):
         for j, t in enumerate(title):
             plt.subplot(num_rows, len(title), (i * len(title)) + (j + 1))
@@ -56,7 +59,9 @@ def generate_images(model, test_input, tar, step):
             plt.imshow(display_list[j][i] * 0.5 + 0.5)
             plt.axis('off')
     plt.tight_layout(pad=0)
-    plt.savefig(progress_dir + "/" + str(step) + ".png")
+    fig_path = progress_dir + "/" + str(step) + ".png"
+    plt.savefig(fig_path)
+    shutil.copyfile(fig_path, "/training/latest.png")
 
 
 def train_step(input_image, target, step):
@@ -125,7 +130,7 @@ def train(checkpoint, dataset):
 
 def main(frames_path: str, poses_path: str):
     checkpoint = load_checkpoint()
-    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=16)
+    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=4)
 
     train(checkpoint, dataset)
 

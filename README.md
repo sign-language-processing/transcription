@@ -58,7 +58,7 @@ pose_to_segments -i sign.pose -o sign.eaf --video sign.mp4
 
 
 <details>
-  <summary>Next Steps</summary>
+  <summary>Next Steps (TODO)</summary>
 
 After looking at the ELAN file, adjusting where needed, we'll transcribe every sign segment into HamNoSys or
 SignWriting:
@@ -82,7 +82,7 @@ text_to_text --sign_language=us --spoken_language=en --eaf=sign.eaf
 Let's start with having a spoken language word, or sentence - "Hello World".
 
 <details>
-  <summary>Next Steps</summary>
+  <summary>Next Steps (TODO)</summary>
 
 First, we'll translate it into sign language text, in SignWriting format:
 
@@ -101,7 +101,7 @@ Finally, we'll animate the pose sequence into a video:
 
 ```bash
 # Using Pix2Pix
-pose_to_video --model=pix2pix --pose=sign.pose --video=sign.mp4 --upscale=true
+pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4 --upscale=true
 # OR Using StyleGAN3
 pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale=true
 # OR Using Mixamo

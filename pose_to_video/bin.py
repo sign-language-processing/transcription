@@ -5,8 +5,9 @@ import os
 
 import cv2
 from pose_format.pose import Pose
+from tqdm import tqdm
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def get_args():
@@ -15,7 +16,7 @@ def get_args():
     parser.add_argument('--video', required=True, type=str, help='path to output video file')
     parser.add_argument('--model', required=True, type=str, choices=['pix_to_pix', 'mixamo', 'stylegan3'],
                         help='system to use')
-    parser.add_argument('--upscale', type=bool, help='should the output be upscaled to 768x768')
+    parser.add_argument('--upscale', action='store_true', help='should the output be upscaled to 768x768')
 
     return parser.parse_args()
 
@@ -39,7 +40,7 @@ def main():
         from pose_to_video.upscaler import upscale
         frames = upscale(frames)
 
-    for frame in frames:
+    for frame in tqdm(frames):
         if video is None:
             print('Saving to disk ...')
             h, w, _ = frame.shape

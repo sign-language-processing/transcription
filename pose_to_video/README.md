@@ -4,7 +4,9 @@
 To animate a `.pose` file into a video, run
 
 ```bash
-pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4
+pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4
+# Or including upscaling
+pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4 --upscale=true
 ```
 
 ## Implementations
