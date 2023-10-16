@@ -149,7 +149,7 @@ class PoseSegmentsDataset(Dataset):
         return [sum_counter / counter[i] for c, i in BIO.items()]
 
 
-def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
+def process_datum_dgs_corpus(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
     poses: Dict[str, Pose] = datum["pose"]
 
     elan_path = datum["tf_datum"]["paths"]["eaf"].numpy().decode('utf-8')
@@ -167,9 +167,29 @@ def process_datum(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
             yield {"id": f"{datum['id']}_{person}", "pose": poses[person], "segments": segments}
 
 
+def process_datum_mediapi_skel(datum: ProcessedPoseDatum) -> Iterable[PoseSegmentsDatum]:
+    segments = [[{"start_time": float(start_time.numpy()), "end_time": float(end_time.numpy())}]
+                for start_time, end_time
+                in zip(datum["tf_datum"]["subtitles"]["start_time"], datum["tf_datum"]["subtitles"]["end_time"])]
+    # Based on the captions timing, we have reasons to believe that the poses are all at 25fps
+    datum["pose"].body.fps = 25
+
+    yield {"id": f"{datum['id']}", "pose": datum["pose"], "segments": segments}
+
+
+PROCESS_DATUM = {
+    "dgs_corpus": process_datum_dgs_corpus,
+    "mediapi_skel": process_datum_mediapi_skel
+}
+
+
 def filter_dataset(tf_datum) -> bool:
+    if "paths" not in tf_datum:
+        # We only filter data out of the DGS corpus at the moment
+        return True
+
     # see https://docs.google.com/spreadsheets/d/1GCZ74uPPbCd7Kva88gjyPgKI5WqA4CPBdM9MDnBKCNo/edit#gid=0
-    if tf_datum["id"].numpy().decode('utf-8') in ["1289910", "1245887","1289868","1246064", "1584617"]:
+    if tf_datum["id"].numpy().decode('utf-8') in ["1289910", "1245887", "1289868", "1246064", "1584617"]:
         return False
 
     cmdi_path = tf_datum["paths"]["cmdi"].numpy().decode('utf-8')
@@ -226,10 +246,10 @@ def get_dataset(name="dgs_corpus",
                             data_dir=data_dir,
                             filter_func=filter_dataset)
     print(f"Dataset({split}) size: {len(data)}")
-    data = list(chain.from_iterable([process_datum(d) for d in tqdm(data, desc="Processing dataset")]))
+    data = list(chain.from_iterable([PROCESS_DATUM[name](d) for d in tqdm(data, desc="Processing dataset")]))
     print(f"Dataset({split}) videos: {len(data)}")
     dataset_statistics(data)
-    
+
     return PoseSegmentsDataset(data,
                                hand_normalization=hand_normalization,
                                optical_flow=optical_flow,

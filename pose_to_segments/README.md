@@ -56,6 +56,13 @@ We replace the IO tagging heads in E0 with BIO heads to form our baseline. Our p
 ```bash
 python -m pose_to_segments.src.train --dataset=dgs_corpus --pose=holistic --fps=25 --hidden_dim=256 --encoder_depth=1 --encoder_bidirectional=true
 ```
+Or for the mediapi-skel dataset (only phrase segmentation)
+```bash
+# FPS is not relevant for mediapi-skel
+export MEDIAPI_PATH=/shares/volk.cl.uzh/amoryo/datasets/mediapi/mediapi-skel.zip
+export MEDIAPI_POSE_PATH=/shares/volk.cl.uzh/amoryo/datasets/mediapi/mediapipe_zips.zip
+python -m pose_to_segments.src.train --dataset=mediapi_skel --pose=holistic --fps=0 --hidden_dim=256 --encoder_depth=1 --encoder_bidirectional=true
+```
 
 ### E2: Adding Reduced Face Keypoints
 

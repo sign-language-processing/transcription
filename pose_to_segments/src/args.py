@@ -34,7 +34,8 @@ parser.add_argument('--learning_rate', type=float, default=1e-3, help='optimizer
 parser.add_argument('--lr_scheduler', type=str, default='none', help='optimizer learning rate scheduler')
 
 # Data Arguments
-parser.add_argument('--dataset', choices=['dgs_corpus'], default='dgs_corpus', help='which dataset to use?')
+parser.add_argument('--dataset', choices=['dgs_corpus', 'mediapi_skel'],
+                    default='dgs_corpus', help='which dataset to use?')
 parser.add_argument('--data_dir', help='which dir to store the dataset?')
 parser.add_argument('--data_dev', type=boolean_string, default=False,
                     help='whether to use dev set as training data for fast debugging?')

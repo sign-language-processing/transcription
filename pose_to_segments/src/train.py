@@ -91,7 +91,8 @@ if __name__ == '__main__':
         if LOGGER.experiment.sweep_id is None:
             LOGGER.log_hyperparams(args)
 
-    data_args = dict(poses=args.pose,
+    data_args = dict(name=args.dataset,
+                     poses=args.pose,
                      fps=args.fps,
                      components=args.pose_components,
                      reduce_face=args.pose_reduce_face,

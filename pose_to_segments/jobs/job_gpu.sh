@@ -22,4 +22,8 @@
 module load anaconda3
 source activate trans
 # pip install .[dev]
+
+export MEDIAPI_PATH=/shares/volk.cl.uzh/amoryo/datasets/mediapi/mediapi-skel.zip
+export MEDIAPI_POSE_PATH=/shares/volk.cl.uzh/amoryo/datasets/mediapi/mediapipe_zips.zip
+
 srun $@
