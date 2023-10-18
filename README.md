@@ -52,7 +52,7 @@ Now let's create an ELAN file with sign and sentence segments:
 (To demo this on a longer file, you can download a large pose file from [here](https://nlp.biu.ac.il/~amit/datasets/poses/holistic/dgs_corpus/1413451-11105600-11163240_a.pose))
 
 ```bash
-pip insatll pympi # depends on pympi to create elan files
+pip install pympi-ling # depends on pympi to create elan files
 pose_to_segments -i sign.pose -o sign.eaf --video sign.mp4
 ```
 

@@ -109,7 +109,7 @@ def main():
         for segment in segments:
             eaf.add_annotation(tier_id, int(segment["start"] / fps * 1000), int(segment["end"] / fps * 1000))
 
-    if args.subtitles:
+    if args.subtitles and os.path.exists(args.subtitles):
         import srt
         eaf.add_tier("SUBTITLE")
         with open(args.subtitles, "r") as infile:
