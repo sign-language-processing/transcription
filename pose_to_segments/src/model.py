@@ -11,7 +11,7 @@ import wandb
 import matplotlib.pyplot as plt
 
 from .utils.probs_to_segments import probs_to_segments
-from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU
+from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU, segment_boundary_f1
 
 
 class PoseTaggingModel(pl.LightningModule):
@@ -163,6 +163,7 @@ class PoseTaggingModel(pl.LightningModule):
             'frame_roc_auc_O': [],
             'segment_percentage': [],
             'segment_IoU': [],
+            'segment_boundary_f1': [],
         }
         data = {
             'gold': [],
@@ -215,6 +216,8 @@ class PoseTaggingModel(pl.LightningModule):
 
             metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
             metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
+
+            metrics['segment_boundary_f1'].append(segment_boundary_f1(segments, segments_gold))
 
             if advanced_plot:
                 # probs plot
