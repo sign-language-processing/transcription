@@ -64,7 +64,7 @@ def get_args():
     parser.add_argument('--video', default=None, required=False, type=str, help='path to video file')
     parser.add_argument('--subtitles', default=None, required=False, type=str, help='path to subtitle file')
     parser.add_argument('--model', default='model_E1s-1.pth', required=False, type=str, help='path to model file')
-    parser.add_argument('--no_pose_link', action='store_true', help='whether to link the pose file')
+    parser.add_argument('--no-pose-link', action='store_true', help='whether to link the pose file')
 
     return parser.parse_args()
 
