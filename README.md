@@ -101,9 +101,10 @@ Finally, we'll animate the pose sequence into a video:
 
 ```bash
 # Using Pix2Pix
-pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4 --upscale=true
+pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4 --upscale
+python -m pose_to_video.bin --model=pix_to_pix --pose=assets/poses/testing-reduced.pose --video=sign.mp4 --upscale
 # OR Using StyleGAN3
-pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale=true
+pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale
 # OR Using Mixamo
 pose_to_video --model=mixamo --pose=sign.pose --video=sign.mp4
 ```

@@ -4,6 +4,7 @@ import importlib
 import os
 
 import cv2
+from _shared.pose_utils import reduce_holistic, correct_wrists
 from pose_format.pose import Pose
 from tqdm import tqdm
 
@@ -27,6 +28,8 @@ def main():
     print('Loading input pose ...')
     with open(args.pose, 'rb') as f:
         pose = Pose.read(f.read())
+        pose = reduce_holistic(pose)
+        correct_wrists(pose)
 
     print('Generating video ...')
 

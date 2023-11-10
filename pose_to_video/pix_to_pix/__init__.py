@@ -6,7 +6,6 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from pose_format import Pose
 from pose_format.pose_visualizer import PoseVisualizer
-from tqdm import tqdm
 
 
 def translate_image(model, image):
@@ -35,7 +34,8 @@ def translate_image(model, image):
 
 def pose_to_video(pose: Pose) -> iter:
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    model = load_model(os.path.join(current_dir, "dist", "model.h5"))
+    # model = load_model(os.path.join(current_dir, "dist", "model.h5"))
+    model = load_model(os.path.join(current_dir, "training", "generators", "95000.h5"))
 
     # Scale pose to 256x256
     scale_w = pose.header.dimensions.width / 256
@@ -47,4 +47,3 @@ def pose_to_video(pose: Pose) -> iter:
     for pose_img_bgr in visualizer.draw():
         pose_img_rgb = cv2.cvtColor(pose_img_bgr, cv2.COLOR_BGR2RGB)
         yield translate_image(model, pose_img_rgb)
-

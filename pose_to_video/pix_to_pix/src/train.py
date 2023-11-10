@@ -17,6 +17,7 @@ summary_writer = tf.summary.create_file_writer("logs/fit/" + datetime.datetime.n
 progress_dir = '/training/progress/'
 checkpoint_dir = '/training/checkpoints/'
 os.makedirs(progress_dir, exist_ok=True)
+os.makedirs('/training/generators/', exist_ok=True)
 
 physical_devices = tf.config.list_physical_devices('GPU')
 if len(physical_devices) > 0:
@@ -119,18 +120,19 @@ def train(checkpoint, dataset):
         timers["train_step"] += time.time() - train_step_start_time
 
         # Training step
-        if (step + 1) % 10 == 0:
+        if step % 10 == 0:
             print('.', end='', flush=True)
 
         # Save (checkpoint) the model every 5k steps
-        if (step + 1) % 5000 == 0:
+        if step % 5000 == 0:
             checkpoint.save(file_prefix=os.path.join(checkpoint_dir, "ckpt"))
             generator.save("/training/model.h5")
+            generator.save(f"/training/generators/{step}.h5")
 
 
 def main(frames_path: str, poses_path: str):
     checkpoint = load_checkpoint()
-    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=4)
+    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=8)
 
     train(checkpoint, dataset)
 
