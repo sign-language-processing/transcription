@@ -11,7 +11,7 @@ import wandb
 import matplotlib.pyplot as plt
 
 from .utils.probs_to_segments import probs_to_segments
-from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU
+from .utils.metrics import frame_accuracy, frame_f1, frame_precision, frame_recall, frame_roc_auc, segment_percentage, segment_IoU, segment_boundary_f1
 
 
 class PoseTaggingModel(pl.LightningModule):
@@ -157,12 +157,13 @@ class PoseTaggingModel(pl.LightningModule):
             'loss': [],
             'frame_accuracy': [],
             'frame_f1': [],
-            # 'frame_f1_O': [],
-            # 'frame_precision_O': [],
-            # 'frame_recall_O': [],
-            # 'frame_roc_auc_O': [],
+            'frame_f1_O': [],
+            'frame_precision_O': [],
+            'frame_recall_O': [],
+            'frame_roc_auc_O': [],
             'segment_percentage': [],
             'segment_IoU': [],
+            'segment_boundary_f1': [],
         }
         data = {
             'gold': [],
@@ -197,11 +198,11 @@ class PoseTaggingModel(pl.LightningModule):
             metrics['frame_f1'].append(frame_f1(probs, gold, average='macro'))
 
             # specific metrics on the O tag to compare to Bull et al.
-            # if torch.count_nonzero(gold) > 0:
-            #     metrics['frame_f1_O'].append(frame_f1(probs, gold, average=None)[0])
-            #     metrics['frame_precision_O'].append(frame_precision(probs, gold, average=None)[0])
-            #     metrics['frame_recall_O'].append(frame_recall(probs, gold, average=None)[0])
-            #     metrics['frame_roc_auc_O'].append(frame_roc_auc(probs, gold, average=None, multi_class='ovr', labels=[0, 1, 2])[0])
+            if torch.count_nonzero(gold) > 0:
+                metrics['frame_f1_O'].append(frame_f1(probs, gold, average=None)[0])
+                metrics['frame_precision_O'].append(frame_precision(probs, gold, average=None)[0])
+                metrics['frame_recall_O'].append(frame_recall(probs, gold, average=None)[0])
+                metrics['frame_roc_auc_O'].append(frame_roc_auc(probs, gold, average=None, multi_class='ovr', labels=[0, 1, 2])[0])
 
             # segment IoU and percentage
             segments = probs_to_segments(probs, b_threshold=self.b_threshold, o_threshold=self.o_threshold, threshold_likeliest=self.threshold_likeliest)
@@ -215,6 +216,8 @@ class PoseTaggingModel(pl.LightningModule):
 
             metrics['segment_percentage'].append(segment_percentage(segments, segments_gold))
             metrics['segment_IoU'].append(segment_IoU(segments, segments_gold, max_len=gold.shape[0]))
+
+            metrics['segment_boundary_f1'].append(segment_boundary_f1(segments, segments_gold))
 
             if advanced_plot:
                 # probs plot

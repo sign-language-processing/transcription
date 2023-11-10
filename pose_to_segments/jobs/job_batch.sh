@@ -32,4 +32,10 @@ for seed in $seeds; do
 # E4ba
 # sbatch $job python -m pose_to_segments.src.train --dataset=dgs_corpus --pose=holistic --fps=25 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --encoder_autoregressive=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments --seed=$seed --run_name=E4ba-$seed --optical_flow=true --hand_normalization=true --epochs=50 --patience=10
 
+# train on mediapi
+# E1s
+sbatch $job python -m pose_to_segments.src.train --dataset=mediapi_skel --pose=holistic --fps=0 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments_mediapi --seed=$seed --run_name=E1s-lsf-$seed
+# E4s
+sbatch $job python -m pose_to_segments.src.train --dataset=mediapi_skel --pose=holistic --fps=0 --hidden_dim=256 --encoder_depth=4 --encoder_bidirectional=true --data_dir=/shares/volk.cl.uzh/zifjia/tensorflow_datasets_2 --wandb_dir=/data/zifjia/pose_to_segments_mediapi --seed=$seed --run_name=E4s-lsf-$seed --optical_flow=true --hand_normalization=true
+
 done

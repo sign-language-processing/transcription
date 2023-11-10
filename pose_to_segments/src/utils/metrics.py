@@ -65,3 +65,59 @@ def segment_IoU(segments: List[dict], segments_gold: List[dict], max_len=1000000
         return 1 if np.sum(intersection) == 0 else 0
 
     return float(np.sum(intersection) / np.sum(union))
+
+def segment_boundary_f1(segments: List[dict], segments_gold: List[dict]) -> float:
+    """
+    segment boundary f1 as described in Bull et al.
+    segments: [{'start': 1, 'end': 2}, ...]
+    """
+    return segment_f1(segments_to_boundaries(segments), segments_to_boundaries(segments_gold))
+
+def segments_to_boundaries(segments: List[dict]) -> List[dict]:
+    """
+    segments: [{'start': 1, 'end': 2}, ...]
+    """
+    boundaries = []
+    for i, segment in enumerate(segments):
+        if i == len(segments) - 1:
+            break
+        segment_next = segments[i + 1]
+        boundary = {"start": segment["end"], "end": segment_next["start"]}
+        boundaries.append(boundary)
+    return boundaries
+
+def segment_f1(segments: List[dict], segments_gold: List[dict]) -> float:
+    """
+    segments: [{'start': 1, 'end': 2}, ...]
+    """
+    if len(segments_gold) == 0 or len(segments) == 0:
+        return 1 if len(segments) == len(segments_gold) else 0
+
+    precision = segment_precision(segments, segments_gold)
+    recall = segment_recall(segments, segments_gold)
+    return (precision * recall) / (precision + recall) if (precision > 0 and recall > 0) else 0
+
+def segment_precision(segments: List[dict], segments_gold: List[dict]) -> float:
+    """
+    segments: [{'start': 1, 'end': 2}, ...]
+    """
+    return segment_recall(segments_gold, segments)
+
+def segment_recall(segments: List[dict], segments_gold: List[dict]) -> float:
+    """
+    segments: [{'start': 1, 'end': 2}, ...]
+    """
+    hit = 0
+    allowed_shift = 15 # 0.6s under 25 fps
+    allowed_shift = allowed_shift + 2
+    for segment_gold in segments_gold:
+        start = segment_gold["start"] - allowed_shift
+        end = segment_gold["end"] + allowed_shift
+        segment_gold_range = range(start, end)
+        # if there is intersection betweeen segment_gold_range and any of the segments
+        if any([len(set(range(segment['start'], segment['end'])).intersection(segment_gold_range)) > 0 for segment in segments]):
+            hit = hit + 1
+    return hit / len(segments_gold)
+
+
+

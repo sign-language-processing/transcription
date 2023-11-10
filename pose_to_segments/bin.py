@@ -64,6 +64,7 @@ def get_args():
     parser.add_argument('--video', default=None, required=False, type=str, help='path to video file')
     parser.add_argument('--subtitles', default=None, required=False, type=str, help='path to subtitle file')
     parser.add_argument('--model', default='model_E1s-1.pth', required=False, type=str, help='path to model file')
+    parser.add_argument('--no-pose-link', action='store_true', help='whether to link the pose file')
 
     return parser.parse_args()
 
@@ -102,14 +103,16 @@ def main():
         if args.video.endswith(".mp4"):
             mimetype = "video/mp4"
         eaf.add_linked_file(args.video, mimetype=mimetype)
-    eaf.add_linked_file(args.i, mimetype="application/pose")
+
+    if not args.no_pose_link: 
+        eaf.add_linked_file(args.i, mimetype="application/pose")
 
     for tier_id, segments in tiers.items():
         eaf.add_tier(tier_id)
         for segment in segments:
             eaf.add_annotation(tier_id, int(segment["start"] / fps * 1000), int(segment["end"] / fps * 1000))
 
-    if args.subtitles:
+    if args.subtitles and os.path.exists(args.subtitles):
         import srt
         eaf.add_tier("SUBTITLE")
         with open(args.subtitles, "r") as infile:
