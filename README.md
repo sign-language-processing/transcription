@@ -101,11 +101,11 @@ Finally, we'll animate the pose sequence into a video:
 
 ```bash
 # Using Pix2Pix
-pose_to_video --model=pix_to_pix --pose=sign.pose --video=sign.mp4 --upscale
-python -m pose_to_video.bin --model=pix_to_pix --pose=assets/poses/testing-reduced.pose --video=sign.mp4 --upscale
+wget -O pix2pix.h5 "https://firebasestorage.googleapis.com/v0/b/sign-mt-assets/o/models%2Fgenerator%2Fmodel.h5?alt=media"
+pose_to_video --type=pix_to_pix --model=pix2pix.h5 --pose=sign.pose --video=sign.mp4 --upscale
 # OR Using StyleGAN3
-pose_to_video --model=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale
+pose_to_video --type=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale
 # OR Using Mixamo
-pose_to_video --model=mixamo --pose=sign.pose --video=sign.mp4
+pose_to_video --type=mixamo --pose=sign.pose --video=sign.mp4
 ```
 </details>
