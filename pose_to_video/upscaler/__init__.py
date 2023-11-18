@@ -19,7 +19,7 @@ def upscale_frame(model, frame):
         frame /= 255.0
 
     model_input = np.expand_dims(frame, axis=0)
-    model_output = model.predict(model_input)[0]
+    model_output = model.predict(model_input, verbose=None)[0]
     return (model_output * 255.0).astype('uint8')
 
 

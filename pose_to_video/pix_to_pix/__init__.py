@@ -32,10 +32,8 @@ def translate_image(model, image):
     return pred.astype(np.uint8)
 
 
-def pose_to_video(pose: Pose) -> iter:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # model = load_model(os.path.join(current_dir, "dist", "model.h5"))
-    model = load_model(os.path.join(current_dir, "training", "generators", "95000.h5"))
+def pose_to_video(pose: Pose, model_path: str) -> iter:
+    model = load_model(model_path)
 
     # Scale pose to 256x256
     scale_w = pose.header.dimensions.width / 256

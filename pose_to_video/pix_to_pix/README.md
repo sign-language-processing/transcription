@@ -26,3 +26,10 @@ pip install tensorflowjs
 chmod +x keras_to_tfjs.sh
 ./keras_to_tfjs.sh
 ```
+
+
+## Download Videos
+
+```
+rsync -avz --progress nlp:/home/nlp/amit/sign-language/transcription/pose_to_video/pix_to_pix/training/videos/ training/videos/
+```

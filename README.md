@@ -96,6 +96,8 @@ Next, we'll animate the sign language text into a pose sequence:
 ```bash
 text_to_pose --notation=signwriting --text=$(cat sign.txt) --pose=sign.pose
 ```
+</details>
+
 
 Finally, we'll animate the pose sequence into a video:
 
@@ -103,6 +105,12 @@ Finally, we'll animate the pose sequence into a video:
 # Using Pix2Pix
 wget -O pix2pix.h5 "https://firebasestorage.googleapis.com/v0/b/sign-mt-assets/o/models%2Fgenerator%2Fmodel.h5?alt=media"
 pose_to_video --type=pix_to_pix --model=pix2pix.h5 --pose=sign.pose --video=sign.mp4 --upscale
+```
+
+<details>
+  <summary>Next Steps (TODO)</summary>
+
+```bash
 # OR Using StyleGAN3
 pose_to_video --type=stylegan3 --pose=sign.pose --video=sign.mp4 --upscale
 # OR Using Mixamo

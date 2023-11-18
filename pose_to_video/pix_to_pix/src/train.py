@@ -132,7 +132,7 @@ def train(checkpoint, dataset):
 
 def main(frames_path: str, poses_path: str):
     checkpoint = load_checkpoint()
-    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=8)
+    dataset = get_dataset(frames_zip_path=frames_path, poses_zip_path=poses_path, num_frames=16)
 
     train(checkpoint, dataset)
 
