@@ -102,9 +102,11 @@ text_to_pose --notation=signwriting --text=$(cat sign.txt) --pose=sign.pose
 Finally, we'll animate the pose sequence into a video:
 
 ```bash
+pip install git+https://github.com/sign-language-processing/pose-to-video
+
 # Using Pix2Pix
 wget -O pix2pix.h5 "https://firebasestorage.googleapis.com/v0/b/sign-mt-assets/o/models%2Fgenerator%2Fmodel.h5?alt=media"
-pose_to_video --type=pix_to_pix --model=pix2pix.h5 --pose=sign.pose --video=sign.mp4 --upscale
+pose_to_video --type=pix2pix --model=pix2pix.h5 --pose=sign.pose --video=sign.mp4 --upscale
 ```
 
 <details>

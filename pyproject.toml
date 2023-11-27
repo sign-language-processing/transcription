@@ -11,7 +11,7 @@ dependencies = [
     "sentencepiece",
     "numpy",
     "opencv-python",
-    "pose_format",
+    "pose-format",
     "torch",
     "tqdm"
 ]
