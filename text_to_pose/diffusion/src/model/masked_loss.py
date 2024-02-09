@@ -8,7 +8,6 @@ def masked_loss(loss_type: str,
                 confidence: torch.Tensor,
                 model_num_steps: int = 10):
     # Loss by confidence. If missing data, no loss. If less likely data, fewer gradients.
-
     difference = tensor1 - tensor2
 
     if loss_type == 'l1':

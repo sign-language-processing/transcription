@@ -40,14 +40,6 @@ packages = [
 
     "video_to_pose",
 
-    "pose_to_video",
-    "pose_to_video.upscaler",
-    "pose_to_video.pix_to_pix",
-
-    "pose_to_segments",
-    "pose_to_segments.src",
-    "pose_to_segments.src.utils",
-
     "pose_to_text",
 
     "text_to_pose",
@@ -55,22 +47,15 @@ packages = [
     "text_to_text",
 ]
 
-[tool.setuptools.package-data]
-pose_to_segments = ["dist/*.pth"]
-pose_to_video = ["pix_to_pix/dist/*.h5", "upscaler/dist/*.h5"]
 
 [tool.pytest.ini_options]
 addopts = "-v"
 testpaths = [
     "_shared",
     "video_to_pose",
-    "pose_to_video",
-    "pose_to_segments",
     "pose_to_text",
     "text_to_pose"
 ]
 
 [project.scripts]
 video_to_pose = "video_to_pose.bin:main"
-pose_to_segments = "pose_to_segments.bin:main"
-pose_to_video = "pose_to_video.bin:main"

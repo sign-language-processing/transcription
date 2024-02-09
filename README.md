@@ -1,4 +1,4 @@
-# 📝 ⇝ 🧏 Transcription
+# 📝 ⇝ 🧏 Transcription [DEPRECATED]
 
 Repository for sign language transcription related models.
 
@@ -20,7 +20,6 @@ pip install git+https://github.com/sign-language-processing/transcription
 ## Development Setup
 ```bash
 # Update conda
-conda update -n base -c defaults conda
 
 # Create environment
 conda create -y --name sign python=3.10
